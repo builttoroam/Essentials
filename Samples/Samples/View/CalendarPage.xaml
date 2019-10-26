@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Samples.View"
+             xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+             x:Class="Samples.View.CalendarPage"
+             Title="Calendar">
+    <views:BasePage.BindingContext>
+        <viewmodels:CalendarViewModel />
+    </views:BasePage.BindingContext>
+    <StackLayout>
+        <Label Text="Welcome to Xamarin.Forms!"
+                VerticalOptions="CenterAndExpand" 
+                HorizontalOptions="CenterAndExpand" />
+    </StackLayout>
+</views:BasePage>
