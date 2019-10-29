@@ -23,6 +23,8 @@
         Unknown,
         Battery,
         Camera,
+        CalendarRead,
+        CalendarWrite,
         Flashlight,
         LaunchApp,
         LocationWhenInUse,

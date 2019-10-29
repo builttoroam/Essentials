@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using EventKit;
+using Foundation;
+using UIKit;
 
 namespace Xamarin.Essentials
 {
@@ -9,15 +12,19 @@ namespace Xamarin.Essentials
 
         public static Task<List<CalendarObject>> PlatformGetCalendarsAsync()
         {
-            return Task.FromResult(new List<CalendarObject>()
+            var calendars = CalendarRequest.Instance.Calendars;
+            var toReturn = new List<CalendarObject>();
+
+            foreach (var c in calendars)
             {
-                new CalendarObject
+                toReturn.Add(new CalendarObject
                 {
-                    Id = "1",
-                    Name = "My First Calendar",
-                    IsReadOnly = false
-                }
-            });
+                    Id = c.CalendarIdentifier,
+                    Name = c.Title,
+                    IsReadOnly = !c.AllowsContentModifications
+                });
+            }
+            return Task.FromResult(toReturn);
         }
 
         public static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
