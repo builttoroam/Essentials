@@ -9,8 +9,15 @@
         <viewmodels:CalendarViewModel />
     </views:BasePage.BindingContext>
     <StackLayout>
-        <Label Text="Welcome to Xamarin.Forms!"
+        <Label Text="Calendar Access Example"
                 VerticalOptions="CenterAndExpand" 
                 HorizontalOptions="CenterAndExpand" />
+        <Button Text="Request Calendar Read Access"
+                Command="{Binding RequestCalendarReadAccess}"/>
+        <Button Text="Request Calendar Write Access"
+                Command="{Binding RequestCalendarWriteAccess}"/>
+        <Button Text="Load Calendars" 
+                Command="{Binding GetCalendars}"/>
+        <Label Text="{Binding Results}"/>
     </StackLayout>
 </views:BasePage>
