@@ -15,11 +15,11 @@ namespace Xamarin.Essentials
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
             var calendars = CalendarRequest.Instance.Calendars;
-            var toReturn = new List<DeviceCalendar>();
+            var calendarList = new List<DeviceCalendar>();
 
             foreach (var t in calendars)
             {
-                toReturn.Add(new DeviceCalendar
+                calendarList.Add(new DeviceCalendar
                 {
                     Id = t.CalendarIdentifier,
                     Name = t.Title,
@@ -30,11 +30,19 @@ namespace Xamarin.Essentials
                  var mySavedEvent = CalendarRequest.Instance.EventFromIdentifier(t.CalendarIdentifier);
                 */
             }
-            return toReturn.AsReadOnly();
+            return calendarList.AsReadOnly();
         }
 
-        public static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
+        public static async Task PlatformRequestCalendarReadAccess()
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+        }
 
-        public static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
+        public static async Task PlatformRequestCalendarWriteAccess()
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+        }
     }
 }

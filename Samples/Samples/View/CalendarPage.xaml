@@ -15,8 +15,7 @@
             <DataTemplate x:Key="CalendarItemTemplate">
                 <ViewCell>
                     <StackLayout>
-                        <Label Text="{Binding Name}" TextColor="Black"/>
-                    <Label Text="Sp,et" TextColor="Pink"/>
+                        <Label Text="{Binding Name}" TextColor="Black" HorizontalTextAlignment="Center"/>
                     </StackLayout>
                 </ViewCell>
             </DataTemplate>
@@ -27,24 +26,24 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
         </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Button Text="Request Calendar Read Access"
-                Command="{Binding RequestCalendarReadAccess}"/>
-        <Button Grid.Row="0" Grid.Column="1" 
-                Text="Request Calendar Write Access"
-                Command="{Binding RequestCalendarWriteAccess}"/>
-        <Button Grid.Row="0" Grid.Column="2"  
-                Text="Load Calendars" 
-                Command="{Binding GetCalendars}"/>
-
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Button Text="Request Read Access"
+                    Command="{Binding RequestCalendarReadAccess}"
+                    HeightRequest="100"/>
+            <Button Grid.Row="0" Grid.Column="1" 
+                    Text="Request Write Access"
+                    Command="{Binding RequestCalendarWriteAccess}"/>
+            <Button Grid.Row="0" Grid.Column="2"  
+                    Text="Load Calendars" 
+                    Command="{Binding GetCalendars}"/>
+        </Grid>
         <ListView Grid.Row="1" 
-                        Grid.Column="0"
-                        Grid.ColumnSpan="3"
-                        ItemsSource="{Binding Calendars}"
-                        ItemTemplate="{StaticResource CalendarItemTemplate}"/>
+                  ItemsSource="{Binding Calendars}"
+                  ItemTemplate="{StaticResource CalendarItemTemplate}"/>
     </Grid>
 </views:BasePage>

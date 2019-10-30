@@ -21,7 +21,7 @@ namespace Xamarin.Essentials
                         return false;
                 }
             }
-            else if (permission == PermissionType.CalendarRead)
+            else if (permission == PermissionType.CalendarRead || permission == PermissionType.CalendarWrite)
             {
                 if (!info.ContainsKey(new NSString("NSCalendarsUsageDescription")))
                 {
@@ -31,7 +31,7 @@ namespace Xamarin.Essentials
                         return false;
                 }
             }
-            else if (permission == PermissionType.CalendarWrite)
+            else if (permission == PermissionType.Reminders)
             {
                 if (!info.ContainsKey(new NSString("NSRemindersUsageDescription")))
                 {
@@ -54,8 +54,9 @@ namespace Xamarin.Essentials
                 case PermissionType.LocationWhenInUse:
                     return Task.FromResult(GetLocationStatus());
                 case PermissionType.CalendarRead:
-                    return RequestCalendarAsync();
                 case PermissionType.CalendarWrite:
+                    return RequestCalendarAsync();
+                case PermissionType.Reminders:
                     return RequestRemindersAsync();
             }
 
@@ -80,12 +81,13 @@ namespace Xamarin.Essentials
 
                     return await RequestLocationAsync();
                 case PermissionType.CalendarRead:
+                case PermissionType.CalendarWrite:
 
                     if (!MainThread.IsMainThread)
                         throw new PermissionException("Permission request must be invoked on main thread.");
 
                     return await RequestCalendarAsync();
-                case PermissionType.CalendarWrite:
+                case PermissionType.Reminders:
 
                     if (!MainThread.IsMainThread)
                         throw new PermissionException("Permission request must be invoked on main thread.");
