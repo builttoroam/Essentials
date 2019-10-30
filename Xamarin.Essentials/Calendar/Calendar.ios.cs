@@ -10,14 +10,16 @@ namespace Xamarin.Essentials
     {
         public static bool PlatformIsSupported => true;
 
-        public static Task<List<CalendarObject>> PlatformGetCalendarsAsync()
+        public static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
         {
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
+
             var calendars = CalendarRequest.Instance.Calendars;
-            var toReturn = new List<CalendarObject>();
+            var toReturn = new List<DeviceCalendar>();
 
             foreach (var t in calendars)
             {
-                toReturn.Add(new CalendarObject
+                toReturn.Add(new DeviceCalendar
                 {
                     Id = t.CalendarIdentifier,
                     Name = t.Title,
@@ -28,7 +30,7 @@ namespace Xamarin.Essentials
                  var mySavedEvent = CalendarRequest.Instance.EventFromIdentifier(t.CalendarIdentifier);
                 */
             }
-            return Task.FromResult(toReturn);
+            return toReturn.AsReadOnly();
         }
 
         public static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);

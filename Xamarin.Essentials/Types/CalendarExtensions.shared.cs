@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Xamarin.Essentials
 {
     [Preserve(AllMembers = true)]
-    public class CalendarObject
+    public class DeviceCalendar : ICalendar
     {
         public string Id { get; set; }
 
@@ -13,6 +13,15 @@ namespace Xamarin.Essentials
         public bool IsReadOnly { get; set; }
 
         // public List<Event> EventList { get; set; }
+    }
+
+    public interface ICalendar
+    {
+        string Id { get; set; }
+
+        string Name { get; set; }
+
+        bool IsReadOnly { get; set; }
     }
 
     public class Event
