@@ -15,14 +15,18 @@ namespace Xamarin.Essentials
             var calendars = CalendarRequest.Instance.Calendars;
             var toReturn = new List<CalendarObject>();
 
-            foreach (var c in calendars)
+            foreach (var t in calendars)
             {
                 toReturn.Add(new CalendarObject
                 {
-                    Id = c.CalendarIdentifier,
-                    Name = c.Title,
-                    IsReadOnly = !c.AllowsContentModifications
+                    Id = t.CalendarIdentifier,
+                    Name = t.Title,
+                    IsReadOnly = !t.AllowsContentModifications
                 });
+                /*
+                 To get Events:
+                 var mySavedEvent = CalendarRequest.Instance.EventFromIdentifier(t.CalendarIdentifier);
+                */
             }
             return Task.FromResult(toReturn);
         }

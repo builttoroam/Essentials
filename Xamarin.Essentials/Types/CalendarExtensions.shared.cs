@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
 
         public bool IsReadOnly { get; set; }
 
-        public List<Event> EventList { get; set; }
+        // public List<Event> EventList { get; set; }
     }
 
     public class Event
