@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 namespace Xamarin.Essentials
 {
+    [Preserve(AllMembers = true)]
     public class CalendarObject
     {
         public string Id { get; set; }
