@@ -3,21 +3,48 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:Samples.View"
              xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+             xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
+             xmlns:samples="clr-namespace:Samples.ViewModel;assembly=Samples"
              x:Class="Samples.View.CalendarPage"
              Title="Calendar">
     <views:BasePage.BindingContext>
         <viewmodels:CalendarViewModel />
     </views:BasePage.BindingContext>
-    <StackLayout>
-        <Label Text="Calendar Access Example"
-                VerticalOptions="CenterAndExpand" 
-                HorizontalOptions="CenterAndExpand" />
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+            <DataTemplate x:Key="CalendarItemTemplate">
+                <ViewCell>
+                    <StackLayout>
+                        <Label Text="{Binding Name}" TextColor="Black"/>
+                    <Label Text="Sp,et" TextColor="Pink"/>
+                    </StackLayout>
+                </ViewCell>
+            </DataTemplate>
+        </ResourceDictionary>
+    </views:BasePage.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
         <Button Text="Request Calendar Read Access"
                 Command="{Binding RequestCalendarReadAccess}"/>
-        <Button Text="Request Calendar Write Access"
+        <Button Grid.Row="0" Grid.Column="1" 
+                Text="Request Calendar Write Access"
                 Command="{Binding RequestCalendarWriteAccess}"/>
-        <Button Text="Load Calendars" 
+        <Button Grid.Row="0" Grid.Column="2"  
+                Text="Load Calendars" 
                 Command="{Binding GetCalendars}"/>
-        <Label Text="{Binding Results}"/>
-    </StackLayout>
+
+        <ListView Grid.Row="1" 
+                        Grid.Column="0"
+                        Grid.ColumnSpan="3"
+                        ItemsSource="{Binding Calendars}"
+                        ItemTemplate="{StaticResource CalendarItemTemplate}"/>
+    </Grid>
 </views:BasePage>

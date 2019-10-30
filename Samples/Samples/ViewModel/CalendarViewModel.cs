@@ -25,13 +25,16 @@ namespace Samples.ViewModel
 
         public ICommand RequestCalendarWriteAccess { get; }
 
-        public string Results { get; set; }
+        public ObservableCollection<CalendarObject> Calendars { get; } = new ObservableCollection<CalendarObject>();
 
         async void OnClick()
         {
-            var listResults = await Calendar.GetCalendarsAsync();
-            Results = listResults.First().Name;
-            OnPropertyChanged(nameof(Results));
+            Calendars.Clear();
+            var calendars = await Calendar.GetCalendarsAsync();
+            foreach (var calendar in calendars)
+            {
+                Calendars.Add(calendar);
+            }
         }
 
         async void OnRequestCalendarWriteAccess()
