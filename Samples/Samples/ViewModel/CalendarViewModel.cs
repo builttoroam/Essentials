@@ -14,7 +14,7 @@ namespace Samples.ViewModel
 
         public CalendarViewModel()
         {
-            GetCalendars = new Command(OnClick);
+            GetCalendars = new Command(OnClickGetCalendars);
             RequestCalendarReadAccess = new Command(OnRequestCalendarReadAccess);
             RequestCalendarWriteAccess = new Command(OnRequestCalendarWriteAccess);
         }
@@ -27,7 +27,7 @@ namespace Samples.ViewModel
 
         public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
 
-        async void OnClick()
+        async void OnClickGetCalendars()
         {
             Calendars.Clear();
             var calendars = await Calendar.GetCalendarsAsync();

@@ -30,6 +30,7 @@
         LocationWhenInUse,
         Maps,
         NetworkState,
+        Reminders,
         Vibrate,
         WriteExternalStorage,
     }

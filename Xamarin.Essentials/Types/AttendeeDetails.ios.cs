@@ -5,7 +5,7 @@ using System.Text;
 namespace Xamarin.Essentials
 {
     // iOS
-    public partial class DeviceSpecificAttendeeDetails
+    public class DeviceSpecificAttendeeDetails
     {
         public AttendanceStatus Status { get; set; }
 

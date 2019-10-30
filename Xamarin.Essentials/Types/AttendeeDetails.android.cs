@@ -5,7 +5,7 @@ using System.Text;
 namespace Xamarin.Essentials
 {
     // Android
-    public partial class DeviceSpecificAttendeeDetails
+    public class DeviceSpecificAttendeeDetails
     {
         public bool IsAttending { get; set; }
 
