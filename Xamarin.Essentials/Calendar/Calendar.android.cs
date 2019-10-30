@@ -1,8 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Remoting.Contexts;
 using System.Threading.Tasks;
-using Android.Content;
-using Android.Database;
 using Android.Provider;
 
 namespace Xamarin.Essentials
@@ -11,34 +8,31 @@ namespace Xamarin.Essentials
     {
         public static bool PlatformIsSupported => true;
 
-        public static async Task<List<CalendarObject>> PlatformGetCalendarsAsync()
+        public static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
-            var calendars = new List<CalendarObject>();
+
             var calendarsUri = CalendarContract.Calendars.ContentUri;
-            string[] calendarsProjection =
+            var calendarsProjection = new List<string>
             {
                 CalendarContract.Calendars.InterfaceConsts.Id,
                 CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName,
                 CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel
             };
-            if (Platform.AppContext == null)
-                return await Task.FromResult(new List<CalendarObject>() { new CalendarObject() { Name = "Could not retrieve list" } });
 
-            var ctx = Platform.AppContext;
-            var cur = ctx.ApplicationContext.ContentResolver.Query(calendarsUri, calendarsProjection, null, null, null);
-
+            var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(calendarsUri, calendarsProjection.ToArray(), null, null, null);
+            var calendars = new List<ICalendar>();
             while (cur.MoveToNext())
             {
-                calendars.Add(new CalendarObject()
+                calendars.Add(new DeviceCalendar()
                 {
-                    Id = cur.GetString(0), // Id
-                    Name = cur.GetString(1), // CalendarDisplayName
-                    IsReadOnly = cur.GetString(2) == "Owner" // CalendarAccessLevel
+                    Id = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.Id)),
+                    Name = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName)),
+                    IsReadOnly = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel)) == "Owner"
                 });
             }
 
-            return await Task.FromResult(calendars);
+            return calendars.AsReadOnly();
         }
 
         public static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);

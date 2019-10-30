@@ -10,7 +10,7 @@ namespace Xamarin.Essentials
         public static bool IsSupported()
             => PlatformIsSupported;
 
-        public static Task<List<CalendarObject>> GetCalendarsAsync()
+        public static Task<IReadOnlyList<ICalendar>> GetCalendarsAsync()
             => PlatformGetCalendarsAsync();
 
         public static Task RequestCalendarReadAccess()

@@ -25,7 +25,7 @@ namespace Samples.ViewModel
 
         public ICommand RequestCalendarWriteAccess { get; }
 
-        public ObservableCollection<CalendarObject> Calendars { get; } = new ObservableCollection<CalendarObject>();
+        public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
 
         async void OnClick()
         {

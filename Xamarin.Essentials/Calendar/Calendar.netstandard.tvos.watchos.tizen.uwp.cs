@@ -8,7 +8,7 @@ namespace Xamarin.Essentials
     {
         public static bool PlatformIsSupported => false;
 
-        public static Task<List<CalendarObject>> PlatformGetCalendarsAsync() => throw new NotImplementedException();
+        public static Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync() => throw new NotImplementedException();
 
         public static Task PlatformRequestCalendarReadAccess() => throw new NotImplementedException();
 
