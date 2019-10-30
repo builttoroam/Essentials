@@ -28,11 +28,25 @@ namespace Xamarin.Essentials
                 {
                     Id = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.Id)),
                     Name = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName)),
-                    IsReadOnly = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel)) == "Owner"
+                    IsReadOnly = IsCalendarReadOnly(cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel)))
                 });
             }
 
             return calendars.AsReadOnly();
+        }
+
+        static bool IsCalendarReadOnly(int accessLevel)
+        {
+            switch (accessLevel)
+            {
+                case (int)CalendarAccess.AccessContributor:
+                case (int)CalendarAccess.AccessRoot:
+                case (int)CalendarAccess.AccessOwner:
+                case (int)CalendarAccess.AccessEditor:
+                    return false;
+                default:
+                    return true;
+            }
         }
 
         public static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
