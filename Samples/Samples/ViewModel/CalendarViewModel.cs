@@ -28,6 +28,8 @@ namespace Samples.ViewModel
 
         public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
 
+        public ObservableCollection<IEvent> Events { get; } = new ObservableCollection<IEvent>();
+
         ICalendar selectedCalendar;
 
         public ICalendar SelectedCalendar
@@ -50,8 +52,6 @@ namespace Samples.ViewModel
                 }
             }
         }
-
-        public ObservableCollection<IEvent> Events { get; } = new ObservableCollection<IEvent>();
 
         async void OnClickGetCalendars()
         {
