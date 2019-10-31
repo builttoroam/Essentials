@@ -6,9 +6,9 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
-        public static bool PlatformIsSupported => true;
+        static bool PlatformIsSupported => true;
 
-        public static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
+        static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -28,29 +28,29 @@ namespace Xamarin.Essentials
                 {
                     Id = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.Id)),
                     Name = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName)),
-                    IsReadOnly = IsCalendarReadOnly(cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel)))
+                    IsReadOnly = IsCalendarReadOnly((CalendarAccess)cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel)))
                 });
             }
 
             return calendars.AsReadOnly();
         }
 
-        static bool IsCalendarReadOnly(int accessLevel)
+        static bool IsCalendarReadOnly(CalendarAccess accessLevel)
         {
             switch (accessLevel)
             {
-                case (int)CalendarAccess.AccessContributor:
-                case (int)CalendarAccess.AccessRoot:
-                case (int)CalendarAccess.AccessOwner:
-                case (int)CalendarAccess.AccessEditor:
+                case CalendarAccess.AccessContributor:
+                case CalendarAccess.AccessRoot:
+                case CalendarAccess.AccessOwner:
+                case CalendarAccess.AccessEditor:
                     return false;
                 default:
                     return true;
             }
         }
 
-        public static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
+        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-        public static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
+        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
     }
 }
