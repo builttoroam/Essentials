@@ -52,5 +52,60 @@ namespace Xamarin.Essentials
         static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+        public static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
+
+            var eventsUri = CalendarContract.Events.ContentUri;
+            var eventsProjection = new List<string>
+            {
+                CalendarContract.Events.InterfaceConsts.Id,
+                CalendarContract.Events.InterfaceConsts.CalendarId,
+                CalendarContract.Events.InterfaceConsts.Title,
+                CalendarContract.Events.InterfaceConsts.Description,
+                CalendarContract.Events.InterfaceConsts.EventLocation,
+                CalendarContract.Events.InterfaceConsts.AllDay,
+                CalendarContract.Events.InterfaceConsts.Dtstart,
+                CalendarContract.Events.InterfaceConsts.Dtend,
+                CalendarContract.Events.InterfaceConsts.Duration,
+                CalendarContract.Events.InterfaceConsts.HasAlarm,
+                CalendarContract.Events.InterfaceConsts.HasAttendeeData,
+                CalendarContract.Events.InterfaceConsts.HasExtendedProperties,
+                CalendarContract.Events.InterfaceConsts.Status,
+                CalendarContract.Events.InterfaceConsts.Rrule,
+                CalendarContract.Events.InterfaceConsts.Rdate
+            };
+            var calendarSpecificEvent = string.Empty;
+            if (!string.IsNullOrEmpty(calendarId))
+            {
+                calendarSpecificEvent = $"calendar_id={calendarId}";
+            }
+
+            var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null);
+            var events = new List<IEvent>();
+            while (cur.MoveToNext())
+            {
+                events.Add(new Event()
+                {
+                    Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Id)),
+                    CalendarId = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CalendarId)),
+                    Title = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Title)),
+                    Description = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Description)),
+                    Location = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventLocation)),
+                    AllDay = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 1,
+                    Start = cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart)),
+                    End = cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend)),
+                    HasAlarm = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasAlarm)) == 1,
+                    HasAttendees = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasAttendeeData)) == 1,
+                    HasExtendedProperties = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasExtendedProperties)) == 1,
+                    Status = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Status)),
+                    RecurrenceFrequency = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule)),
+                    RecurranceDate = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rdate)),
+                });
+            }
+
+            return events.AsReadOnly();
+        }
     }
 }
