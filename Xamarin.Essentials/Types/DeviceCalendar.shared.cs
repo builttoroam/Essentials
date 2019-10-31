@@ -22,9 +22,44 @@ namespace Xamarin.Essentials
         bool IsReadOnly { get; set; }
     }
 
-    public class Event
+    public interface IEvent
     {
-        public int Id { get; set; }
+        string Id { get; set; }
+
+        // Calendar Id this event is for
+        string CalendarId { get; set; }
+
+        string Title { get; set; }
+
+        string Description { get; set; }
+
+        string Location { get; set; }
+
+        bool AllDay { get; set; }
+
+        long? Start { get; set; }
+
+        long? End { get; set; }
+
+        bool HasAlarm { get; set; }
+
+        bool HasAttendees { get; set; }
+
+        bool HasExtendedProperties { get; set; }
+
+        string Status { get; set; }
+
+        List<Reminder> Reminders { get; set; }
+
+        string RecurranceDate { get; set; }
+
+        string RecurrenceFrequency { get; set; }
+    }
+
+    [Preserve(AllMembers = true)]
+    public class Event : IEvent
+    {
+        public string Id { get; set; }
 
         // Calendar Id this event is for
         public string CalendarId { get; set; }
@@ -37,17 +72,23 @@ namespace Xamarin.Essentials
 
         public bool AllDay { get; set; }
 
-        public DateTime Start { get; set; }
+        public long? Start { get; set; }
 
-        public DateTime End { get; set; }
+        public long? End { get; set; }
 
-        public bool HasRecurrence { get; set; }
+        public bool HasAlarm { get; set; }
 
-        public RecurrenceRule RecurrenceFrequency { get; set; }
+        public bool HasAttendees { get; set; }
 
-        public bool HasReminder { get; set; }
+        public bool HasExtendedProperties { get; set; }
+
+        public string Status { get; set; }
 
         public List<Reminder> Reminders { get; set; }
+
+        public string RecurranceDate { get; set; }
+
+        public string RecurrenceFrequency { get; set; }
     }
 
     public class Reminder

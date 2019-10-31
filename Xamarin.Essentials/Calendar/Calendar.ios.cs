@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Xamarin.Essentials
@@ -25,6 +26,8 @@ namespace Xamarin.Essentials
             }
             return calendarList.AsReadOnly();
         }
+
+        static Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = "") => throw new NotImplementedException();
 
         static async Task PlatformRequestCalendarReadAccess()
         {
