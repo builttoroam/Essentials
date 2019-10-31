@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Linq;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -26,11 +28,35 @@ namespace Samples.ViewModel
 
         public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
 
+        ICalendar selectedCalendar;
+
+        public ICalendar SelectedCalendar
+        {
+            get
+            {
+                return selectedCalendar;
+            }
+
+            set
+            {
+                if (selectedCalendar != value)
+                {
+                    selectedCalendar = value;
+                    OnPropertyChanged("SelectedCalendar");
+                    if (selectedCalendar != null)
+                    {
+                        OnChangeRequestCalendarSpecificEvents(selectedCalendar.Id);
+                    }
+                }
+            }
+        }
+
         public ObservableCollection<IEvent> Events { get; } = new ObservableCollection<IEvent>();
 
         async void OnClickGetCalendars()
         {
             Calendars.Clear();
+            Calendars.Add(new DeviceCalendar() { Id = null, IsReadOnly = true, Name = "All" });
             var calendars = await Calendar.GetCalendarsAsync();
             foreach (var calendar in calendars)
             {
@@ -38,7 +64,7 @@ namespace Samples.ViewModel
             }
         }
 
-        async void OnClickCalendarSpecificEvents(string calendarId)
+        async void OnChangeRequestCalendarSpecificEvents(string calendarId)
         {
             Events.Clear();
             var events = await Calendar.GetEventsAsync(calendarId);
