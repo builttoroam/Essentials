@@ -56,9 +56,9 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Access to your location is required for cool things to happen!</string>
     <key>NSCalendarsUsageDescription</key>
-    <string>Add calendar events</string>
+    <string>Access to view and create calendar events</string>
     <key>NSRemindersUsageDescription</key>
-    <string>Add calendar events</string>
+    <string>Access to view and create reminders</string>
   <key>CFBundleURLTypes</key>
   <array>
     <dict>

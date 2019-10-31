@@ -7,7 +7,7 @@ namespace Tests
     public class Calendar_Tests
     {
         [Fact]
-        public async Task Calendar_IsSupported_Fail_On_NetStandard() =>
-            await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Task.FromResult<bool>(Calendar.PlatformIsSupported));
+        public void Calendar_IsSupported_Fail_On_NetStandard() =>
+            Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Calendar.IsSupported);
     }
 }
