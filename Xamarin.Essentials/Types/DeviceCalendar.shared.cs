@@ -11,8 +11,6 @@ namespace Xamarin.Essentials
         public string Name { get; set; }
 
         public bool IsReadOnly { get; set; }
-
-        // public List<Event> EventList { get; set; }
     }
 
     public interface ICalendar
@@ -84,8 +82,6 @@ namespace Xamarin.Essentials
         public string Name { get; set; }
 
         public string Email { get; set; }
-
-        // public IAttendeeDetails AttendeeDetails => DeviceSpecificAttendeeDetails;
     }
 
     public interface IAttendeeDetails

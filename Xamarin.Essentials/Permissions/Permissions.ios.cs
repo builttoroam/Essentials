@@ -153,13 +153,7 @@ namespace Xamarin.Essentials
             EKEntityType.Event,
             (bool granted, NSError e) =>
             {
-                if (granted)
-                {
-                }
-                else
-                {
-                    throw new PermissionException($"{e} was not granted.");
-                }
+                tcs.SetResult(granted ? PermissionStatus.Granted : PermissionStatus.Denied);
             });
             return tcs.Task;
         }

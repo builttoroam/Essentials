@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -10,8 +8,6 @@ namespace Samples.ViewModel
 {
     public class CalendarViewModel : BaseViewModel
     {
-        // public ObservableCollection<Calendar> calendars;
-
         public CalendarViewModel()
         {
             GetCalendars = new Command(OnClickGetCalendars);
@@ -45,11 +41,11 @@ namespace Samples.ViewModel
             }
             catch (PermissionException ex)
             {
-                await DisplayAlertAsync($"Unable to request calendar read access: {ex.Message}");
+                await DisplayAlertAsync($"Unable to request calendar write access: {ex.Message}");
             }
             catch (Exception ex)
             {
-                await DisplayAlertAsync($"Unable to request calendar read access: {ex.Message}");
+                await DisplayAlertAsync($"Unable to request calendar write access: {ex.Message}");
             }
         }
 
