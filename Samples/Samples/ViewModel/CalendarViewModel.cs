@@ -11,17 +11,22 @@ namespace Samples.ViewModel
         public CalendarViewModel()
         {
             GetCalendars = new Command(OnClickGetCalendars);
+            GetAllEvents = new Command(OnClickGetEvents);
             RequestCalendarReadAccess = new Command(OnRequestCalendarReadAccess);
             RequestCalendarWriteAccess = new Command(OnRequestCalendarWriteAccess);
         }
 
         public ICommand GetCalendars { get; }
 
+        public ICommand GetAllEvents { get; }
+
         public ICommand RequestCalendarReadAccess { get; }
 
         public ICommand RequestCalendarWriteAccess { get; }
 
         public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
+
+        public ObservableCollection<IEvent> Events { get; } = new ObservableCollection<IEvent>();
 
         async void OnClickGetCalendars()
         {
@@ -30,6 +35,26 @@ namespace Samples.ViewModel
             foreach (var calendar in calendars)
             {
                 Calendars.Add(calendar);
+            }
+        }
+
+        async void OnClickCalendarSpecificEvents(string calendarId)
+        {
+            Events.Clear();
+            var events = await Calendar.GetEventsAsync(calendarId);
+            foreach (var evnt in events)
+            {
+                Events.Add(evnt);
+            }
+        }
+
+        async void OnClickGetEvents()
+        {
+            Events.Clear();
+            var events = await Calendar.GetEventsAsync();
+            foreach (var evnt in events)
+            {
+                Events.Add(evnt);
             }
         }
 
