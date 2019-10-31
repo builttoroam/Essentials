@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Android.Provider;
 
@@ -53,7 +54,7 @@ namespace Xamarin.Essentials
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
-        public static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null)
+        public static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -76,11 +77,23 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.Rrule,
                 CalendarContract.Events.InterfaceConsts.Rdate
             };
+            startDate = DateTime.Now;
+            endDate = DateTime.Now.AddMonths(3);
             var calendarSpecificEvent = string.Empty;
             if (!string.IsNullOrEmpty(calendarId))
             {
-                calendarSpecificEvent = $"calendar_id={calendarId}";
+                calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId}={calendarId} AND ";
             }
+            if (startDate != null)
+            {
+                calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtstart} >= {startDate.Value.ToUnixTimeMilliseconds()} AND ";
+            }
+            if (endDate != null)
+            {
+                calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {endDate.Value.ToUnixTimeMilliseconds()} AND ";
+            }
+
+            calendarSpecificEvent += "deleted != 1";
 
             var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null);
             var events = new List<IEvent>();
