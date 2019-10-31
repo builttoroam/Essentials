@@ -1,106 +1,61 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<TabbedPage  xmlns="http://xamarin.com/schemas/2014/forms"
+<views:BasePage  xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:Samples.View"
              xmlns:viewmodels="clr-namespace:Samples.ViewModel"
              xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
              xmlns:samples="clr-namespace:Samples.ViewModel;assembly=Samples"
              x:Class="Samples.View.CalendarPage"
-             Title="CalendarTabbedView">
-  <ContentPage  Title="Calendars">
-    <ContentPage.Resources>
+             Title="Calendars">
+  <views:BasePage.Resources>
       <ResourceDictionary>
-        <DataTemplate x:Key="CalendarItemTemplate">
-          <ViewCell>
-            <StackLayout>
-              <Label Text="{Binding Name}"
-                     TextColor="Black"
-                     HorizontalTextAlignment="Center"/>
-            </StackLayout>
-          </ViewCell>
-        </DataTemplate>
+          <DataTemplate x:Key="EventItemTemplate">
+              <ViewCell>
+                  <StackLayout>
+                      <Label Text="{Binding Title}"
+                             TextColor="Black"
+                             HorizontalTextAlignment="Center"/>
+                  </StackLayout>
+              </ViewCell>
+          </DataTemplate>
       </ResourceDictionary>
-    </ContentPage.Resources>
-    <ContentPage.BindingContext>
+    </views:BasePage.Resources>
+  <views:BasePage.BindingContext>
       <viewmodels:CalendarViewModel />
-    </ContentPage.BindingContext>
-        <ContentPage.Content>
-          <Grid>
-            <Grid.RowDefinitions>
-              <RowDefinition Height="Auto"/>
-              <RowDefinition/>
-            </Grid.RowDefinitions>
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-              </Grid.ColumnDefinitions>
-              <Button Text="Request Read Access"
-                      Command="{Binding RequestCalendarReadAccess}"
-                      HeightRequest="100"/>
-              <Button Grid.Row="0"
-                      Grid.Column="1"
-                      Text="Request Write Access"
-                      Command="{Binding RequestCalendarWriteAccess}"/>
-              <Button Grid.Row="0"
-                      Grid.Column="2"
-                      Text="Load Calendars"
-                      Command="{Binding GetCalendars}"/>
-            </Grid>
-            <ListView Grid.Row="1"
-                      ItemsSource="{Binding Calendars}"
-                      ItemTemplate="{StaticResource CalendarItemTemplate}"
-                      ItemTapped="OnClickCalendarSpecificEvents"/>
-          </Grid>
-        </ContentPage.Content>
-    </ContentPage>
-    <ContentPage  Title="Events">
-        <ContentPage.Resources>
-            <ResourceDictionary>
-                <DataTemplate x:Key="EventItemTemplate">
-                    <ViewCell>
-                        <StackLayout>
-                            <Label Text="{Binding Title}"
-                                   TextColor="Black"
-                                   HorizontalTextAlignment="Center"/>
-                        </StackLayout>
-                    </ViewCell>
-                </DataTemplate>
-            </ResourceDictionary>
-        </ContentPage.Resources>
-        <ContentPage.BindingContext>
-            <viewmodels:CalendarViewModel />
-        </ContentPage.BindingContext>
-        <ContentPage.Content>
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition/>
-                </Grid.RowDefinitions>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                        <ColumnDefinition/>
-                    </Grid.ColumnDefinitions>
-                    <Button Text="Request Read Access"
-                            Command="{Binding RequestCalendarReadAccess}"
-                            HeightRequest="100"/>
-                    <Button Grid.Row="0"
-                            Grid.Column="1"
-                            Text="Request Write Access"
-                            Command="{Binding RequestCalendarWriteAccess}"/>
-                    <Button Grid.Row="0"
-                            Grid.Column="2"
-                            Text="Load Events"
-                            Command="{Binding GetAllEvents}"/>
-                </Grid>
-                <ListView x:Name = "CalendarList" 
-                          Grid.Row="1"
-                          ItemsSource="{Binding Events}"
-                          ItemTemplate="{StaticResource EventItemTemplate}"/>
-            </Grid>
-        </ContentPage.Content>
-    </ContentPage>
-</TabbedPage>
+    </views:BasePage.BindingContext>
+  <views:BasePage.Content>
+      <Grid>
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+          </Grid.ColumnDefinitions>
+          <Button Text="Request Read Access"
+                  Command="{Binding RequestCalendarReadAccess}"
+                  HeightRequest="100"/>
+          <Button Grid.Row="0"
+                  Grid.Column="1"
+                  Text="Request Write Access"
+                  Command="{Binding RequestCalendarWriteAccess}"/>
+          <Button Grid.Row="0"
+                  Grid.Column="2"
+                  Text="Load Calendars"
+                  Command="{Binding GetCalendars}"/>
+        </Grid>
+        <Picker Grid.Row="1"
+                Title="Select a Calendar"
+                ItemsSource="{Binding Calendars}"
+                ItemDisplayBinding="{Binding Name}"
+                SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
+        <ListView Grid.Row="2"
+                  ItemsSource="{Binding Events}"
+                  ItemTemplate="{StaticResource EventItemTemplate}"/>
+      </Grid>
+    </views:BasePage.Content>
+</views:BasePage>
