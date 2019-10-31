@@ -27,7 +27,7 @@ namespace Xamarin.Essentials
             return calendarList.AsReadOnly();
         }
 
-        static Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => throw new NotImplementedException();
+        static Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = "") => throw new NotImplementedException();
 
         static async Task PlatformRequestCalendarReadAccess()
         {
@@ -38,11 +38,5 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
         }
-
-        static async Task<PermissionStatus> PlatformCheckCalendarReadAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarRead);
-
-        static async Task<PermissionStatus> PlatformCheckCalendarWriteAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarWrite);
-
-        static Task<int> PlatformCreateCalendarEvent(IEvent newEvent) => throw new NotImplementedException();
     }
 }
