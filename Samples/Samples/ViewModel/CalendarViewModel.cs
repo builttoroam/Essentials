@@ -20,11 +20,33 @@ namespace Samples.ViewModel
             StartTimeSelectedCommand = new Command(OnStartTimeSelected);
             EndDateSelectedCommand = new Command(OnEndDateSelected);
             EndTimeSelectedCommand = new Command(OnEndTimeSelected);
+            StartDateEnabledCheckBoxChanged = new Command(OnStartCheckboxChanged);
+            EndDateEnabledCheckBoxChanged = new Command(OnEndCheckboxChanged);
         }
 
         ICalendar selectedCalendar;
 
+        bool startdatePickersEnabled;
+
+        bool enddatePickersEnabled;
+
+        public bool StartDatePickersEnabled
+        {
+            get => startdatePickersEnabled;
+            set => SetProperty(ref startdatePickersEnabled, value);
+        }
+
+        public bool EndDatePickersEnabled
+        {
+            get => enddatePickersEnabled;
+            set => SetProperty(ref enddatePickersEnabled, value);
+        }
+
         public ICommand GetCalendars { get; }
+
+        public ICommand StartDateEnabledCheckBoxChanged { get; }
+
+        public ICommand EndDateEnabledCheckBoxChanged { get; }
 
         public ICommand RequestCalendarReadAccess { get; }
 
@@ -60,16 +82,49 @@ namespace Samples.ViewModel
             {
                 if (SetProperty(ref selectedCalendar, value) && selectedCalendar != null)
                 {
-                    var endDate = EndDate.HasValue ? EndDate += EndTime.GetValueOrDefault() : null;
-                    var startDate = StartDate.HasValue ? StartDate += StartTime.GetValueOrDefault() : null;
+                    var endDate = EndDate.HasValue ? EndDate + EndTime.GetValueOrDefault() : null;
+                    var startDate = StartDate.HasValue ? StartDate + StartTime.GetValueOrDefault() : null;
                     OnChangeRequestCalendarSpecificEvents(selectedCalendar.Id, startDate, endDate);
                 }
             }
         }
 
-        public override void OnAppearing()
+        void OnStartCheckboxChanged(object parameter)
         {
-            base.OnAppearing();
+            if (parameter is bool b)
+            {
+                StartDatePickersEnabled = b;
+
+                if (!b)
+                    return;
+
+                StartDate = StartDate ?? (StartDate = DateTime.Now);
+                StartTime = StartTime ?? default(TimeSpan);
+                EndDate = EndDate ?? (EndDate = DateTime.Now);
+                EndTime = EndTime ?? default(TimeSpan);
+                var endDate = EndDate + EndTime;
+                var startDate = StartDate + StartTime;
+                RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
+            }
+        }
+
+        void OnEndCheckboxChanged(object parameter)
+        {
+            if (parameter is bool b)
+            {
+                EndDatePickersEnabled = b;
+
+                if (!b)
+                    return;
+
+                StartDate = StartDate ?? (StartDate = DateTime.Now);
+                StartTime = StartTime ?? default(TimeSpan);
+                EndDate = EndDate ?? (EndDate = DateTime.Now);
+                EndTime = EndTime ?? default(TimeSpan);
+                var endDate = EndDate + EndTime;
+                var startDate = StartDate + StartTime;
+                RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
+            }
         }
 
         async void OnClickGetCalendars()
@@ -92,16 +147,15 @@ namespace Samples.ViewModel
                 return;
 
             startDate += StartTime.GetValueOrDefault();
-            var endDate = EndDate.HasValue ? EndDate += EndTime.GetValueOrDefault() : null;
+            var endDate = EndDate.HasValue ? EndDate + EndTime.GetValueOrDefault() : null;
 
             RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
         }
 
         void OnStartTimeSelected(object parameter)
         {
-            var endDate = EndDate.HasValue ? EndDate += EndTime.GetValueOrDefault() : null;
-            var startDate = StartDate.HasValue ? StartDate += StartTime.GetValueOrDefault() : null;
-
+            var endDate = EndDate.HasValue ? EndDate + EndTime.GetValueOrDefault() : null;
+            var startDate = StartDate.HasValue ? StartDate + StartTime.GetValueOrDefault() : null;
             RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
         }
 
@@ -113,15 +167,15 @@ namespace Samples.ViewModel
                 return;
 
             endDate += EndTime.GetValueOrDefault();
-            var startDate = StartDate.HasValue ? StartDate += StartTime.GetValueOrDefault() : null;
+            var startDate = StartDate.HasValue ? StartDate + StartTime.GetValueOrDefault() : null;
 
             RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
         }
 
         void OnEndTimeSelected(object parameter)
         {
-            var endDate = EndDate.HasValue ? EndDate += EndTime.GetValueOrDefault() : null;
-            var startDate = StartDate.HasValue ? StartDate += StartTime.GetValueOrDefault() : null;
+            var endDate = EndDate.HasValue ? EndDate + EndTime.GetValueOrDefault() : null;
+            var startDate = StartDate.HasValue ? StartDate + StartTime.GetValueOrDefault() : null;
 
             RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
         }
@@ -162,6 +216,13 @@ namespace Samples.ViewModel
 
         async void RefreshEventList(string calendarId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
+            if (Calendars.Count == 0)
+                return;
+            if (!StartDatePickersEnabled)
+                startDate = null;
+            if (!EndDatePickersEnabled)
+                endDate = null;
+
             Events.Clear();
             var events = await Calendar.GetEventsAsync(SelectedCalendar?.Id, startDate?.ToUniversalTime(), endDate?.ToUniversalTime());
             foreach (var evnt in events)
