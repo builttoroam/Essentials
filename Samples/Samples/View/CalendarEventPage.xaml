@@ -1,0 +1,68 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage  xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:Samples.View"
+             xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+             xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
+             xmlns:converters="clr-namespace:Samples.Converters;assembly=Samples"
+             x:Class="Samples.View.CalendarEventPage"
+             x:DataType="essentials:IEvent"
+             Title="Event"
+             Padding="20,20,20,20">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+            <converters:EpochToDateTimeConverter x:Key="EpochToDateTimeConverter"/>
+        </ResourceDictionary>
+    </views:BasePage.Resources>
+    <views:BasePage.Content>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Label Grid.ColumnSpan="4"
+                   Text="{Binding Title}"
+                   FontSize="34"
+                   TextColor="Black"
+                   HorizontalTextAlignment="Center"/>
+            <Label Grid.Row="1"
+                   Grid.Column="0"
+                   Text="Location:"/>
+            <Label Grid.Row="1"
+                   Grid.Column="1"
+                   Grid.ColumnSpan="3"
+                   Text="{Binding Location}"/>
+            <Label Grid.Row="2"
+                   Grid.Column="0"
+                   Text="When:"/>
+            <Label Grid.Column="1"
+                   Grid.Row="2"
+                   Text="{Binding Start, Converter={StaticResource EpochToDateTimeConverter}}"
+                   TextColor="Black"
+                   HorizontalTextAlignment="Center"/>
+            <Label Grid.Column="2"
+                   Grid.Row="2"
+                   Text="-"/>
+            <Label Grid.Column="3"
+                   Grid.Row="2"
+                   Text="{Binding End, Converter={StaticResource EpochToDateTimeConverter}}"
+                   TextColor="Black"
+                   HorizontalTextAlignment="Center"/>
+            <Label Grid.Row="3"
+                   Grid.Column="0"
+                   Text="Description"/>
+            <Label Grid.Row="3"
+                   Grid.Column="1"
+                   Grid.ColumnSpan="3"
+                   Text="{Binding Description}"/>
+        </Grid>
+    </views:BasePage.Content>
+</views:BasePage>
