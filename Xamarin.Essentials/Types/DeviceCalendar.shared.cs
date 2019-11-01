@@ -26,7 +26,6 @@ namespace Xamarin.Essentials
     {
         string Id { get; set; }
 
-        // Calendar Id this event is for
         string CalendarId { get; set; }
 
         string Title { get; set; }
@@ -61,7 +60,6 @@ namespace Xamarin.Essentials
     {
         public string Id { get; set; }
 
-        // Calendar Id this event is for
         public string CalendarId { get; set; }
 
         public string Title { get; set; }
