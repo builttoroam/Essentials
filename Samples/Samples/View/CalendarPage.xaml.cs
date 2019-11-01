@@ -11,5 +11,15 @@ namespace Samples.View
         {
             InitializeComponent();
         }
+
+        void OnEventTapped(object sender, ItemTappedEventArgs e)
+        {
+            if (e.Item == null)
+                return;
+
+            var modal = new CalendarEventPage();
+            modal.BindingContext = e.Item as IEvent;
+            Navigation.PushModalAsync(modal);
+        }
     }
 }
