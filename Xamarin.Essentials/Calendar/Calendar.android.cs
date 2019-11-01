@@ -77,8 +77,6 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.Rrule,
                 CalendarContract.Events.InterfaceConsts.Rdate
             };
-            startDate = DateTime.Now;
-            endDate = DateTime.Now.AddMonths(3);
             var calendarSpecificEvent = string.Empty;
             if (!string.IsNullOrEmpty(calendarId))
             {
