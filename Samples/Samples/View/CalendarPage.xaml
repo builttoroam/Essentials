@@ -5,16 +5,40 @@
              xmlns:viewmodels="clr-namespace:Samples.ViewModel"
              xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
              xmlns:samples="clr-namespace:Samples.ViewModel;assembly=Samples"
+             xmlns:behaviors="clr-namespace:Samples.Behaviors;assembly=Samples"
+             xmlns:converters="clr-namespace:Samples.Converters;assembly=Samples"
              x:Class="Samples.View.CalendarPage"
+             x:DataType="viewmodels:CalendarViewModel"
              Title="Calendars">
   <views:BasePage.Resources>
       <ResourceDictionary>
-          <DataTemplate x:Key="EventItemTemplate">
+        <converters:DateSelectedEventArgsConverter x:Key="DateSelectedEventArgsConverter"/>
+        <converters:TimeSelectedEventArgsConverter x:Key="TimeSelectedEventArgsConverter"/>
+        <converters:EpochToDateTimeConverter x:Key="EpochToDateTimeConverter"/>
+          <DataTemplate x:DataType="essentials:IEvent" x:Key="EventItemTemplate">
               <ViewCell>
                   <StackLayout>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
                       <Label Text="{Binding Title}"
                              TextColor="Black"
                              HorizontalTextAlignment="Center"/>
+                      <Label Grid.Column="1" 
+                             Text="{Binding Start, Converter={StaticResource EpochToDateTimeConverter}}"
+                             TextColor="Black"
+                             HorizontalTextAlignment="Center"/>
+                      <Label Grid.Column="2" 
+                             Text="-"/>
+                      <Label Grid.Column="3" 
+                             Text="{Binding End, Converter={StaticResource EpochToDateTimeConverter}}"
+                             TextColor="Black"
+                             HorizontalTextAlignment="Center"/>
+                    </Grid>
                   </StackLayout>
               </ViewCell>
           </DataTemplate>
@@ -26,6 +50,8 @@
   <views:BasePage.Content>
       <Grid>
         <Grid.RowDefinitions>
+          <RowDefinition Height="Auto"/>
+          <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>
           <RowDefinition Height="Auto"/>
           <RowDefinition/>
@@ -48,12 +74,58 @@
                   Text="Load Calendars"
                   Command="{Binding GetCalendars}"/>
         </Grid>
-        <Picker Grid.Row="1"
-                Title="Select a Calendar"
-                ItemsSource="{Binding Calendars}"
-                ItemDisplayBinding="{Binding Name}"
-                SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
-        <ListView Grid.Row="2"
+          <Picker Grid.Row="1"
+                  Title="Select a Calendar"
+                  ItemsSource="{Binding Calendars}"
+                  ItemDisplayBinding="{Binding Name}"
+                  SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
+        <Grid Grid.Row="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Label Text="Start Date"/>
+            <DatePicker Date="{Binding StartDate}"
+                      MinimumDate="1970-01-01"
+                      Grid.Row = "0"
+                      Grid.Column="1">
+              <DatePicker.Behaviors>
+                <behaviors:EventToCommandBehavior EventName="DateSelected" Command="{Binding StartDateSelectedCommand}" Converter="{StaticResource DateSelectedEventArgsConverter}"></behaviors:EventToCommandBehavior>
+              </DatePicker.Behaviors>
+            </DatePicker>
+              <TimePicker Time="{Binding StartTime}"
+                          Grid.Row = "0"
+                          Grid.Column="2">
+                <TimePicker.Behaviors>
+                  <behaviors:EventToCommandBehavior EventName="PropertyChanged" Command="{Binding StartTimeSelectedCommand}" Converter="{StaticResource TimeSelectedEventArgsConverter}"></behaviors:EventToCommandBehavior>
+                  </TimePicker.Behaviors>
+              </TimePicker>
+            <Label Text="End Date"
+                   Grid.Row="1"
+                   Grid.Column="0"/>
+            <DatePicker Date="{Binding EndDate}"
+                      MinimumDate="1970-01-01"
+                      Grid.Row="1"
+                      Grid.Column="1">
+                <DatePicker.Behaviors>
+                    <behaviors:EventToCommandBehavior EventName="DateSelected" Command="{Binding EndDateSelectedCommand}" Converter="{StaticResource DateSelectedEventArgsConverter}"></behaviors:EventToCommandBehavior>
+                </DatePicker.Behaviors>
+            </DatePicker>
+            <TimePicker Time="{Binding EndTime}"
+                        Grid.Row = "1"
+                        Grid.Column="2"/>
+        </Grid>
+          <BoxView Grid.Row="3" 
+                   VerticalOptions="Center"
+                   HorizontalOptions="FillAndExpand"
+                   HeightRequest="1"
+                   Color="#5b5d68"/>
+          <ListView Grid.Row="4"
                   ItemsSource="{Binding Events}"
                   ItemTemplate="{StaticResource EventItemTemplate}"/>
       </Grid>
