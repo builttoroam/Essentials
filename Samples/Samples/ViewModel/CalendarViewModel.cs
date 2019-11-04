@@ -23,9 +23,21 @@ namespace Samples.ViewModel
 
         ICalendar selectedCalendar;
 
-        public bool StartDatePickersEnabled { get; set; }
+        bool startdatePickersEnabled;
 
-        public bool EndDatePickersEnabled { get; set; }
+        bool enddatePickersEnabled;
+
+        public bool StartDatePickersEnabled
+        {
+            get => startdatePickersEnabled;
+            set => SetProperty(ref startdatePickersEnabled, value);
+        }
+
+        public bool EndDatePickersEnabled
+        {
+            get => enddatePickersEnabled;
+            set => SetProperty(ref enddatePickersEnabled, value);
+        }
 
         public ICommand GetCalendars { get; }
 
