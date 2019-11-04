@@ -36,6 +36,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="View\CalendarEventAddPage.xaml.cs">
+      <DependentUpon>CalendarEventAddPage.xaml</DependentUpon>
+    </Compile>
     <Compile Update="View\CalendarEventPage.xaml.cs">
       <DependentUpon>CalendarEventPage.xaml</DependentUpon>
     </Compile>
