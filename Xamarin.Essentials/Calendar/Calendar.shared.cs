@@ -21,7 +21,5 @@ namespace Xamarin.Essentials
         public static Task RequestCalendarReadAccess() => PlatformRequestCalendarReadAccess();
 
         public static Task RequestCalendarWriteAccess() => PlatformRequestCalendarWriteAccess();
-
-        public static Task<int> CreateCalendarEvent(IEvent newEvent) => PlatformCreateCalendarEvent(newEvent);
     }
 }
