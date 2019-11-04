@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Linq;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
-using DateTimeOffset = System.DateTimeOffset;
 
 namespace Samples.ViewModel
 {
@@ -26,21 +23,9 @@ namespace Samples.ViewModel
 
         ICalendar selectedCalendar;
 
-        bool startdatePickersEnabled;
+        public bool StartDatePickersEnabled { get; set; }
 
-        bool enddatePickersEnabled;
-
-        public bool StartDatePickersEnabled
-        {
-            get => startdatePickersEnabled;
-            set => SetProperty(ref startdatePickersEnabled, value);
-        }
-
-        public bool EndDatePickersEnabled
-        {
-            get => enddatePickersEnabled;
-            set => SetProperty(ref enddatePickersEnabled, value);
-        }
+        public bool EndDatePickersEnabled { get; set; }
 
         public ICommand GetCalendars { get; }
 
@@ -62,13 +47,13 @@ namespace Samples.ViewModel
 
         public bool HasCalendarReadAccess { get; set; }
 
-        public DateTime? StartDate { get; set; }
+        public DateTime StartDate { get; set; } = DateTime.Now;
 
-        public TimeSpan? StartTime { get; set; }
+        public TimeSpan StartTime { get; set; }
 
-        public DateTime? EndDate { get; set; }
+        public DateTime EndDate { get; set; } = DateTime.Now;
 
-        public TimeSpan? EndTime { get; set; }
+        public TimeSpan EndTime { get; set; }
 
         public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
 
@@ -82,9 +67,7 @@ namespace Samples.ViewModel
             {
                 if (SetProperty(ref selectedCalendar, value) && selectedCalendar != null)
                 {
-                    var endDate = EndDate.HasValue ? EndDate + EndTime.GetValueOrDefault() : null;
-                    var startDate = StartDate.HasValue ? StartDate + StartTime.GetValueOrDefault() : null;
-                    OnChangeRequestCalendarSpecificEvents(selectedCalendar.Id, startDate, endDate);
+                    OnChangeRequestCalendarSpecificEvents(selectedCalendar.Id);
                 }
             }
         }
@@ -95,16 +78,7 @@ namespace Samples.ViewModel
             {
                 StartDatePickersEnabled = b;
 
-                if (!b)
-                    return;
-
-                StartDate = StartDate ?? (StartDate = DateTime.Now);
-                StartTime = StartTime ?? default(TimeSpan);
-                EndDate = EndDate ?? (EndDate = DateTime.Now);
-                EndTime = EndTime ?? default(TimeSpan);
-                var endDate = EndDate + EndTime;
-                var startDate = StartDate + StartTime;
-                RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
+                RefreshEventList(SelectedCalendar?.Id);
             }
         }
 
@@ -114,16 +88,7 @@ namespace Samples.ViewModel
             {
                 EndDatePickersEnabled = b;
 
-                if (!b)
-                    return;
-
-                StartDate = StartDate ?? (StartDate = DateTime.Now);
-                StartTime = StartTime ?? default(TimeSpan);
-                EndDate = EndDate ?? (EndDate = DateTime.Now);
-                EndTime = EndTime ?? default(TimeSpan);
-                var endDate = EndDate + EndTime;
-                var startDate = StartDate + StartTime;
-                RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
+                RefreshEventList(SelectedCalendar?.Id);
             }
         }
 
@@ -146,17 +111,17 @@ namespace Samples.ViewModel
             if (!startDate.HasValue)
                 return;
 
-            startDate += StartTime.GetValueOrDefault();
-            var endDate = EndDate.HasValue ? EndDate + EndTime.GetValueOrDefault() : null;
+            startDate += StartTime;
 
-            RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
+            RefreshEventList(SelectedCalendar?.Id, startDate);
         }
 
         void OnStartTimeSelected(object parameter)
         {
-            var endDate = EndDate.HasValue ? EndDate + EndTime.GetValueOrDefault() : null;
-            var startDate = StartDate.HasValue ? StartDate + StartTime.GetValueOrDefault() : null;
-            RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
+            if (parameter == null)
+                return;
+
+            RefreshEventList(SelectedCalendar?.Id);
         }
 
         void OnEndDateSelected(object parameter)
@@ -166,18 +131,16 @@ namespace Samples.ViewModel
             if (!endDate.HasValue)
                 return;
 
-            endDate += EndTime.GetValueOrDefault();
-            var startDate = StartDate.HasValue ? StartDate + StartTime.GetValueOrDefault() : null;
-
-            RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
+            endDate += EndTime;
+            RefreshEventList(SelectedCalendar?.Id, null, endDate);
         }
 
         void OnEndTimeSelected(object parameter)
         {
-            var endDate = EndDate.HasValue ? EndDate + EndTime.GetValueOrDefault() : null;
-            var startDate = StartDate.HasValue ? StartDate + StartTime.GetValueOrDefault() : null;
+            if (parameter == null)
+                return;
 
-            RefreshEventList(SelectedCalendar?.Id, startDate, endDate);
+            RefreshEventList();
         }
 
         void OnChangeRequestCalendarSpecificEvents(string calendarId = null, DateTime? startDateTime = null, DateTime? endDateTime = null) => RefreshEventList(calendarId, startDateTime, endDateTime);
@@ -216,15 +179,13 @@ namespace Samples.ViewModel
 
         async void RefreshEventList(string calendarId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
+            startDate = StartDatePickersEnabled && startDate == null ? (DateTime?)StartDate + StartTime : null;
+            endDate = EndDatePickersEnabled && endDate == null ? (DateTime?)EndDate + EndTime : null;
             if (Calendars.Count == 0)
                 return;
-            if (!StartDatePickersEnabled)
-                startDate = null;
-            if (!EndDatePickersEnabled)
-                endDate = null;
 
             Events.Clear();
-            var events = await Calendar.GetEventsAsync(SelectedCalendar?.Id, startDate?.ToUniversalTime(), endDate?.ToUniversalTime());
+            var events = await Calendar.GetEventsAsync(calendarId, startDate?.ToUniversalTime(), endDate?.ToUniversalTime());
             foreach (var evnt in events)
             {
                 Events.Add(evnt);
