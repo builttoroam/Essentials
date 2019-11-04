@@ -179,6 +179,8 @@ namespace Samples.ViewModel
 
         async void RefreshEventList(string calendarId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
+            await Calendar.RequestCalendarReadAccess();
+
             startDate = StartDatePickersEnabled && startDate == null ? (DateTime?)StartDate + StartTime : null;
             endDate = EndDatePickersEnabled && endDate == null ? (DateTime?)EndDate + EndTime : null;
             if (Calendars.Count == 0)
