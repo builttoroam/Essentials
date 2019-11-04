@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Xamarin.Forms;
+﻿// This code is a slightly modified version of the Xamarin-Forms-sample/Behaviors code provided here:
+// https://github.com/xamarin/xamarin-forms-samples/tree/master/Behaviors/EventToCommandBehavior/EventToCommandBehavior/Behaviors
 
-/*
- * This code is a slightly modified version of the Xamarin-Forms-sample/Behaviors code provided here:
- * https://github.com/xamarin/xamarin-forms-samples/tree/master/Behaviors/EventToCommandBehavior/EventToCommandBehavior/Behaviors
- */
+using System;
+using Xamarin.Forms;
 
 namespace Samples.Behaviors
 {
