@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Android.Content;
 using Android.Provider;
 
 namespace Xamarin.Essentials
@@ -54,7 +55,7 @@ namespace Xamarin.Essentials
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
-        public static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -112,13 +113,45 @@ namespace Xamarin.Essentials
                     HasAlarm = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasAlarm)) == 1,
                     HasAttendees = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasAttendeeData)) == 1,
                     HasExtendedProperties = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasExtendedProperties)) == 1,
-                    Status = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Status)),
-                    RecurrenceFrequency = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule)),
-                    RecurranceDate = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rdate)),
+                    Status = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Status))
                 });
             }
 
             return events.AsReadOnly();
+        }
+
+        static async Task<int> PlatformCreateCalendarEvent(IEvent newEvent)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
+
+            var result = 0;
+            if (string.IsNullOrEmpty(newEvent.CalendarId))
+            {
+                return 0;
+            }
+            var eventUri = CalendarContract.Events.ContentUri;
+            var eventValues = new ContentValues();
+
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.CalendarId, newEvent.CalendarId);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, "TestEvent");
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, "This is a test event.");
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, "123 fake street");
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, 0);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, DateTimeOffset.Now.ToUnixTimeMilliseconds());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, DateTimeOffset.Now.AddHours(1).ToUnixTimeMilliseconds());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
+
+            try
+            {
+                var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
+                result = Convert.ToInt32(resultUri.LastPathSegment);
+            }
+            catch
+            {
+                return -1;
+            }
+
+            return result;
         }
     }
 }
