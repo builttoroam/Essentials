@@ -15,8 +15,7 @@
       <converters:CheckBoxEventArgsConverter x:Key="CheckBoxEventArgsConverter"/>
       <converters:DateSelectedEventArgsConverter x:Key="DateSelectedEventArgsConverter"/>
       <converters:TimeSelectedEventArgsConverter x:Key="TimeSelectedEventArgsConverter"/>
-      <converters:EpochToDateTimeConverter x:Key="EpochToDateTimeConverter"/>
-      <DataTemplate x:DataType="essentials:IEvent"
+      <DataTemplate x:DataType="essentials:Event"
                     x:Key="EventItemTemplate">
         <ViewCell>
           <StackLayout>
@@ -31,13 +30,13 @@
                      TextColor="Black"
                      HorizontalTextAlignment="Center"/>
               <Label Grid.Column="1"
-                     Text="{Binding Start, Converter={StaticResource EpochToDateTimeConverter}}"
+                     Text="{Binding StartDate, StringFormat='{0:dd/MM/yy hh:mm tt}'}"
                      TextColor="Black"
                      HorizontalTextAlignment="Center"/>
               <Label Grid.Column="2"
                      Text="-"/>
               <Label Grid.Column="3"
-                     Text="{Binding End, Converter={StaticResource EpochToDateTimeConverter}}"
+                     Text="{Binding EndDate, StringFormat='{0:dd/MM/yy hh:mm tt}'}"
                      TextColor="Black"
                      HorizontalTextAlignment="Center"/>
             </Grid>
@@ -64,6 +63,10 @@
           <ColumnDefinition/>
           <ColumnDefinition/>
         </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition/>
+          <RowDefinition/>
+        </Grid.RowDefinitions>
         <Button Text="Request Read Access"
                 Command="{Binding RequestCalendarReadAccess}"
                 HeightRequest="100"/>
@@ -75,12 +78,20 @@
                 Grid.Column="2"
                 Text="Load Calendars"
                 Command="{Binding GetCalendars}"/>
+
+        <Picker x:Name="SelectedCalendar"
+                Grid.Row="1"
+                Grid.Column="0"
+                Grid.ColumnSpan="2"
+                Title="Select a Calendar"
+                ItemsSource="{Binding Calendars}"
+                ItemDisplayBinding="{Binding Name}"
+                SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
+        <Button Grid.Row="1"
+                Grid.Column="2"
+                Text="Add"
+                Clicked="OnAddEventButtonClicked"/>
       </Grid>
-      <Picker Grid.Row="1"
-              Title="Select a Calendar"
-              ItemsSource="{Binding Calendars}"
-              ItemDisplayBinding="{Binding Name}"
-              SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
       <Grid Grid.Row="2">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto"/>
