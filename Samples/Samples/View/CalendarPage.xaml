@@ -63,35 +63,22 @@
           <ColumnDefinition/>
           <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-          <RowDefinition/>
-          <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Button Text="Request Read Access"
+          <Button Text="Request Read Access"
                 Command="{Binding RequestCalendarReadAccess}"
                 HeightRequest="100"/>
-        <Button Grid.Row="0"
-                Grid.Column="1"
+        <Button Grid.Column="1"
                 Text="Request Write Access"
                 Command="{Binding RequestCalendarWriteAccess}"/>
-        <Button Grid.Row="0"
-                Grid.Column="2"
+        <Button Grid.Column="2"
                 Text="Load Calendars"
                 Command="{Binding GetCalendars}"/>
-
-        <Picker x:Name="SelectedCalendar"
-                Grid.Row="1"
-                Grid.Column="0"
-                Grid.ColumnSpan="2"
-                Title="Select a Calendar"
-                ItemsSource="{Binding Calendars}"
-                ItemDisplayBinding="{Binding Name}"
-                SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
-        <Button Grid.Row="1"
-                Grid.Column="2"
-                Text="Add"
-                Clicked="OnAddEventButtonClicked"/>
       </Grid>
+      <Picker Grid.Row="1" 
+              x:Name="SelectedCalendar"
+              Title="Select a Calendar"
+              ItemsSource="{Binding Calendars}"
+              ItemDisplayBinding="{Binding Name}"
+              SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
       <Grid Grid.Row="2">
         <Grid.RowDefinitions>
           <RowDefinition Height="Auto"/>
