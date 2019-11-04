@@ -15,54 +15,58 @@
         </ResourceDictionary>
     </views:BasePage.Resources>
     <views:BasePage.Content>
+      <StackLayout>
+          <Label Text="{Binding Title}"
+                 FontSize="34"
+                 TextColor="Black"
+                 HorizontalTextAlignment="Center"/>
+          <Grid>
+              <Grid.ColumnDefinitions>
+                  <ColumnDefinition/>
+                  <ColumnDefinition/>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition/>
+              </Grid.RowDefinitions>
+              <Label Grid.Row="1"
+                     Grid.Column="0"
+                     Text="Location:"/>
+              <Label Grid.Row="1"
+                     Grid.Column="1"
+                     Grid.ColumnSpan="3"
+                     Text="{Binding Location}"/>
+              <Label Grid.Row="2"
+                     Grid.Column="0"
+                     Text="When:"/>
+              <Label Grid.Column="1"
+                     Grid.Row="2"
+                     Text="{Binding Start, Converter={StaticResource EpochToDateTimeConverter}}"
+                     TextColor="Black"
+                     HorizontalTextAlignment="Center"/>
+              <Label Grid.Column="2"
+                     Grid.Row="2"
+                     Text="-"/>
+              <Label Grid.Column="3"
+                     Grid.Row="2"
+                     Text="{Binding End, Converter={StaticResource EpochToDateTimeConverter}}"
+                     TextColor="Black"
+                     HorizontalTextAlignment="Center"/>
+          </Grid>
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition/>
-            </Grid.RowDefinitions>
-            <Label Grid.ColumnSpan="4"
-                   Text="{Binding Title}"
-                   FontSize="34"
-                   TextColor="Black"
-                   HorizontalTextAlignment="Center"/>
-            <Label Grid.Row="1"
-                   Grid.Column="0"
-                   Text="Location:"/>
-            <Label Grid.Row="1"
-                   Grid.Column="1"
-                   Grid.ColumnSpan="3"
-                   Text="{Binding Location}"/>
-            <Label Grid.Row="2"
-                   Grid.Column="0"
-                   Text="When:"/>
+            <Label Text="Description"/>
             <Label Grid.Column="1"
-                   Grid.Row="2"
-                   Text="{Binding Start, Converter={StaticResource EpochToDateTimeConverter}}"
-                   TextColor="Black"
-                   HorizontalTextAlignment="Center"/>
-            <Label Grid.Column="2"
-                   Grid.Row="2"
-                   Text="-"/>
-            <Label Grid.Column="3"
-                   Grid.Row="2"
-                   Text="{Binding End, Converter={StaticResource EpochToDateTimeConverter}}"
-                   TextColor="Black"
-                   HorizontalTextAlignment="Center"/>
-            <Label Grid.Row="3"
-                   Grid.Column="0"
-                   Text="Description"/>
-            <Label Grid.Row="3"
-                   Grid.Column="1"
-                   Grid.ColumnSpan="3"
                    Text="{Binding Description}"/>
         </Grid>
+      </StackLayout>
+        
     </views:BasePage.Content>
 </views:BasePage>
