@@ -5,6 +5,7 @@
                  xmlns:viewmodels="clr-namespace:Samples.ViewModel"
                  xmlns:behaviors="clr-namespace:Samples.Behaviors;assembly=Samples"
                  xmlns:converters="clr-namespace:Samples.Converters;assembly=Samples"
+                 xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
                  x:Class="Samples.View.CalendarPage"
                  x:DataType="viewmodels:CalendarViewModel"
                  Title="Calendars">
@@ -55,13 +56,13 @@
         <RowDefinition Height="Auto"/>
         <RowDefinition/>
       </Grid.RowDefinitions>
-      <Grid>
+      <Grid HeightRequest="60">
         <Grid.ColumnDefinitions>
           <ColumnDefinition/>
           <ColumnDefinition/>
           <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-          <Button Text="Request Read Access"
+        <Button Text="Request Read Access"
                 Command="{Binding RequestCalendarReadAccessCommand}"/>
         <Button Grid.Column="1"
                 Text="Request Write Access"
@@ -70,7 +71,7 @@
                 Text="Load Calendars"
                 Command="{Binding GetCalendars}"/>
       </Grid>
-      <Picker Grid.Row="1" 
+      <Picker Grid.Row="1"
               x:Name="SelectedCalendar"
               Title="Select a Calendar"
               ItemsSource="{Binding Calendars}"
