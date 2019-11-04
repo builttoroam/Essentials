@@ -48,11 +48,7 @@ namespace Xamarin.Essentials
 
         string Status { get; set; }
 
-        List<Reminder> Reminders { get; set; }
-
-        string RecurranceDate { get; set; }
-
-        string RecurrenceFrequency { get; set; }
+        RecurrenceRule RecurrancePattern { get; set; }
     }
 
     [Preserve(AllMembers = true)]
@@ -72,7 +68,11 @@ namespace Xamarin.Essentials
 
         public long? Start { get; set; }
 
+        public DateTimeOffset? StartDate => Start.HasValue ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds((long)Start.Value).ToLocalTime() : null;
+
         public long? End { get; set; }
+
+        public DateTimeOffset? EndDate => End.HasValue ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds((long)End.Value).ToLocalTime() : null;
 
         public bool HasAlarm { get; set; }
 
@@ -82,18 +82,7 @@ namespace Xamarin.Essentials
 
         public string Status { get; set; }
 
-        public List<Reminder> Reminders { get; set; }
-
-        public string RecurranceDate { get; set; }
-
-        public string RecurrenceFrequency { get; set; }
-    }
-
-    public class Reminder
-    {
-        public static int Id { get; set; }
-
-        public int MinutesPriorToEvent { get; set; }
+        RecurrenceRule IEvent.RecurrancePattern { get; set; }
     }
 
     public class RecurrenceRule
