@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using EventKit;
-using Foundation;
 
 namespace Xamarin.Essentials
 {
@@ -15,15 +12,7 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            EKCalendar[] calendars;
-            try
-            {
-                calendars = CalendarRequest.Instance.Calendars;
-            }
-            catch (NullReferenceException ex)
-            {
-                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
-            }
+            var calendars = CalendarRequest.Instance.Calendars;
             var calendarList = new List<DeviceCalendar>();
 
             foreach (var t in calendars)
@@ -38,127 +27,22 @@ namespace Xamarin.Essentials
             return calendarList.AsReadOnly();
         }
 
-        static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => throw new NotImplementedException();
+
+        static async Task PlatformRequestCalendarReadAccess()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
-
-            var eventList = new List<Event>();
-            var startDateToConvert = startDate ?? DateTimeOffset.Now;
-            var endDateToConvert = endDate ?? startDateToConvert.Add(defaultDateDistance);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
-            var sDate = startDateToConvert.ToNSDate();
-            var eDate = endDateToConvert.ToNSDate();
-            EKCalendar[] calendars;
-            try
-            {
-                calendars = !string.IsNullOrWhiteSpace(calendarId)
-                    ? CalendarRequest.Instance.Calendars.Where(x => x.CalendarIdentifier == calendarId).ToArray()
-                    : null;
-            }
-            catch (NullReferenceException ex)
-            {
-                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
-            }
-
-            var query = CalendarRequest.Instance.PredicateForEvents(sDate, eDate, calendars);
-            var events = CalendarRequest.Instance.EventsMatching(query);
-
-            foreach (var e in events)
-            {
-                eventList.Add(new Event
-                {
-                    Id = e.CalendarItemIdentifier,
-                    CalendarId = e.Calendar.CalendarIdentifier,
-                    Title = e.Title,
-                    Start = e.StartDate.ToEpochTime(),
-                    End = e.EndDate.ToEpochTime()
-                });
-            }
-            eventList.Sort((x, y) =>
-            {
-                if (!x.StartDate.HasValue)
-                {
-                    if (!y.EndDate.HasValue)
-                    {
-                        return 0;
-                    }
-                    return -1;
-                }
-                if (!y.EndDate.HasValue)
-                {
-                    return 1;
-                }
-                return x.StartDate.Value.CompareTo(y.EndDate.Value);
-            });
-
-            return eventList.AsReadOnly();
         }
 
-        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
-
-        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
-
-        static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
+        static async Task PlatformRequestCalendarWriteAccess()
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
-
-            EKEvent e;
-            try
-            {
-                e = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
-            }
-            catch (NullReferenceException ex)
-            {
-                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
-            }
-
-            return new Event
-            {
-                Id = e.CalendarItemIdentifier,
-                Title = e.Title,
-                Description = e.Notes,
-                Location = e.Location,
-                Start = e.StartDate.ToEpochTime(),
-                End = e.EndDate.ToEpochTime(),
-                Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<IAttendee>()
-            };
-        }
-
-        static IReadOnlyList<IAttendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
-        {
-            var attendees = new List<IAttendee>();
-
-            foreach (var attendee in inviteList)
-            {
-                attendees.Add(new Attendee()
-                {
-                    Name = attendee.Name,
-                    Email = attendee.Name
-                });
-            }
-            return attendees.AsReadOnly();
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
         }
 
         static async Task<PermissionStatus> PlatformCheckCalendarReadAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarRead);
 
         static async Task<PermissionStatus> PlatformCheckCalendarWriteAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarWrite);
 
-        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
-        {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
-
-            var evnt = EKEvent.FromStore(CalendarRequest.Instance);
-            evnt.Title = newEvent.Title;
-            evnt.Calendar = CalendarRequest.Instance.GetCalendar(newEvent.CalendarId);
-            evnt.Notes = newEvent.Description;
-            evnt.Location = newEvent.Location;
-            evnt.AllDay = newEvent.AllDay;
-            evnt.StartDate = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0).ToNSDate();
-            evnt.EndDate = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0).ToNSDate();
-            if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
-            {
-                return evnt.EventIdentifier;
-            }
-            throw new Exception(error.DebugDescription);
-        }
+        static Task<int> PlatformCreateCalendarEvent(IEvent newEvent) => throw new NotImplementedException();
     }
 }

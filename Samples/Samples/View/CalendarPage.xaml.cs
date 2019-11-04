@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 using Samples.ViewModel;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -14,7 +13,17 @@ namespace Samples.View
             InitializeComponent();
         }
 
-        async void OnAddEventButtonClicked(object sender, EventArgs e)
+        void OnEventTapped(object sender, ItemTappedEventArgs e)
+        {
+            if (e.Item == null)
+                return;
+
+            var modal = new CalendarEventPage();
+            modal.BindingContext = e.Item as Event;
+            Navigation.PushModalAsync(modal);
+        }
+
+        void OnAddEventButtonClicked(object sender, EventArgs e)
         {
             var modal = new CalendarEventAddPage();
 
@@ -22,20 +31,7 @@ namespace Samples.View
                 return;
 
             modal.BindingContext = new CalendarEventAddViewModel(tst.Id, tst.Name);
-            await Navigation.PushAsync(modal);
-        }
-
-        async void OnEventTapped(object sender, ItemTappedEventArgs e)
-        {
-            if (e.Item == null && e.Item is Event)
-                return;
-
-            var evnt = await Calendar.GetEventByIdAsync((e.Item as Event)?.Id);
-            var modal = new CalendarEventPage
-            {
-                BindingContext = evnt
-            };
-            await Navigation.PushAsync(modal);
+            Navigation.PushModalAsync(modal);
         }
     }
 }
