@@ -96,9 +96,9 @@
                   Grid.Column="0"
                   IsChecked="{Binding StartDatePickersEnabled}">
           <CheckBox.Behaviors>
-            <behaviors:EventToCommandBehavior EventName="FocusChangeRequested"
+            <behaviors:EventToCommandBehavior EventName="CheckedChanged"
                                               Command="{Binding StartDateEnabledCheckBoxChanged}"
-                                              Converter="{StaticResource CheckBoxEventArgsConverter}"></behaviors:EventToCommandBehavior>
+                                              Converter="{StaticResource CheckBoxEventArgsConverter}"/>
           </CheckBox.Behaviors>
         </CheckBox>
         <Label Grid.Row="0"
@@ -114,7 +114,7 @@
           <DatePicker.Behaviors>
             <behaviors:EventToCommandBehavior EventName="DateSelected"
                                               Command="{Binding StartDateSelectedCommand}"
-                                              Converter="{StaticResource DateSelectedEventArgsConverter}"></behaviors:EventToCommandBehavior>
+                                              Converter="{StaticResource DateSelectedEventArgsConverter}"/>
           </DatePicker.Behaviors>
         </DatePicker>
         <TimePicker Time="{Binding StartTime}"
@@ -124,16 +124,16 @@
           <TimePicker.Behaviors>
             <behaviors:EventToCommandBehavior EventName="PropertyChanged"
                                               Command="{Binding StartTimeSelectedCommand}"
-                                              Converter="{StaticResource TimeSelectedEventArgsConverter}"></behaviors:EventToCommandBehavior>
+                                              Converter="{StaticResource TimeSelectedEventArgsConverter}"/>
           </TimePicker.Behaviors>
         </TimePicker>
         <CheckBox Grid.Row="1"
                   Grid.Column="0"
                   IsChecked="{Binding EndDatePickersEnabled}">
           <CheckBox.Behaviors>
-            <behaviors:EventToCommandBehavior EventName="FocusChangeRequested"
+            <behaviors:EventToCommandBehavior EventName="CheckedChanged"
                                               Command="{Binding EndDateEnabledCheckBoxChanged}"
-                                              Converter="{StaticResource CheckBoxEventArgsConverter}"></behaviors:EventToCommandBehavior>
+                                              Converter="{StaticResource CheckBoxEventArgsConverter}"/>
           </CheckBox.Behaviors>
         </CheckBox>
         <Label Text="End Date"
@@ -149,7 +149,7 @@
           <DatePicker.Behaviors>
             <behaviors:EventToCommandBehavior EventName="DateSelected"
                                               Command="{Binding EndDateSelectedCommand}"
-                                              Converter="{StaticResource DateSelectedEventArgsConverter}"></behaviors:EventToCommandBehavior>
+                                              Converter="{StaticResource DateSelectedEventArgsConverter}"/>
           </DatePicker.Behaviors>
         </DatePicker>
         <TimePicker Time="{Binding EndTime}"
@@ -163,6 +163,7 @@
                HeightRequest="1"
                Color="#5b5d68"/>
       <ListView Grid.Row="4"
+                HasUnevenRows="true"
                 ItemsSource="{Binding Events}"
                 ItemTemplate="{StaticResource EventItemTemplate}"
                 SelectionMode="None"
