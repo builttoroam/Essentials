@@ -42,5 +42,7 @@ namespace Xamarin.Essentials
         static async Task<PermissionStatus> PlatformCheckCalendarReadAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarRead);
 
         static async Task<PermissionStatus> PlatformCheckCalendarWriteAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarWrite);
+
+        static Task<int> PlatformCreateCalendarEvent(IEvent newEvent) => throw new NotImplementedException();
     }
 }
