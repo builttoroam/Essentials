@@ -90,10 +90,12 @@ namespace Xamarin.Essentials
             {
                 calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {endDate.Value.ToUnixTimeMilliseconds()} AND ";
             }
+            if (calendarSpecificEvent != string.Empty)
+            {
+                calendarSpecificEvent = calendarSpecificEvent.Substring(0, calendarSpecificEvent.LastIndexOf(" AND ", StringComparison.Ordinal));
+            }
 
-            calendarSpecificEvent += "deleted != 1";
-
-            var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null);
+            var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, $"{CalendarContract.Events.InterfaceConsts.Dtstart} ASC");
             var events = new List<IEvent>();
             while (cur.MoveToNext())
             {
