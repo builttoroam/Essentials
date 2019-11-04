@@ -15,7 +15,7 @@ namespace Samples.View
 
         void OnEventTapped(object sender, ItemTappedEventArgs e)
         {
-            if (e.Item == null)
+            if (e.Item == null && e.Item is Event)
                 return;
 
             var modal = new CalendarEventPage();
