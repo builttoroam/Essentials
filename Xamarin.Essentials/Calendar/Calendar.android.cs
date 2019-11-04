@@ -8,6 +8,8 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
+        const string andCondition = "AND";
+
         static bool PlatformIsSupported => true;
 
         static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
@@ -81,19 +83,19 @@ namespace Xamarin.Essentials
             var calendarSpecificEvent = string.Empty;
             if (!string.IsNullOrEmpty(calendarId))
             {
-                calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId}={calendarId} AND ";
+                calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId}={calendarId} {andCondition} ";
             }
             if (startDate != null)
             {
-                calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtstart} >= {startDate.Value.ToUnixTimeMilliseconds()} AND ";
+                calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtstart} >= {startDate.Value.ToUnixTimeMilliseconds()} {andCondition} ";
             }
             if (endDate != null)
             {
-                calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {endDate.Value.ToUnixTimeMilliseconds()} AND ";
+                calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {endDate.Value.ToUnixTimeMilliseconds()} {andCondition} ";
             }
             if (calendarSpecificEvent != string.Empty)
             {
-                calendarSpecificEvent = calendarSpecificEvent.Substring(0, calendarSpecificEvent.LastIndexOf(" AND ", StringComparison.Ordinal));
+                calendarSpecificEvent = calendarSpecificEvent.Substring(0, calendarSpecificEvent.LastIndexOf($" {andCondition} ", StringComparison.Ordinal));
             }
 
             var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, $"{CalendarContract.Events.InterfaceConsts.Dtstart} ASC");
