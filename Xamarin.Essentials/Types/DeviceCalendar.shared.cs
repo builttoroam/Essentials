@@ -11,8 +11,6 @@ namespace Xamarin.Essentials
         public string Name { get; set; }
 
         public bool IsReadOnly { get; set; }
-
-        public bool Deleted { get; set; }
     }
 
     public interface ICalendar
@@ -22,8 +20,6 @@ namespace Xamarin.Essentials
         string Name { get; set; }
 
         bool IsReadOnly { get; set; }
-
-        bool Deleted { get; set; }
     }
 
     public interface IEvent
@@ -52,11 +48,7 @@ namespace Xamarin.Essentials
 
         string Status { get; set; }
 
-        IReadOnlyList<IAttendee> Attendees { get; set; }
-
         RecurrenceRule RecurrancePattern { get; set; }
-
-        bool Deleted { get; set; }
     }
 
     [Preserve(AllMembers = true)]
@@ -90,11 +82,7 @@ namespace Xamarin.Essentials
 
         public string Status { get; set; }
 
-        public IReadOnlyList<IAttendee> Attendees { get; set; }
-
-        public RecurrenceRule RecurrancePattern { get; set; }
-
-        public bool Deleted { get; set; }
+        RecurrenceRule IEvent.RecurrancePattern { get; set; }
     }
 
     public class RecurrenceRule
@@ -117,15 +105,7 @@ namespace Xamarin.Essentials
         public List<int> SetPositions { get; set; }
     }
 
-    public interface IAttendee
-    {
-        string Name { get; set; }
-
-        string Email { get; set; }
-    }
-
-    [Preserve(AllMembers = true)]
-    public class Attendee : IAttendee
+    public class Attendee
     {
         public string Name { get; set; }
 
