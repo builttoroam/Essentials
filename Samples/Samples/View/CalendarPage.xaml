@@ -3,8 +3,6 @@
                  xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                  xmlns:views="clr-namespace:Samples.View"
                  xmlns:viewmodels="clr-namespace:Samples.ViewModel"
-                 xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
-                 xmlns:samples="clr-namespace:Samples.ViewModel;assembly=Samples"
                  xmlns:behaviors="clr-namespace:Samples.Behaviors;assembly=Samples"
                  xmlns:converters="clr-namespace:Samples.Converters;assembly=Samples"
                  x:Class="Samples.View.CalendarPage"
@@ -64,11 +62,10 @@
           <ColumnDefinition/>
         </Grid.ColumnDefinitions>
           <Button Text="Request Read Access"
-                Command="{Binding RequestCalendarReadAccess}"
-                HeightRequest="100"/>
+                Command="{Binding RequestCalendarReadAccessCommand}"/>
         <Button Grid.Column="1"
                 Text="Request Write Access"
-                Command="{Binding RequestCalendarWriteAccess}"/>
+                Command="{Binding RequestCalendarWriteAccessCommand}"/>
         <Button Grid.Column="2"
                 Text="Load Calendars"
                 Command="{Binding GetCalendars}"/>
