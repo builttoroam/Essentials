@@ -9,11 +9,6 @@
              x:DataType="essentials:Event"
              Title="Event"
              Padding="20,20,20,20">
-    <views:BasePage.Resources>
-        <ResourceDictionary>
-            <converters:EpochToDateTimeConverter x:Key="EpochToDateTimeConverter"/>
-        </ResourceDictionary>
-    </views:BasePage.Resources>
     <views:BasePage.Content>
       <StackLayout>
           <Label Text="{Binding Title}"
@@ -45,7 +40,7 @@
                      Text="When:"/>
               <Label Grid.Column="1"
                      Grid.Row="2"
-                     Text="{Binding Start, Converter={StaticResource EpochToDateTimeConverter}}"
+                     Text="{Binding StartDate, StringFormat='{0:dd/MM/yy hh:mm tt}'}"
                      TextColor="Black"
                      HorizontalTextAlignment="Center"/>
               <Label Grid.Column="2"
@@ -53,7 +48,7 @@
                      Text="-"/>
               <Label Grid.Column="3"
                      Grid.Row="2"
-                     Text="{Binding End, Converter={StaticResource EpochToDateTimeConverter}}"
+                     Text="{Binding EndDate, StringFormat='{0:dd/MM/yy hh:mm tt}'}"
                      TextColor="Black"
                      HorizontalTextAlignment="Center"/>
           </Grid>
