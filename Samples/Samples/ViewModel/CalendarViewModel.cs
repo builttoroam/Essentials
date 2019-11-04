@@ -11,8 +11,8 @@ namespace Samples.ViewModel
         public CalendarViewModel()
         {
             GetCalendars = new Command(OnClickGetCalendars);
-            RequestCalendarReadAccess = new Command(OnRequestCalendarReadAccess);
-            RequestCalendarWriteAccess = new Command(OnRequestCalendarWriteAccess);
+            RequestCalendarReadAccessCommand = new Command(OnRequestCalendarReadAccess);
+            RequestCalendarWriteAccessCommand = new Command(OnRequestCalendarWriteAccess);
             StartDateSelectedCommand = new Command(OnStartDateSelected);
             StartTimeSelectedCommand = new Command(OnStartTimeSelected);
             EndDateSelectedCommand = new Command(OnEndDateSelected);
@@ -45,9 +45,9 @@ namespace Samples.ViewModel
 
         public ICommand EndDateEnabledCheckBoxChanged { get; }
 
-        public ICommand RequestCalendarReadAccess { get; }
+        public ICommand RequestCalendarReadAccessCommand { get; }
 
-        public ICommand RequestCalendarWriteAccess { get; }
+        public ICommand RequestCalendarWriteAccessCommand { get; }
 
         public ICommand StartDateSelectedCommand { get; }
 
@@ -56,8 +56,6 @@ namespace Samples.ViewModel
         public ICommand EndDateSelectedCommand { get; }
 
         public ICommand EndTimeSelectedCommand { get; }
-
-        public bool HasCalendarReadAccess { get; set; }
 
         public DateTime StartDate { get; set; } = DateTime.Now;
 
