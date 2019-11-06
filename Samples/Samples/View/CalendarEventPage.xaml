@@ -62,7 +62,7 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Label Text="Description"/>
+                <Label Text="Description:"/>
                 <Label Grid.Column="1"
                    Text="{Binding Description}"/>
             </Grid>
