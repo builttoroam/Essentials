@@ -20,7 +20,7 @@ namespace Samples.View
 
             var modal = new CalendarEventPage();
             modal.BindingContext = e.Item as Event;
-            Navigation.PushModalAsync(modal);
+            Navigation.PushAsync(modal);
         }
     }
 }
