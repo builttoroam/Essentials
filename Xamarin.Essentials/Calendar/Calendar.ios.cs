@@ -47,8 +47,6 @@ namespace Xamarin.Essentials
                 {
                     Id = e.CalendarItemIdentifier,
                     Title = e.Title,
-                    Description = e.Notes,
-                    Location = e.Location,
                     Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.StartDate.SecondsSinceReferenceDate) * 1000),
                     End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000)
                 });
