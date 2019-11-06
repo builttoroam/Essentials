@@ -72,13 +72,6 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.AllDay,
                 CalendarContract.Events.InterfaceConsts.Dtstart,
                 CalendarContract.Events.InterfaceConsts.Dtend,
-                CalendarContract.Events.InterfaceConsts.Duration,
-                CalendarContract.Events.InterfaceConsts.HasAlarm,
-                CalendarContract.Events.InterfaceConsts.HasAttendeeData,
-                CalendarContract.Events.InterfaceConsts.HasExtendedProperties,
-                CalendarContract.Events.InterfaceConsts.Status,
-                CalendarContract.Events.InterfaceConsts.Rrule,
-                CalendarContract.Events.InterfaceConsts.Rdate
             };
             var calendarSpecificEvent = string.Empty;
             if (!string.IsNullOrEmpty(calendarId))
@@ -107,6 +100,46 @@ namespace Xamarin.Essentials
                     Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Id)),
                     CalendarId = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CalendarId)),
                     Title = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Title)),
+                    Start = cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart)),
+                    End = cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend)),
+                });
+            }
+
+            return events.AsReadOnly();
+        }
+
+        static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
+
+            var eventsUri = CalendarContract.Events.ContentUri;
+            var eventsProjection = new List<string>
+            {
+                CalendarContract.Events.InterfaceConsts.Id,
+                CalendarContract.Events.InterfaceConsts.CalendarId,
+                CalendarContract.Events.InterfaceConsts.Title,
+                CalendarContract.Events.InterfaceConsts.Description,
+                CalendarContract.Events.InterfaceConsts.EventLocation,
+                CalendarContract.Events.InterfaceConsts.AllDay,
+                CalendarContract.Events.InterfaceConsts.Dtstart,
+                CalendarContract.Events.InterfaceConsts.Dtend,
+                CalendarContract.Events.InterfaceConsts.Duration,
+                CalendarContract.Events.InterfaceConsts.HasAlarm,
+                CalendarContract.Events.InterfaceConsts.HasAttendeeData,
+                CalendarContract.Events.InterfaceConsts.HasExtendedProperties,
+                CalendarContract.Events.InterfaceConsts.Status,
+            };
+            var calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.Id}={eventId}";
+            var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null);
+
+            cur.MoveToNext();
+            if (cur.IsFirst && cur.IsLast)
+            {
+                return new Event
+                {
+                    Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Id)),
+                    CalendarId = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CalendarId)),
+                    Title = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Title)),
                     Description = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Description)),
                     Location = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventLocation)),
                     AllDay = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 1,
@@ -116,10 +149,12 @@ namespace Xamarin.Essentials
                     HasAttendees = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasAttendeeData)) == 1,
                     HasExtendedProperties = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasExtendedProperties)) == 1,
                     Status = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Status))
-                });
+                };
             }
-
-            return events.AsReadOnly();
+            else
+            {
+                throw new Exception("o oh");
+            }
         }
     }
 }

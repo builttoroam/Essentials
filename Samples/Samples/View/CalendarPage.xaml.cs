@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Samples.ViewModel;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -13,14 +14,17 @@ namespace Samples.View
             InitializeComponent();
         }
 
-        void OnEventTapped(object sender, ItemTappedEventArgs e)
+        async void OnEventTapped(object sender, ItemTappedEventArgs e)
         {
             if (e.Item == null && e.Item is Event)
                 return;
 
-            var modal = new CalendarEventPage();
-            modal.BindingContext = e.Item as Event;
-            Navigation.PushAsync(modal);
+            var evnt = await Calendar.GetEventByIdAsync((e.Item as Event)?.Id);
+            var modal = new CalendarEventPage
+            {
+                BindingContext = evnt
+            };
+            await Navigation.PushAsync(modal);
         }
     }
 }
