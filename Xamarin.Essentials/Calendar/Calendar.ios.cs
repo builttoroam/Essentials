@@ -9,8 +9,6 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
-        private static readonly DateTime beginningOfEpochTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-
         static bool PlatformIsSupported => true;
 
         static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
@@ -54,21 +52,28 @@ namespace Xamarin.Essentials
                     Title = e.Title,
                     Description = e.Description,
                     Location = e.Location,
-                    Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + sDate.SecondsSinceReferenceDate) * 1000)
+                    Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.StartDate.SecondsSinceReferenceDate) * 1000),
+                    End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000)
                 });
             }
+            eventList.Sort((x, y) =>
+            {
+                if (!x.StartDate.HasValue)
+                {
+                    if (!y.EndDate.HasValue)
+                    {
+                        return 0;
+                    }
+                    return -1;
+                }
+                return !y.EndDate.HasValue ? 1 : x.StartDate.Value.CompareTo(y.EndDate.Value);
+            });
 
             return eventList.AsReadOnly();
         }
 
-        static async Task PlatformRequestCalendarReadAccess()
-        {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
-        }
+        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-        static async Task PlatformRequestCalendarWriteAccess()
-        {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
-        }
+        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
     }
 }
