@@ -8,7 +8,7 @@
                  xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
                  x:Class="Samples.View.CalendarPage"
                  x:DataType="viewmodels:CalendarViewModel"
-                 Title="Calendars">
+                 Title="Calendar">
   <views:BasePage.Resources>
     <ResourceDictionary>
      <x:String x:Key="DateDisplayFormatter">{0:dd/MM/yy hh:mm tt}</x:String>
@@ -152,7 +152,13 @@
         <TimePicker Time="{Binding EndTime}"
                     IsEnabled="{Binding EndDatePickersEnabled}"
                     Grid.Row = "1"
-                    Grid.Column="3"/>
+                    Grid.Column="3">
+            <TimePicker.Behaviors>
+                <behaviors:EventToCommandBehavior EventName="PropertyChanged"
+                                                  Command="{Binding EndTimeSelectedCommand}"
+                                                  Converter="{StaticResource TimeSelectedEventArgsConverter}"/>
+            </TimePicker.Behaviors>
+        </TimePicker>
       </Grid>
       <BoxView Grid.Row="3"
                VerticalOptions="Center"
