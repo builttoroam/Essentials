@@ -12,6 +12,24 @@
     <views:BasePage.Resources>
         <ResourceDictionary>
             <x:String x:Key="DateDisplayFormatter">{0:dd/MM/yy hh:mm tt}</x:String>
+            <DataTemplate x:DataType="essentials:Attendee"
+                          x:Key="AttendeeItemTemplate">
+                <ViewCell>
+                    <StackLayout>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+                            <Label Text="{Binding Name}"
+                                   TextColor="Black"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding Email}"
+                                   TextColor="DarkGray"/>
+                        </Grid>
+                    </StackLayout>
+                </ViewCell>
+            </DataTemplate>
         </ResourceDictionary>
     </views:BasePage.Resources>
     <views:BasePage.Content>
@@ -62,9 +80,23 @@
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
-                <Label Text="Description:"/>
-                <Label Grid.Column="1"
-                   Text="{Binding Description}"/>
+              <Grid.RowDefinitions>
+                  <RowDefinition/>
+                  <RowDefinition/>
+              </Grid.RowDefinitions>
+                <Label Text="Attendees"/>
+                <ListView Grid.Row="0"
+                          Grid.Column="1"
+                          HasUnevenRows="true"
+                          ItemsSource="{Binding Attendees}"
+                          ItemTemplate="{StaticResource AttendeeItemTemplate}"
+                          SelectionMode="None"/>
+                <Label Grid.Row="1" 
+                       Grid.Column="0"
+                       Text="Description:"/>
+                <Label Grid.Row="1"
+                       Grid.Column="1"
+                       Text="{Binding Description}"/>
             </Grid>
         </StackLayout>
     </views:BasePage.Content>
