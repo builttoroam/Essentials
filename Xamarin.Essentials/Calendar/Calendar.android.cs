@@ -195,7 +195,7 @@ namespace Xamarin.Essentials
             var recurranceRule = new RecurrenceRule();
             if (rule.Contains("FREQ="))
             {
-                var ruleFrequency = rule.Substring(rule.IndexOf("FREQ=") + 5);
+                var ruleFrequency = rule.Substring(rule.IndexOf("FREQ=", StringComparison.Ordinal) + 5);
                 ruleFrequency = ruleFrequency.Substring(0, ruleFrequency.IndexOf(";"));
                 switch (ruleFrequency)
                 {
@@ -238,8 +238,8 @@ namespace Xamarin.Essentials
             if (rule.Contains("BYDAY="))
             {
                 var ruleOccurenceDays = rule.Substring(rule.IndexOf("BYDAY=", StringComparison.Ordinal) + 6);
-                ruleOccurenceDays = ruleOccurenceDays.Substring(0, ruleOccurenceDays.IndexOf(";", StringComparison.Ordinal));
-
+                ruleOccurenceDays = ruleOccurenceDays.Contains(";") ? ruleOccurenceDays.Substring(0, ruleOccurenceDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceDays;
+                recurranceRule.DaysOfTheWeek = new List<DayOfTheWeek>();
                 foreach (var d in ruleOccurenceDays.Split(','))
                 {
                     switch (d)
