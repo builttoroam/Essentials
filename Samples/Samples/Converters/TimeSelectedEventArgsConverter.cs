@@ -13,7 +13,7 @@ namespace Samples.Converters
         {
             var eventArgs = value as PropertyChangedEventArgs;
 
-            if (eventArgs == null || eventArgs.PropertyName != nameof(TimePicker.TimeProperty))
+            if (eventArgs == null || eventArgs.PropertyName != nameof(TimePicker.Time))
                 return null;
 
             return eventArgs.PropertyName;

@@ -11,6 +11,7 @@
                  Title="Calendars">
   <views:BasePage.Resources>
     <ResourceDictionary>
+     <x:String x:Key="DateDisplayFormatter">{0:dd/MM/yy hh:mm tt}</x:String>
       <converters:CheckBoxEventArgsConverter x:Key="CheckBoxEventArgsConverter"/>
       <converters:DateSelectedEventArgsConverter x:Key="DateSelectedEventArgsConverter"/>
       <converters:TimeSelectedEventArgsConverter x:Key="TimeSelectedEventArgsConverter"/>
@@ -29,13 +30,13 @@
                      TextColor="Black"
                      HorizontalTextAlignment="Center"/>
               <Label Grid.Column="1"
-                     Text="{Binding StartDate, StringFormat='{0:dd/MM/yy hh:mm tt}'}"
+                     Text="{Binding StartDate, StringFormat={StaticResource DateDisplayFormatter}}"
                      TextColor="Black"
                      HorizontalTextAlignment="Center"/>
               <Label Grid.Column="2"
                      Text="-"/>
               <Label Grid.Column="3"
-                     Text="{Binding EndDate, StringFormat='{0:dd/MM/yy hh:mm tt}'}"
+                     Text="{Binding EndDate, StringFormat={StaticResource DateDisplayFormatter}}"
                      TextColor="Black"
                      HorizontalTextAlignment="Center"/>
             </Grid>
