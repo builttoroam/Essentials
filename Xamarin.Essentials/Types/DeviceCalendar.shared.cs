@@ -48,6 +48,8 @@ namespace Xamarin.Essentials
 
         string Status { get; set; }
 
+        IReadOnlyList<IAttendee> Attendees { get; set; }
+
         RecurrenceRule RecurrancePattern { get; set; }
     }
 
@@ -82,7 +84,9 @@ namespace Xamarin.Essentials
 
         public string Status { get; set; }
 
-        RecurrenceRule IEvent.RecurrancePattern { get; set; }
+        public IReadOnlyList<IAttendee> Attendees { get; set; }
+
+        public RecurrenceRule RecurrancePattern { get; set; }
     }
 
     public class RecurrenceRule
@@ -105,7 +109,15 @@ namespace Xamarin.Essentials
         public List<int> SetPositions { get; set; }
     }
 
-    public class Attendee
+    public interface IAttendee
+    {
+        string Name { get; set; }
+
+        string Email { get; set; }
+    }
+
+    [Preserve(AllMembers = true)]
+    public class Attendee : IAttendee
     {
         public string Name { get; set; }
 
