@@ -191,8 +191,8 @@ namespace Samples.ViewModel
         {
             await Calendar.RequestCalendarReadAccess();
 
-            startDate = StartDatePickersEnabled && startDate == null ? (DateTime?)StartDate + StartTime : null;
-            endDate = EndDatePickersEnabled && endDate == null ? (DateTime?)EndDate + EndTime : null;
+            startDate = StartDatePickersEnabled && !startDate.HasValue ? (DateTime?)StartDate.Date + StartTime : startDate;
+            endDate = (EndDatePickersEnabled && !endDate.HasValue) ? (DateTime?)EndDate.Date + EndTime : endDate;
             if (Calendars.Count == 0)
                 return;
 
