@@ -196,7 +196,7 @@ namespace Xamarin.Essentials
             if (rule.Contains("FREQ="))
             {
                 var ruleFrequency = rule.Substring(rule.IndexOf("FREQ=", StringComparison.Ordinal) + 5);
-                ruleFrequency = ruleFrequency.Substring(0, ruleFrequency.IndexOf(";"));
+                ruleFrequency = ruleFrequency.Contains(";") ? ruleFrequency.Substring(0, ruleFrequency.IndexOf(";")) : ruleFrequency;
                 switch (ruleFrequency)
                 {
                     case dailyFrequency:
@@ -217,21 +217,21 @@ namespace Xamarin.Essentials
             if (rule.Contains("INTERVAL="))
             {
                 var ruleInterval = rule.Substring(rule.IndexOf("INTERVAL=", StringComparison.Ordinal) + 9);
-                ruleInterval = ruleInterval.Substring(0, ruleInterval.IndexOf(";", StringComparison.Ordinal));
+                ruleInterval = ruleInterval.Contains(";") ? ruleInterval.Substring(0, ruleInterval.IndexOf(";", StringComparison.Ordinal)) : ruleInterval;
                 recurranceRule.Interval = int.Parse(ruleInterval);
             }
 
             if (rule.Contains("COUNT="))
             {
                 var ruleOccurences = rule.Substring(rule.IndexOf("COUNT=", StringComparison.Ordinal) + 6);
-                ruleOccurences = ruleOccurences.Substring(0, ruleOccurences.IndexOf(";", StringComparison.Ordinal));
+                ruleOccurences = ruleOccurences.Contains(";") ? ruleOccurences.Substring(0, ruleOccurences.IndexOf(";", StringComparison.Ordinal)) : ruleOccurences;
                 recurranceRule.TotalOccurences = int.Parse(ruleOccurences);
             }
 
             if (rule.Contains("UNTIL="))
             {
                 var ruleEndDate = rule.Substring(rule.IndexOf("UNTIL=", StringComparison.Ordinal) + 6);
-                ruleEndDate = ruleEndDate.Substring(0, ruleEndDate.IndexOf(";", StringComparison.Ordinal));
+                ruleEndDate = ruleEndDate.Contains(";") ? ruleEndDate.Substring(0, ruleEndDate.IndexOf(";", StringComparison.Ordinal)) : ruleEndDate;
                 recurranceRule.EndDate = DateTime.Parse(ruleEndDate).ToLocalTime();
             }
 
