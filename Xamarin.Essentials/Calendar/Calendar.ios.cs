@@ -88,8 +88,24 @@ namespace Xamarin.Essentials
                 Description = e.Notes,
                 Location = e.Location,
                 Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.StartDate.SecondsSinceReferenceDate) * 1000),
-                End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000)
+                End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000),
+                Attendees = GetAttendeesForEvent(e.Attendees)
             };
+        }
+
+        static IReadOnlyList<IAttendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
+        {
+            var attendees = new List<IAttendee>();
+
+            foreach (var attendee in inviteList)
+            {
+                attendees.Add(new Attendee()
+                {
+                    Name = attendee.Name,
+                    Email = attendee.Name
+                });
+            }
+            return attendees.AsReadOnly();
         }
     }
 }

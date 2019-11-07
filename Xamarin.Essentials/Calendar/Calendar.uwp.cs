@@ -114,5 +114,5 @@ namespace Xamarin.Essentials
             }
             return attendees.AsReadOnly();
         }
-}
+    }
 }
