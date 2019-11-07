@@ -12,8 +12,9 @@ namespace Xamarin.Essentials
         static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
-            var appointmentStore = await AppointmentManager.RequestStoreAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
-            var uwpCalendarList = await appointmentStore.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
+
+            var instance = await CalendarRequest.GetInstanceAsync();
+            var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
             var calendars = new List<ICalendar>();
             foreach (var c in uwpCalendarList)
             {
@@ -31,8 +32,6 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var appointmentStore = await AppointmentManager.RequestStoreAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
-
             var options = new FindAppointmentsOptions();
             options.FetchProperties.Add(AppointmentProperties.Subject);
             options.FetchProperties.Add(AppointmentProperties.StartTime);
@@ -43,7 +42,8 @@ namespace Xamarin.Essentials
             if (eDate < sDate)
                 eDate = sDate;
 
-            var events = await appointmentStore.FindAppointmentsAsync(sDate, eDate.Subtract(sDate), options);
+            var instance = await CalendarRequest.GetInstanceAsync();
+            var events = await instance.FindAppointmentsAsync(sDate, eDate.Subtract(sDate), options);
             var eventList = new List<Event>();
             foreach (var e in events)
             {
@@ -79,9 +79,8 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var appointmentStore = await AppointmentManager.RequestStoreAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
-
-            var e = await appointmentStore.GetAppointmentAsync(eventId);
+            var instance = await CalendarRequest.GetInstanceAsync();
+            var e = await instance.GetAppointmentAsync(eventId);
 
             return new Event()
             {

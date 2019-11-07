@@ -83,6 +83,7 @@
               <Grid.RowDefinitions>
                   <RowDefinition/>
                   <RowDefinition/>
+                  <RowDefinition/>
               </Grid.RowDefinitions>
                 <Label Text="Attendees"/>
                 <ListView Grid.Row="0"
@@ -92,9 +93,11 @@
                           ItemTemplate="{StaticResource AttendeeItemTemplate}"
                           SelectionMode="None"/>
                 <Label Grid.Row="1" 
+                       Grid.RowSpan="2"
                        Grid.Column="0"
                        Text="Description:"/>
                 <Label Grid.Row="1"
+                       Grid.RowSpan="2"
                        Grid.Column="1"
                        Text="{Binding Description}"/>
             </Grid>
