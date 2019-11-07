@@ -89,7 +89,7 @@ namespace Xamarin.Essentials
                 Location = e.Location,
                 Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.StartDate.SecondsSinceReferenceDate) * 1000),
                 End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000),
-                Attendees = GetAttendeesForEvent(e.Attendees)
+                Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<IAttendee>()
             };
         }
 
