@@ -37,7 +37,7 @@ namespace Xamarin.Essentials
             var systemAbsoluteReferenceDate = new DateTime(2001, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             var eventList = new List<Event>();
             var startDateToConvert = startDate ?? DateTimeOffset.Now;
-            var endDateToConvert = endDate ?? startDateToConvert.AddYears(4);   // 4 years is the maximum period that a iOS calendar events can search
+            var endDateToConvert = endDate ?? startDateToConvert.Add(defaultDateDistance);  // 4 years is the maximum period that a iOS calendar events can search
             var sDate = NSDate.FromTimeIntervalSinceReferenceDate((startDateToConvert.UtcDateTime - systemAbsoluteReferenceDate).TotalSeconds);
             var eDate = NSDate.FromTimeIntervalSinceReferenceDate((endDateToConvert.UtcDateTime - systemAbsoluteReferenceDate).TotalSeconds);
             var calendars = !string.IsNullOrEmpty(calendarId) ? CalendarRequest.Instance.Calendars.Where(x => x.CalendarIdentifier == calendarId).ToArray() : null;

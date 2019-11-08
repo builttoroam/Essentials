@@ -6,6 +6,10 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
+        static TimeSpan defaultDateDistance = TimeSpan.FromDays(14);
+
+        public static void SetDefaultDateDistance(TimeSpan newDefaultSpan) => defaultDateDistance = newDefaultSpan;
+
         public static bool IsSupported => PlatformIsSupported;
 
         public static Task<IReadOnlyList<ICalendar>> GetCalendarsAsync() => PlatformGetCalendarsAsync();
