@@ -79,22 +79,14 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.Deleted
             };
             var calendarSpecificEvent = string.Empty;
+            var sDate = startDate ?? DateTimeOffset.Now;
+            var eDate = endDate ?? sDate.Add(defaultDateDistance);
             if (!string.IsNullOrEmpty(calendarId))
             {
                 calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId}={calendarId} {andCondition} ";
             }
-            if (startDate != null)
-            {
-                calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtstart} >= {startDate.Value.ToUnixTimeMilliseconds()} {andCondition} ";
-            }
-            if (endDate != null)
-            {
-                calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {endDate.Value.ToUnixTimeMilliseconds()} {andCondition} ";
-            }
-            if (calendarSpecificEvent != string.Empty)
-            {
-                calendarSpecificEvent = calendarSpecificEvent.Substring(0, calendarSpecificEvent.LastIndexOf($" {andCondition} ", StringComparison.Ordinal));
-            }
+            calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtstart} >= {sDate.ToUnixTimeMilliseconds()} {andCondition} ";
+            calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {eDate.ToUnixTimeMilliseconds()}";
 
             var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, $"{CalendarContract.Events.InterfaceConsts.Dtstart} ASC");
             var events = new List<IEvent>();
