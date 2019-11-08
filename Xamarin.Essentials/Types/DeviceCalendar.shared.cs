@@ -11,6 +11,8 @@ namespace Xamarin.Essentials
         public string Name { get; set; }
 
         public bool IsReadOnly { get; set; }
+
+        public bool Deleted { get; set; }
     }
 
     public interface ICalendar
@@ -20,6 +22,8 @@ namespace Xamarin.Essentials
         string Name { get; set; }
 
         bool IsReadOnly { get; set; }
+
+        bool Deleted { get; set; }
     }
 
     public interface IEvent
@@ -51,6 +55,8 @@ namespace Xamarin.Essentials
         IReadOnlyList<IAttendee> Attendees { get; set; }
 
         RecurrenceRule RecurrancePattern { get; set; }
+
+        bool Deleted { get; set; }
     }
 
     [Preserve(AllMembers = true)]
@@ -87,6 +93,8 @@ namespace Xamarin.Essentials
         public IReadOnlyList<IAttendee> Attendees { get; set; }
 
         public RecurrenceRule RecurrancePattern { get; set; }
+
+        public bool Deleted { get; set; }
     }
 
     public class RecurrenceRule
