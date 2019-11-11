@@ -131,7 +131,7 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.Rdate,
                 CalendarContract.Events.InterfaceConsts.Deleted
             };
-            var calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.Id}={eventId}";
+            var calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.Id}='{eventId}'";
 
             if (Platform.AppContext.ApplicationContext.ContentResolver == null)
                 throw new NullReferenceException($"Could not find event with id {eventId}");
@@ -171,7 +171,7 @@ namespace Xamarin.Essentials
             }
             else
             {
-                throw new Exception("o oh");
+                throw new NullReferenceException($"No Event found for event Id {eventId}");
             }
         }
 
