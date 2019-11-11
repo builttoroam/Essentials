@@ -15,7 +15,15 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var calendars = CalendarRequest.Instance.Calendars;
+            EKCalendar[] calendars;
+            try
+            {
+                calendars = CalendarRequest.Instance.Calendars;
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
+            }
             var calendarList = new List<DeviceCalendar>();
 
             foreach (var t in calendars)
@@ -34,13 +42,23 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var systemAbsoluteReferenceDate = new DateTime(2001, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             var eventList = new List<Event>();
             var startDateToConvert = startDate ?? DateTimeOffset.Now;
-            var endDateToConvert = endDate ?? startDateToConvert.Add(defaultDateDistance);  // 4 years is the maximum period that a iOS calendar events can search
-            var sDate = NSDate.FromTimeIntervalSinceReferenceDate((startDateToConvert.UtcDateTime - systemAbsoluteReferenceDate).TotalSeconds);
-            var eDate = NSDate.FromTimeIntervalSinceReferenceDate((endDateToConvert.UtcDateTime - systemAbsoluteReferenceDate).TotalSeconds);
-            var calendars = !string.IsNullOrEmpty(calendarId) ? CalendarRequest.Instance.Calendars.Where(x => x.CalendarIdentifier == calendarId).ToArray() : null;
+            var endDateToConvert = endDate ?? startDateToConvert.Add(defaultDateDistance);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
+            var sDate = startDateToConvert.ToNSDate();
+            var eDate = endDateToConvert.ToNSDate();
+            EKCalendar[] calendars;
+            try
+            {
+                calendars = !string.IsNullOrWhiteSpace(calendarId)
+                    ? CalendarRequest.Instance.Calendars.Where(x => x.CalendarIdentifier == calendarId).ToArray()
+                    : null;
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
+            }
+
             var query = CalendarRequest.Instance.PredicateForEvents(sDate, eDate, calendars);
             var events = CalendarRequest.Instance.EventsMatching(query);
 
@@ -51,8 +69,8 @@ namespace Xamarin.Essentials
                     Id = e.CalendarItemIdentifier,
                     CalendarId = e.Calendar.CalendarIdentifier,
                     Title = e.Title,
-                    Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.StartDate.SecondsSinceReferenceDate) * 1000),
-                    End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000)
+                    Start = e.StartDate.ToEpochTime(),
+                    End = e.EndDate.ToEpochTime()
                 });
             }
             eventList.Sort((x, y) =>
@@ -65,7 +83,11 @@ namespace Xamarin.Essentials
                     }
                     return -1;
                 }
-                return !y.EndDate.HasValue ? 1 : x.StartDate.Value.CompareTo(y.EndDate.Value);
+                if (!y.EndDate.HasValue)
+                {
+                    return 1;
+                }
+                return x.StartDate.Value.CompareTo(y.EndDate.Value);
             });
 
             return eventList.AsReadOnly();
@@ -79,7 +101,15 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var e = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+            EKEvent e;
+            try
+            {
+                e = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
+            }
 
             return new Event
             {
@@ -87,8 +117,8 @@ namespace Xamarin.Essentials
                 Title = e.Title,
                 Description = e.Notes,
                 Location = e.Location,
-                Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.StartDate.SecondsSinceReferenceDate) * 1000),
-                End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000),
+                Start = e.StartDate.ToEpochTime(),
+                End = e.EndDate.ToEpochTime(),
                 Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<IAttendee>()
             };
         }

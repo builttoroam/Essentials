@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Database;
 using Android.Provider;
 
 namespace Xamarin.Essentials
@@ -131,7 +132,19 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.Deleted
             };
             var calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.Id}={eventId}";
-            var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null);
+
+            if (Platform.AppContext.ApplicationContext.ContentResolver == null)
+                throw new NullReferenceException($"Could not find event with id {eventId}");
+
+            ICursor cur;
+            try
+            {
+                cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null);
+            }
+            catch (SQLException e)
+            {
+                throw e;
+            }
 
             cur.MoveToNext();
             if (cur.IsFirst && cur.IsLast)
