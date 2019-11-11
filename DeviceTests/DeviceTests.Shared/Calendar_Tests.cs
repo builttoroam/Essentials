@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Android.Database;
 using Xamarin.Essentials;
 using Xunit;
 
@@ -40,13 +39,7 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(async () =>
             {
-#if __IOS__
                 await Assert.ThrowsAsync<NullReferenceException>(() => Calendar.GetEventByIdAsync("ThisIsAFakeId"));
-#elif WINDOWS_UWP
-                await Assert.ThrowsAsync<UnauthorizedAccessException>(() => Calendar.GetEventByIdAsync("ThisIsAFakeId"));
-#else
-                await Assert.ThrowsAsync<SQLException>(() => Calendar.GetEventByIdAsync("ThisIsAFakeId"));
-#endif
             });
         }
     }
