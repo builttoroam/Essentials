@@ -33,7 +33,7 @@ namespace Xamarin.Essentials
         static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
-
+			
             var systemAbsoluteReferenceDate = new DateTime(2001, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             var eventList = new List<Event>();
             var startDateToConvert = startDate ?? DateTimeOffset.Now;
