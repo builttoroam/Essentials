@@ -80,7 +80,16 @@ namespace Xamarin.Essentials
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
             var instance = await CalendarRequest.GetInstanceAsync();
-            var e = await instance.GetAppointmentAsync(eventId);
+
+            Appointment e;
+            try
+            {
+                e = await instance.GetAppointmentAsync(eventId);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
 
             return new Event()
             {
