@@ -106,8 +106,8 @@ namespace Xamarin.Essentials
 
             return events.AsReadOnly();
         }
-		
-		static async Task<int> PlatformCreateCalendarEvent(IEvent newEvent)
+
+        static async Task<int> PlatformCreateCalendarEvent(IEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -139,7 +139,7 @@ namespace Xamarin.Essentials
             }
 
             return result;
-		}
+        }
 
         static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
         {

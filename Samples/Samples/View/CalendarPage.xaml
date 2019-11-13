@@ -71,16 +71,20 @@
                 Text="Load Calendars"
                 Command="{Binding GetCalendars}"/>
             </Grid>
-            <Picker Grid.Row="1"
-              x:Name="SelectedCalendar"
-              Title="Select a Calendar"
-              ItemsSource="{Binding Calendars}"
-              ItemDisplayBinding="{Binding Name}"
-              SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
-			  <Button Grid.Row="1"
-                Grid.Column="2"
-                Text="Add"
-                Clicked="OnAddEventButtonClicked"/>
+          <Grid Grid.Row="1">
+              <Grid.ColumnDefinitions>
+                  <ColumnDefinition/>
+                  <ColumnDefinition Width="Auto"/>
+              </Grid.ColumnDefinitions>
+              <Picker x:Name="SelectedCalendar"
+                      Title="Select a Calendar"
+                      ItemsSource="{Binding Calendars}"
+                      ItemDisplayBinding="{Binding Name}"
+                      SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
+              <Button Grid.Column="1"
+                      Text="Add"
+                      Clicked="OnAddEventButtonClicked"/>
+          </Grid>
             <Grid Grid.Row="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>

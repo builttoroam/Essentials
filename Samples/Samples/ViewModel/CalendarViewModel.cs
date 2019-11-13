@@ -39,12 +39,6 @@ namespace Samples.ViewModel
             set => SetProperty(ref enddatePickersEnabled, value);
         }
 
-        ICalendar selectedCalendar;
-
-        public bool StartDatePickersEnabled { get; set; }
-
-        public bool EndDatePickersEnabled { get; set; }
-
         public ICommand GetCalendars { get; }
 
         public ICommand StartDateEnabledCheckBoxChanged { get; }
@@ -67,27 +61,11 @@ namespace Samples.ViewModel
 
         public TimeSpan StartTime { get; set; }
 
-        public DateTime EndDate { get; set; } = DateTime.Now;
+        public DateTime EndDate { get; set; } = DateTime.Now.AddDays(14);
 
         public TimeSpan EndTime { get; set; } = TimeSpan.Parse("23:59");
 
-        public ICommand StartDateSelectedCommand { get; }
-
-        public ICommand StartTimeSelectedCommand { get; }
-
-        public ICommand EndDateSelectedCommand { get; }
-
-        public ICommand EndTimeSelectedCommand { get; }
-
         public bool HasCalendarReadAccess { get; set; }
-
-        public DateTime StartDate { get; set; } = DateTime.Now;
-
-        public TimeSpan StartTime { get; set; }
-
-        public DateTime EndDate { get; set; } = DateTime.Now;
-
-        public TimeSpan EndTime { get; set; }
 
         public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
 

@@ -23,8 +23,8 @@ namespace Samples.View
 
             modal.BindingContext = new CalendarEventAddViewModel(tst.Id, tst.Name);
             Navigation.PushModalAsync(modal);
-		}
-			
+        }
+
         async void OnEventTapped(object sender, ItemTappedEventArgs e)
         {
             if (e.Item == null && e.Item is Event)
