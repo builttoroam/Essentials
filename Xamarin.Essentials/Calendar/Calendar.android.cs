@@ -109,7 +109,7 @@ namespace Xamarin.Essentials
 
         static async Task<int> PlatformCreateCalendarEvent(IEvent newEvent)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
             var result = 0;
             if (string.IsNullOrEmpty(newEvent.CalendarId))
