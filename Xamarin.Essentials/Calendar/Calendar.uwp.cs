@@ -123,6 +123,30 @@ namespace Xamarin.Essentials
             return attendees.AsReadOnly();
         }
 
-        static Task<int> PlatformCreateCalendarEvent(IEvent newEvent) => throw new NotImplementedException();
+        static async Task<int> PlatformCreateCalendarEvent(IEvent newEvent)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var instance = await CalendarRequest.GetInstanceAsync();
+
+            var app = new Appointment()
+            {
+                Subject = newEvent.Title,
+                Details = newEvent.Description,
+                Location = newEvent.Location,
+                StartTime = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0),
+                Duration = new TimeSpan((DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0) - DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0)).Ticks)
+            };
+            try
+            {
+                var cal = await instance.GetAppointmentCalendarAsync(newEvent.CalendarId);
+                await cal.SaveAppointmentAsync(app);
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }
