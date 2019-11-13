@@ -120,12 +120,12 @@ namespace Xamarin.Essentials
             var eventValues = new ContentValues();
 
             eventValues.Put(CalendarContract.Events.InterfaceConsts.CalendarId, newEvent.CalendarId);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, "TestEvent");
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, "This is a test event.");
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, "123 fake street");
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, 0);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, DateTimeOffset.Now.ToUnixTimeMilliseconds());
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, DateTimeOffset.Now.AddHours(1).ToUnixTimeMilliseconds());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, newEvent.Title);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, newEvent.Description);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, newEvent.Location);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, newEvent.AllDay);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, newEvent.Start.ToString());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.End.ToString());
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
 
             try
