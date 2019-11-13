@@ -11,14 +11,32 @@ namespace Samples.ViewModel
         public CalendarViewModel()
         {
             GetCalendars = new Command(OnClickGetCalendars);
-            RequestCalendarReadAccess = new Command(OnRequestCalendarReadAccess);
-            RequestCalendarWriteAccess = new Command(OnRequestCalendarWriteAccess);
+            RequestCalendarReadAccessCommand = new Command(OnRequestCalendarReadAccess);
+            RequestCalendarWriteAccessCommand = new Command(OnRequestCalendarWriteAccess);
             StartDateSelectedCommand = new Command(OnStartDateSelected);
             StartTimeSelectedCommand = new Command(OnStartTimeSelected);
             EndDateSelectedCommand = new Command(OnEndDateSelected);
             EndTimeSelectedCommand = new Command(OnEndTimeSelected);
             StartDateEnabledCheckBoxChanged = new Command(OnStartCheckboxChanged);
             EndDateEnabledCheckBoxChanged = new Command(OnEndCheckboxChanged);
+        }
+
+        ICalendar selectedCalendar;
+
+        bool startdatePickersEnabled;
+
+        bool enddatePickersEnabled;
+
+        public bool StartDatePickersEnabled
+        {
+            get => startdatePickersEnabled;
+            set => SetProperty(ref startdatePickersEnabled, value);
+        }
+
+        public bool EndDatePickersEnabled
+        {
+            get => enddatePickersEnabled;
+            set => SetProperty(ref enddatePickersEnabled, value);
         }
 
         ICalendar selectedCalendar;
@@ -33,9 +51,25 @@ namespace Samples.ViewModel
 
         public ICommand EndDateEnabledCheckBoxChanged { get; }
 
-        public ICommand RequestCalendarReadAccess { get; }
+        public ICommand RequestCalendarReadAccessCommand { get; }
 
-        public ICommand RequestCalendarWriteAccess { get; }
+        public ICommand RequestCalendarWriteAccessCommand { get; }
+
+        public ICommand StartDateSelectedCommand { get; }
+
+        public ICommand StartTimeSelectedCommand { get; }
+
+        public ICommand EndDateSelectedCommand { get; }
+
+        public ICommand EndTimeSelectedCommand { get; }
+
+        public DateTime StartDate { get; set; } = DateTime.Now;
+
+        public TimeSpan StartTime { get; set; }
+
+        public DateTime EndDate { get; set; } = DateTime.Now;
+
+        public TimeSpan EndTime { get; set; } = TimeSpan.Parse("23:59");
 
         public ICommand StartDateSelectedCommand { get; }
 
@@ -179,10 +213,8 @@ namespace Samples.ViewModel
 
         async void RefreshEventList(string calendarId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
-            await Calendar.RequestCalendarReadAccess();
-
-            startDate = StartDatePickersEnabled && startDate == null ? (DateTime?)StartDate + StartTime : null;
-            endDate = EndDatePickersEnabled && endDate == null ? (DateTime?)EndDate + EndTime : null;
+            startDate = StartDatePickersEnabled && !startDate.HasValue ? (DateTime?)StartDate.Date + StartTime : startDate;
+            endDate = (EndDatePickersEnabled && !endDate.HasValue) ? (DateTime?)EndDate.Date + EndTime : endDate;
             if (Calendars.Count == 0)
                 return;
 
