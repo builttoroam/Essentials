@@ -14,7 +14,7 @@ namespace Samples.View
             InitializeComponent();
         }
 
-        void OnAddEventButtonClicked(object sender, EventArgs e)
+        async void OnAddEventButtonClicked(object sender, EventArgs e)
         {
             var modal = new CalendarEventAddPage();
 
@@ -22,7 +22,7 @@ namespace Samples.View
                 return;
 
             modal.BindingContext = new CalendarEventAddViewModel(tst.Id, tst.Name);
-            Navigation.PushModalAsync(modal);
+            await Navigation.PushAsync(modal);
         }
 
         async void OnEventTapped(object sender, ItemTappedEventArgs e)

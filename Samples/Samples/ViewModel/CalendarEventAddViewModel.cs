@@ -50,11 +50,14 @@ namespace Samples.ViewModel
                 Title = EventTitle,
                 AllDay = AllDay,
                 Description = Description,
+                Location = EventLocation,
                 Start = startDto.ToUnixTimeMilliseconds(),
                 End = endDto.ToUnixTimeMilliseconds()
             };
 
             var eventId = await Calendar.CreateCalendarEvent(newEvent);
+
+            await DisplayAlertAsync("Created event id: " + eventId);
         }
     }
 }
