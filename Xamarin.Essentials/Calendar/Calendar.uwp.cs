@@ -122,5 +122,7 @@ namespace Xamarin.Essentials
             }
             return attendees.AsReadOnly();
         }
+
+        static Task<int> PlatformCreateCalendarEvent(IEvent newEvent) => throw new NotImplementedException();
     }
 }

@@ -61,9 +61,11 @@ namespace Samples.ViewModel
 
         public TimeSpan StartTime { get; set; }
 
-        public DateTime EndDate { get; set; } = DateTime.Now;
+        public DateTime EndDate { get; set; } = DateTime.Now.AddDays(14);
 
         public TimeSpan EndTime { get; set; } = TimeSpan.Parse("23:59");
+
+        public bool HasCalendarReadAccess { get; set; }
 
         public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
 

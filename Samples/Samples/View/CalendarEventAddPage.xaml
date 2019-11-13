@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<views:BasePage  xmlns="http://xamarin.com/schemas/2014/forms"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                 xmlns:views="clr-namespace:Samples.View"
+                 xmlns:viewmodels="clr-namespace:Samples.ViewModel"
+                 xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
+                 xmlns:converters="clr-namespace:Samples.Converters;assembly=Samples"
+                 x:Class="Samples.View.CalendarEventAddPage"
+                 x:DataType="viewmodels:CalendarEventAddViewModel"
+                 Title="Event"
+                 Padding="20,20,20,20">
+    <views:BasePage.Content>
+    <StackLayout>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition/>
+          <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition/>
+          <RowDefinition/>
+          <RowDefinition/>
+          <RowDefinition/>
+          <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Label Text="Calendar:"
+               HorizontalTextAlignment="Center"/>
+        <Entry IsReadOnly="true"
+               Text="{Binding CalendarName}"
+               Grid.Row="0"
+               Grid.Column="1"/>
+
+        <Label Text="Title"
+               HorizontalTextAlignment="Center"
+               Grid.Row="1"
+               Grid.Column="0"/>
+        <Entry Placeholder="Title..."
+               Text="{Binding EventTitle}"
+               Grid.Row="1"
+               Grid.Column="1"/>
+
+        <Label Text="Description"
+               HorizontalTextAlignment="Center"
+               Grid.Row="2"
+               Grid.Column="0"/>
+        <Entry Placeholder="Description..."
+               Text="{Binding Description}"
+               Grid.Row="2"
+               Grid.Column="1"/>
+
+        <Label Text="Event Location"
+               HorizontalTextAlignment="Center"
+               Grid.Row="3"
+               Grid.Column="0"/>
+        <Entry Placeholder="Location..."
+               Text="{Binding EventLocation}"
+               Grid.Row="3"
+               Grid.Column="1"/>
+
+        <Label Text="All Day"
+               HorizontalTextAlignment="Center"
+               Grid.Row="4"
+               Grid.Column="0"/>
+        <Switch Grid.Row="4"
+                HorizontalOptions="Start"
+                IsToggled="{Binding AllDay}"
+                Grid.Column="1"/>
+      </Grid>
+      <Grid>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition/>
+          <ColumnDefinition/>
+          <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition/>
+          <RowDefinition/>
+        </Grid.RowDefinitions>
+        <Label Text="Start Date"
+               HorizontalTextAlignment="Center"/>
+        <DatePicker Date="{Binding StartDate}"
+                    MinimumDate="1970-01-01"
+                    Grid.Row="0"
+                    Grid.Column="1"/>
+        <TimePicker Time="{Binding StartTime}"
+                    Grid.Row="0"
+                    Grid.Column="2"/>
+        <Label Text="End Date"
+               HorizontalTextAlignment="Center"
+               Grid.Row="1"
+               Grid.Column="0"/>
+        <DatePicker Date="{Binding EndDate}"
+                    MinimumDate="1970-01-01"
+                    Grid.Row="1"
+                    Grid.Column="1"/>
+        <TimePicker Time="{Binding EndTime}"
+                    Grid.Row="1"
+                    Grid.Column="2"/>
+      </Grid>
+      <Button Text="Add Event"
+              Command="{Binding CreateEvent}"/>
+    </StackLayout>
+  </views:BasePage.Content>
+</views:BasePage>
