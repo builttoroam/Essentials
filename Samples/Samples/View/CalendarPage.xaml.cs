@@ -16,7 +16,7 @@ namespace Samples.View
 
         async void OnEventTapped(object sender, ItemTappedEventArgs e)
         {
-            if (e.Item == null && e.Item is Event)
+            if (e.Item == null || !(e.Item is Event evt))
                 return;
 
             var evnt = await Calendar.GetEventByIdAsync((e.Item as Event)?.Id);

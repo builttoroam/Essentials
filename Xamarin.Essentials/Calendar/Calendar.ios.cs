@@ -79,7 +79,15 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var e = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+            EKEvent e;
+            try
+            {
+                e = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+            }
+            catch (NullReferenceException)
+            {
+                throw new NullReferenceException($"[iOS]: No Event found for event Id {eventId}");
+            }
 
             return new Event
             {

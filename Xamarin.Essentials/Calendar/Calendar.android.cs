@@ -139,8 +139,7 @@ namespace Xamarin.Essentials
             var calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.Id}={eventId}";
             var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null);
 
-            cur.MoveToNext();
-            if (cur.IsFirst && cur.IsLast)
+            try
             {
                 var rRule = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule));
                 return new Event
@@ -161,9 +160,9 @@ namespace Xamarin.Essentials
                     RecurrancePattern = !string.IsNullOrEmpty(rRule) ? GetRecurranceRuleForEvent(rRule) : null
                 };
             }
-            else
+            catch (NullReferenceException)
             {
-                throw new Exception("o oh");
+				throw new NullReferenceException($"[Android]: No Event found for event Id {eventId}");
             }
         }
 
