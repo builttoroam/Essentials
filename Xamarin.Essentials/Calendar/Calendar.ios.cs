@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using EventKit;
+using Foundation;
 
 namespace Xamarin.Essentials
 {
@@ -46,6 +49,7 @@ namespace Xamarin.Essentials
                 eventList.Add(new Event
                 {
                     Id = e.CalendarItemIdentifier,
+                    CalendarId = e.Calendar.CalendarIdentifier,
                     Title = e.Title,
                     Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.StartDate.SecondsSinceReferenceDate) * 1000),
                     End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000)
@@ -70,5 +74,30 @@ namespace Xamarin.Essentials
         static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+        static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
+
+            EKEvent e;
+            try
+            {
+                e = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+            }
+            catch (NullReferenceException)
+            {
+                throw new NullReferenceException($"[iOS]: No Event found for event Id {eventId}");
+            }
+
+            return new Event
+            {
+                Id = e.CalendarItemIdentifier,
+                Title = e.Title,
+                Description = e.Notes,
+                Location = e.Location,
+                Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.StartDate.SecondsSinceReferenceDate) * 1000),
+                End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000)
+            };
+        }
     }
 }
