@@ -15,6 +15,12 @@ namespace Xamarin.Essentials
         const string weeklyFrequency = "WEEKLY";
         const string monthlyFrequency = "MONTHLY";
         const string yearlyFrequency = "YEARLY";
+        const string ruleFrequency = "FREQ=";
+        const string ruleCount = "COUNT=";
+        const string ruleInterval = "INTERVAL=";
+        const string ruleEnd = "UNTIL=";
+        const string ruleByDay = "BYDAY=";
+        const string ruleDevider = ";";
 
         static bool PlatformIsSupported => true;
 
@@ -201,11 +207,11 @@ namespace Xamarin.Essentials
         static RecurrenceRule GetRecurranceRuleForEvent(string rule)
         {
             var recurranceRule = new RecurrenceRule();
-            if (rule.Contains("FREQ="))
+            if (rule.Contains(ruleFrequency))
             {
-                var ruleFrequency = rule.Substring(rule.IndexOf("FREQ=", StringComparison.Ordinal) + 5);
-                ruleFrequency = ruleFrequency.Contains(";") ? ruleFrequency.Substring(0, ruleFrequency.IndexOf(";")) : ruleFrequency;
-                switch (ruleFrequency)
+                var ruleFrequencyResult = rule.Substring(rule.IndexOf(ruleFrequency, StringComparison.Ordinal) + ruleFrequency.Length);
+                ruleFrequencyResult = ruleFrequencyResult.Contains(ruleDevider) ? ruleFrequencyResult.Substring(0, ruleFrequencyResult.IndexOf(ruleDevider)) : ruleFrequencyResult;
+                switch (ruleFrequencyResult)
                 {
                     case dailyFrequency:
                         recurranceRule.Frequency = RecurrenceFrequency.Daily;
@@ -222,31 +228,31 @@ namespace Xamarin.Essentials
                 }
             }
 
-            if (rule.Contains("INTERVAL="))
+            if (rule.Contains(ruleInterval))
             {
-                var ruleInterval = rule.Substring(rule.IndexOf("INTERVAL=", StringComparison.Ordinal) + 9);
-                ruleInterval = ruleInterval.Contains(";") ? ruleInterval.Substring(0, ruleInterval.IndexOf(";", StringComparison.Ordinal)) : ruleInterval;
-                recurranceRule.Interval = int.Parse(ruleInterval);
+                var ruleIntervalResult = rule.Substring(rule.IndexOf(ruleInterval, StringComparison.Ordinal) + ruleInterval.Length);
+                ruleIntervalResult = ruleIntervalResult.Contains(ruleDevider) ? ruleIntervalResult.Substring(0, ruleIntervalResult.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleIntervalResult;
+                recurranceRule.Interval = int.Parse(ruleIntervalResult);
             }
 
-            if (rule.Contains("COUNT="))
+            if (rule.Contains(ruleCount))
             {
-                var ruleOccurences = rule.Substring(rule.IndexOf("COUNT=", StringComparison.Ordinal) + 6);
-                ruleOccurences = ruleOccurences.Contains(";") ? ruleOccurences.Substring(0, ruleOccurences.IndexOf(";", StringComparison.Ordinal)) : ruleOccurences;
-                recurranceRule.TotalOccurences = int.Parse(ruleOccurences);
+                var ruleCountResult = rule.Substring(rule.IndexOf(ruleCount, StringComparison.Ordinal) + ruleCount.Length);
+                ruleCountResult = ruleCountResult.Contains(ruleDevider) ? ruleCountResult.Substring(0, ruleCountResult.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleCountResult;
+                recurranceRule.TotalOccurences = int.Parse(ruleCountResult);
             }
 
-            if (rule.Contains("UNTIL="))
+            if (rule.Contains(ruleEnd))
             {
-                var ruleEndDate = rule.Substring(rule.IndexOf("UNTIL=", StringComparison.Ordinal) + 6);
-                ruleEndDate = ruleEndDate.Contains(";") ? ruleEndDate.Substring(0, ruleEndDate.IndexOf(";", StringComparison.Ordinal)) : ruleEndDate;
+                var ruleEndDate = rule.Substring(rule.IndexOf(ruleEnd, StringComparison.Ordinal) + ruleEnd.Length);
+                ruleEndDate = ruleEndDate.Contains(ruleDevider) ? ruleEndDate.Substring(0, ruleEndDate.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleEndDate;
                 recurranceRule.EndDate = DateTime.Parse(ruleEndDate).ToLocalTime();
             }
 
-            if (rule.Contains("BYDAY="))
+            if (rule.Contains(ruleByDay))
             {
-                var ruleOccurenceDays = rule.Substring(rule.IndexOf("BYDAY=", StringComparison.Ordinal) + 6);
-                ruleOccurenceDays = ruleOccurenceDays.Contains(";") ? ruleOccurenceDays.Substring(0, ruleOccurenceDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceDays;
+                var ruleOccurenceDays = rule.Substring(rule.IndexOf(ruleByDay, StringComparison.Ordinal) + ruleByDay.Length);
+                ruleOccurenceDays = ruleOccurenceDays.Contains(ruleDevider) ? ruleOccurenceDays.Substring(0, ruleOccurenceDays.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleOccurenceDays;
                 recurranceRule.DaysOfTheWeek = new List<DayOfTheWeek>();
                 foreach (var d in ruleOccurenceDays.Split(','))
                 {
