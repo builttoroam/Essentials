@@ -137,5 +137,27 @@ namespace Xamarin.Essentials
             }
             return attendees.AsReadOnly();
         }
+
+        static async Task<PermissionStatus> PlatformCheckCalendarReadAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarRead);
+
+        static async Task<PermissionStatus> PlatformCheckCalendarWriteAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarWrite);
+
+        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var evnt = EKEvent.FromStore(CalendarRequest.Instance);
+            evnt.Title = newEvent.Title;
+            evnt.Calendar = CalendarRequest.Instance.GetCalendar(newEvent.CalendarId);
+            evnt.Notes = newEvent.Description;
+            evnt.Location = newEvent.Location;
+            evnt.StartDate = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0).ToNSDate();
+            evnt.EndDate = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0).ToNSDate();
+            if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
+            {
+                return evnt.EventIdentifier;
+            }
+            throw new Exception(error.DebugDescription);
+        }
     }
 }
