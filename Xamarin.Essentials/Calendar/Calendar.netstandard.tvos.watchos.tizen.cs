@@ -18,6 +18,6 @@ namespace Xamarin.Essentials
 
         static Task PlatformRequestCalendarWriteAccess() => throw new NotImplementedException();
 
-        static Task<int> PlatformCreateCalendarEvent(IEvent newEvent) => throw new NotImplementedException();
+        static Task<string> PlatformCreateCalendarEvent(IEvent newEvent) => throw new NotImplementedException();
     }
 }
