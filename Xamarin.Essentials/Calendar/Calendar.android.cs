@@ -46,7 +46,7 @@ namespace Xamarin.Essentials
                     IsReadOnly = IsCalendarReadOnly((CalendarAccess)cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel)))
                 });
             }
-
+            cur.Dispose();
             return calendars.AsReadOnly();
         }
 
@@ -115,7 +115,7 @@ namespace Xamarin.Essentials
                     End = cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend)),
                 });
             }
-
+            cur.Dispose();
             return events.AsReadOnly();
         }
 
@@ -148,7 +148,7 @@ namespace Xamarin.Essentials
             try
             {
                 var rRule = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule));
-                return new Event
+                var eventResult = new Event
                 {
                     Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Id)),
                     CalendarId = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CalendarId)),
@@ -165,6 +165,8 @@ namespace Xamarin.Essentials
                     Attendees = GetAttendeesForEvent(eventId),
                     RecurrancePattern = !string.IsNullOrEmpty(rRule) ? GetRecurranceRuleForEvent(rRule) : null
                 };
+                cur.Dispose();
+                return eventResult;
             }
             catch (NullReferenceException)
             {
@@ -192,6 +194,7 @@ namespace Xamarin.Essentials
                     Email = cur.GetString(attendeesProjection.IndexOf(CalendarContract.Attendees.InterfaceConsts.AttendeeEmail)),
                 });
             }
+            cur.Dispose();
             return attendees.AsReadOnly();
         }
 
