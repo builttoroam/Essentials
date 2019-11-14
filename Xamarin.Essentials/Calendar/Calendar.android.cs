@@ -49,7 +49,7 @@ namespace Xamarin.Essentials
                     Deleted = cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.Deleted)) == 1
                 });
             }
-
+            cur.Dispose();
             return calendars.AsReadOnly();
         }
 
@@ -109,7 +109,7 @@ namespace Xamarin.Essentials
                     Deleted = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Deleted)) == 1
                 });
             }
-
+            cur.Dispose();
             return events.AsReadOnly();
         }
 
@@ -156,7 +156,7 @@ namespace Xamarin.Essentials
             if (cur.IsFirst && cur.IsLast)
             {
                 var rRule = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule));
-                return new Event
+                var eventResult = new Event
                 {
                     Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Id)),
                     CalendarId = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CalendarId)),
@@ -174,6 +174,8 @@ namespace Xamarin.Essentials
                     RecurrancePattern = !string.IsNullOrEmpty(rRule) ? GetRecurranceRuleForEvent(rRule) : null,
                     Deleted = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Deleted)) == 1,
                 };
+                cur.Dispose();
+                return eventResult;
             }
             else
             {
@@ -201,6 +203,7 @@ namespace Xamarin.Essentials
                     Email = cur.GetString(attendeesProjection.IndexOf(CalendarContract.Attendees.InterfaceConsts.AttendeeEmail)),
                 });
             }
+            cur.Dispose();
             return attendees.AsReadOnly();
         }
 
