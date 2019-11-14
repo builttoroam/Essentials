@@ -33,7 +33,7 @@ namespace Xamarin.Essentials
         static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
-			
+
             var systemAbsoluteReferenceDate = new DateTime(2001, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             var eventList = new List<Event>();
             var startDateToConvert = startDate ?? DateTimeOffset.Now;
@@ -79,7 +79,15 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var e = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+            EKEvent e;
+            try
+            {
+                e = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+            }
+            catch (NullReferenceException)
+            {
+                throw new NullReferenceException($"[iOS]: No Event found for event Id {eventId}");
+            }
 
             return new Event
             {
