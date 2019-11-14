@@ -123,7 +123,7 @@ namespace Xamarin.Essentials
             return attendees.AsReadOnly();
         }
 
-        static async Task<int> PlatformCreateCalendarEvent(IEvent newEvent)
+        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -141,9 +141,9 @@ namespace Xamarin.Essentials
             {
                 var cal = await instance.GetAppointmentCalendarAsync(newEvent.CalendarId);
                 await cal.SaveAppointmentAsync(app);
-                return 1;
+                return app.LocalId;
             }
-            catch (Exception ex)
+            catch (NullReferenceException ex)
             {
                 throw ex;
             }
