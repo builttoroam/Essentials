@@ -162,7 +162,7 @@ namespace Xamarin.Essentials
             }
             catch (NullReferenceException)
             {
-				throw new NullReferenceException($"[Android]: No Event found for event Id {eventId}");
+                throw new NullReferenceException($"[Android]: No Event found for event Id {eventId}");
             }
         }
 
