@@ -107,14 +107,14 @@ namespace Xamarin.Essentials
             return events.AsReadOnly();
         }
 
-        static async Task<int> PlatformCreateCalendarEvent(IEvent newEvent)
+        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
             var result = 0;
             if (string.IsNullOrEmpty(newEvent.CalendarId))
             {
-                return 0;
+                return string.Empty;
             }
             var eventUri = CalendarContract.Events.ContentUri;
             var eventValues = new ContentValues();
@@ -133,12 +133,12 @@ namespace Xamarin.Essentials
                 var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
                 result = Convert.ToInt32(resultUri.LastPathSegment);
             }
-            catch
+            catch (NullReferenceException ex)
             {
-                return -1;
+                throw ex;
             }
 
-            return result;
+            return result.ToString();
         }
 
         static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
