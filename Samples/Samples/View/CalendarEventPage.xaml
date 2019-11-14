@@ -12,8 +12,8 @@
     <views:BasePage.Resources>
         <ResourceDictionary>
             <x:String x:Key="DateDisplayFormatter">{0:dd/MM/yy hh:mm tt}</x:String>
-            <DataTemplate x:DataType="essentials:Attendee"
-                          x:Key="AttendeeItemTemplate">
+            <DataTemplate x:Key="AttendeeItemTemplate"
+                          x:DataType="essentials:Attendee">
                 <ViewCell>
                     <StackLayout>
                         <Grid>
