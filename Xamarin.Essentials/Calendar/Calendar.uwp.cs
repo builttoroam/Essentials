@@ -135,7 +135,8 @@ namespace Xamarin.Essentials
                 Details = newEvent.Description,
                 Location = newEvent.Location,
                 StartTime = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0),
-                Duration = new TimeSpan((DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0) - DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0)).Ticks)
+                Duration = new TimeSpan((DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0) - DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0)).Ticks),
+                AllDay = newEvent.AllDay
             };
             try
             {
