@@ -5,7 +5,7 @@ using iOSSize = CoreGraphics.CGSize;
 
 namespace Xamarin.Essentials
 {
-    public static class CalendarExtensions
+    public static partial class CalendarExtensions
     {
         // https://developer.apple.com/documentation/foundation/nsdate
         // NSDate minimum date is 2001/01/01

@@ -105,7 +105,8 @@
                     Grid.Column="2"/>
       </Grid>
       <Button Text="Add Event"
-              Command="{Binding CreateEvent}"/>
+              Command="{Binding CreateEvent}"
+              IsEnabled="{Binding CanCreateEvent}"/>
     </StackLayout>
   </views:BasePage.Content>
 </views:BasePage>
