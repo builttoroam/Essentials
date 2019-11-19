@@ -151,6 +151,7 @@ namespace Xamarin.Essentials
             evnt.Calendar = CalendarRequest.Instance.GetCalendar(newEvent.CalendarId);
             evnt.Notes = newEvent.Description;
             evnt.Location = newEvent.Location;
+            evnt.AllDay = newEvent.AllDay;
             evnt.StartDate = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0).ToNSDate();
             evnt.EndDate = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0).ToNSDate();
             if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
