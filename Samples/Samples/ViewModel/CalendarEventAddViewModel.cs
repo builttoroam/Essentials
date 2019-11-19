@@ -21,7 +21,21 @@ namespace Samples.ViewModel
 
         public string CalendarName { get; set; }
 
-        public string EventTitle { get; set; }
+        string eventTitle;
+
+        public string EventTitle
+        {
+            get => eventTitle;
+            set
+            {
+                if (SetProperty(ref eventTitle, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateEvent));
+                }
+            }
+        }
+
+        public bool CanCreateEvent => !string.IsNullOrWhiteSpace(EventTitle) && ((EndDate.Date == StartDate.Date && (EndTime > StartTime || AllDay)) || EndDate.Date > StartDate.Date);
 
         public string Description { get; set; }
 
@@ -32,16 +46,70 @@ namespace Samples.ViewModel
         public bool AllDay
         {
             get => allDay;
-            set => SetProperty(ref allDay, value);
+            set
+            {
+                if (SetProperty(ref allDay, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateEvent));
+                }
+            }
         }
 
-        public DateTime StartDate { get; set; } = DateTime.Now;
+        DateTime startDate = DateTime.Now.Date;
 
-        public TimeSpan StartTime { get; set; }
+        public DateTime StartDate
+        {
+            get => startDate;
+            set
+            {
+                if (SetProperty(ref startDate, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateEvent));
+                }
+            }
+        }
 
-        public DateTime EndDate { get; set; } = DateTime.Now;
+        TimeSpan startTime = DateTime.Now.AddHours(1).TimeOfDay.RoundToNearestMinutes(30);
 
-        public TimeSpan EndTime { get; set; }
+        public TimeSpan StartTime
+        {
+            get => startTime;
+            set
+            {
+                if (SetProperty(ref startTime, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateEvent));
+                }
+            }
+        }
+
+        DateTime endDate = DateTime.Now.Date;
+
+        public DateTime EndDate
+        {
+            get => endDate;
+            set
+            {
+                if (SetProperty(ref endDate, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateEvent));
+                }
+            }
+        }
+
+        TimeSpan endTime = DateTime.Now.AddHours(2).TimeOfDay.RoundToNearestMinutes(30);
+
+        public TimeSpan EndTime
+        {
+            get => endTime;
+            set
+            {
+                if (SetProperty(ref endTime, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateEvent));
+                }
+            }
+        }
 
         public ICommand CreateEvent { get; }
 
