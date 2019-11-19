@@ -27,7 +27,13 @@ namespace Samples.ViewModel
 
         public string EventLocation { get; set; }
 
-        public bool AllDay { get; set; }
+        bool allDay;
+
+        public bool AllDay
+        {
+            get => allDay;
+            set => SetProperty(ref allDay, value);
+        }
 
         public DateTime StartDate { get; set; } = DateTime.Now;
 
@@ -41,7 +47,6 @@ namespace Samples.ViewModel
 
         async void CreateCalendarEvent()
         {
-            await Calendar.RequestCalendarWriteAccess();
             var startDto = new DateTimeOffset(StartDate + StartTime);
             var endDto = new DateTimeOffset(EndDate + EndTime);
             var newEvent = new Event()

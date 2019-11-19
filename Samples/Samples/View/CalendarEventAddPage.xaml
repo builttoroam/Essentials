@@ -9,6 +9,11 @@
                  x:DataType="viewmodels:CalendarEventAddViewModel"
                  Title="Event"
                  Padding="20,20,20,20">
+    <views:BasePage.Resources>
+        <ResourceDictionary>
+            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        </ResourceDictionary>
+    </views:BasePage.Resources>
     <views:BasePage.Content>
     <StackLayout>
       <Grid>
@@ -83,6 +88,7 @@
                     Grid.Row="0"
                     Grid.Column="1"/>
         <TimePicker Time="{Binding StartTime}"
+                    IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
                     Grid.Row="0"
                     Grid.Column="2"/>
         <Label Text="End Date"
@@ -94,6 +100,7 @@
                     Grid.Row="1"
                     Grid.Column="1"/>
         <TimePicker Time="{Binding EndTime}"
+                    IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
                     Grid.Row="1"
                     Grid.Column="2"/>
       </Grid>
