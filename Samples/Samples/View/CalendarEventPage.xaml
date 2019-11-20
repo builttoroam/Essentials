@@ -57,6 +57,7 @@
                      TextColor="Black"
                      HorizontalTextAlignment="Center"/>
             </Grid>
+          <ScrollView>
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -93,6 +94,7 @@
                        Grid.Column="1"
                        Text="{Binding Description}"/>
             </Grid>
+          </ScrollView >
         </StackLayout>
     </views:BasePage.Content>
 </views:BasePage>
