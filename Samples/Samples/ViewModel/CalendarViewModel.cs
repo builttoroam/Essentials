@@ -198,9 +198,9 @@ namespace Samples.ViewModel
 
             Events.Clear();
             var events = await Calendar.GetEventsAsync(calendarId, startDate?.ToUniversalTime(), endDate?.ToUniversalTime());
-            foreach (var evnt in events)
+            foreach (var calendarEvent in events)
             {
-                Events.Add(evnt);
+                Events.Add(calendarEvent);
             }
         }
     }
