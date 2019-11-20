@@ -36,8 +36,8 @@ namespace Xamarin.Essentials
             options.FetchProperties.Add(AppointmentProperties.Subject);
             options.FetchProperties.Add(AppointmentProperties.StartTime);
             options.FetchProperties.Add(AppointmentProperties.Duration);
-            var sDate = startDate ?? DateTimeOffset.Now;
-            var eDate = endDate ?? sDate.Add(defaultDateDistance);
+            var sDate = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
+            var eDate = endDate ?? sDate.Add(defaultEndTimeFromStartTime);
 
             if (eDate < sDate)
                 eDate = sDate;

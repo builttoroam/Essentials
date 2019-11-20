@@ -15,7 +15,15 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var calendars = CalendarRequest.Instance.Calendars;
+            EKCalendar[] calendars;
+            try
+            {
+                calendars = CalendarRequest.Instance.Calendars;
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
+            }
             var calendarList = new List<DeviceCalendar>();
 
             foreach (var t in calendars)
@@ -34,13 +42,23 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var systemAbsoluteReferenceDate = new DateTime(2001, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
             var eventList = new List<Event>();
-            var startDateToConvert = startDate ?? DateTimeOffset.Now;
-            var endDateToConvert = endDate ?? startDateToConvert.AddYears(4);   // 4 years is the maximum period that a iOS calendar events can search
-            var sDate = NSDate.FromTimeIntervalSinceReferenceDate((startDateToConvert.UtcDateTime - systemAbsoluteReferenceDate).TotalSeconds);
-            var eDate = NSDate.FromTimeIntervalSinceReferenceDate((endDateToConvert.UtcDateTime - systemAbsoluteReferenceDate).TotalSeconds);
-            var calendars = !string.IsNullOrEmpty(calendarId) ? CalendarRequest.Instance.Calendars.Where(x => x.CalendarIdentifier == calendarId).ToArray() : null;
+            var startDateToConvert = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
+            var endDateToConvert = endDate ?? startDateToConvert.Add(defaultEndTimeFromStartTime);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
+            var sDate = startDateToConvert.ToNSDate();
+            var eDate = endDateToConvert.ToNSDate();
+            EKCalendar[] calendars;
+            try
+            {
+                calendars = !string.IsNullOrWhiteSpace(calendarId)
+                    ? CalendarRequest.Instance.Calendars.Where(x => x.CalendarIdentifier == calendarId).ToArray()
+                    : null;
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
+            }
+
             var query = CalendarRequest.Instance.PredicateForEvents(sDate, eDate, calendars);
             var events = CalendarRequest.Instance.EventsMatching(query);
 
@@ -51,8 +69,8 @@ namespace Xamarin.Essentials
                     Id = e.CalendarItemIdentifier,
                     CalendarId = e.Calendar.CalendarIdentifier,
                     Title = e.Title,
-                    Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.StartDate.SecondsSinceReferenceDate) * 1000),
-                    End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000)
+                    Start = e.StartDate.ToEpochTime(),
+                    End = e.EndDate.ToEpochTime()
                 });
             }
             eventList.Sort((x, y) =>
@@ -65,7 +83,11 @@ namespace Xamarin.Essentials
                     }
                     return -1;
                 }
-                return !y.EndDate.HasValue ? 1 : x.StartDate.Value.CompareTo(y.EndDate.Value);
+                if (!y.EndDate.HasValue)
+                {
+                    return 1;
+                }
+                return x.StartDate.Value.CompareTo(y.EndDate.Value);
             });
 
             return eventList.AsReadOnly();
@@ -95,9 +117,48 @@ namespace Xamarin.Essentials
                 Title = e.Title,
                 Description = e.Notes,
                 Location = e.Location,
-                Start = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.StartDate.SecondsSinceReferenceDate) * 1000),
-                End = (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + e.EndDate.SecondsSinceReferenceDate) * 1000)
+                Start = e.StartDate.ToEpochTime(),
+                End = e.EndDate.ToEpochTime(),
+                Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<IAttendee>()
             };
+        }
+
+        static IReadOnlyList<IAttendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
+        {
+            var attendees = new List<IAttendee>();
+
+            foreach (var attendee in inviteList)
+            {
+                attendees.Add(new Attendee()
+                {
+                    Name = attendee.Name,
+                    Email = attendee.Name
+                });
+            }
+            return attendees.AsReadOnly();
+        }
+
+        static async Task<PermissionStatus> PlatformCheckCalendarReadAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarRead);
+
+        static async Task<PermissionStatus> PlatformCheckCalendarWriteAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarWrite);
+
+        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var evnt = EKEvent.FromStore(CalendarRequest.Instance);
+            evnt.Title = newEvent.Title;
+            evnt.Calendar = CalendarRequest.Instance.GetCalendar(newEvent.CalendarId);
+            evnt.Notes = newEvent.Description;
+            evnt.Location = newEvent.Location;
+            evnt.AllDay = newEvent.AllDay;
+            evnt.StartDate = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0).ToNSDate();
+            evnt.EndDate = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0).ToNSDate();
+            if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
+            {
+                return evnt.EventIdentifier;
+            }
+            throw new Exception(error.DebugDescription);
         }
     }
 }

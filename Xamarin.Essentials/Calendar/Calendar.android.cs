@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
+using Android.Database;
 using Android.Provider;
 
 namespace Xamarin.Essentials
@@ -32,7 +33,8 @@ namespace Xamarin.Essentials
             {
                 CalendarContract.Calendars.InterfaceConsts.Id,
                 CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName,
-                CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel
+                CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel,
+                CalendarContract.Calendars.InterfaceConsts.Deleted
             };
 
             var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(calendarsUri, calendarsProjection.ToArray(), null, null, null);
@@ -43,7 +45,8 @@ namespace Xamarin.Essentials
                 {
                     Id = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.Id)),
                     Name = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName)),
-                    IsReadOnly = IsCalendarReadOnly((CalendarAccess)cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel)))
+                    IsReadOnly = IsCalendarReadOnly((CalendarAccess)cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel))),
+                    Deleted = cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.Deleted)) == 1
                 });
             }
             cur.Dispose();
@@ -78,29 +81,19 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.Id,
                 CalendarContract.Events.InterfaceConsts.CalendarId,
                 CalendarContract.Events.InterfaceConsts.Title,
-                CalendarContract.Events.InterfaceConsts.Description,
-                CalendarContract.Events.InterfaceConsts.EventLocation,
-                CalendarContract.Events.InterfaceConsts.AllDay,
                 CalendarContract.Events.InterfaceConsts.Dtstart,
                 CalendarContract.Events.InterfaceConsts.Dtend,
+                CalendarContract.Events.InterfaceConsts.Deleted
             };
             var calendarSpecificEvent = string.Empty;
+            var sDate = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
+            var eDate = endDate ?? sDate.Add(defaultEndTimeFromStartTime);
             if (!string.IsNullOrEmpty(calendarId))
             {
                 calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId}={calendarId} {andCondition} ";
             }
-            if (startDate != null)
-            {
-                calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtstart} >= {startDate.Value.ToUnixTimeMilliseconds()} {andCondition} ";
-            }
-            if (endDate != null)
-            {
-                calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {endDate.Value.ToUnixTimeMilliseconds()} {andCondition} ";
-            }
-            if (calendarSpecificEvent != string.Empty)
-            {
-                calendarSpecificEvent = calendarSpecificEvent.Substring(0, calendarSpecificEvent.LastIndexOf($" {andCondition} ", StringComparison.Ordinal));
-            }
+            calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtstart} >= {sDate.ToUnixTimeMilliseconds()} {andCondition} ";
+            calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {eDate.ToUnixTimeMilliseconds()}";
 
             var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, $"{CalendarContract.Events.InterfaceConsts.Dtstart} ASC");
             var events = new List<IEvent>();
@@ -113,10 +106,45 @@ namespace Xamarin.Essentials
                     Title = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Title)),
                     Start = cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart)),
                     End = cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend)),
+                    Deleted = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Deleted)) == 1
                 });
             }
             cur.Dispose();
             return events.AsReadOnly();
+        }
+
+        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var result = 0;
+            if (string.IsNullOrEmpty(newEvent.CalendarId))
+            {
+                return string.Empty;
+            }
+            var eventUri = CalendarContract.Events.ContentUri;
+            var eventValues = new ContentValues();
+
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.CalendarId, newEvent.CalendarId);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, newEvent.Title);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, newEvent.Description);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, newEvent.Location);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, newEvent.AllDay);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, newEvent.Start.ToString());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.End.ToString());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
+
+            try
+            {
+                var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
+                result = Convert.ToInt32(resultUri.LastPathSegment);
+            }
+            catch (NullReferenceException ex)
+            {
+                throw ex;
+            }
+
+            return result.ToString();
         }
 
         static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
@@ -140,7 +168,8 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.HasExtendedProperties,
                 CalendarContract.Events.InterfaceConsts.Status,
                 CalendarContract.Events.InterfaceConsts.Rrule,
-                CalendarContract.Events.InterfaceConsts.Rdate
+                CalendarContract.Events.InterfaceConsts.Rdate,
+                CalendarContract.Events.InterfaceConsts.Deleted
             };
             var calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.Id}={eventId}";
             try
@@ -163,7 +192,8 @@ namespace Xamarin.Essentials
                         HasExtendedProperties = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasExtendedProperties)) == 1,
                         Status = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Status)),
                         Attendees = GetAttendeesForEvent(eventId),
-                        RecurrancePattern = !string.IsNullOrEmpty(rRule) ? GetRecurranceRuleForEvent(rRule) : null
+                        RecurrancePattern = !string.IsNullOrEmpty(rRule) ? GetRecurranceRuleForEvent(rRule) : null,
+                        Deleted = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Deleted)) == 1,
                     };
                     return eventResult;
                 }
