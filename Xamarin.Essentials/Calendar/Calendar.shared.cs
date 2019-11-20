@@ -18,9 +18,13 @@ namespace Xamarin.Essentials
 
         public static Task<string> CreateCalendarEvent(IEvent newEvent) => PlatformCreateCalendarEvent(newEvent);
 
-        static TimeSpan defaultDateDistance = TimeSpan.FromDays(14);
+        static TimeSpan defaultEndTimeFromStartTime = TimeSpan.FromDays(14);
 
-        public static void SetDefaultDateDistance(TimeSpan newDefaultSpan) => defaultDateDistance = newDefaultSpan;
+        static TimeSpan defaultStartTimeFromNow = TimeSpan.Zero;
+
+        public static void SetDefaultStartTimeFromNow(TimeSpan newDefaultSpan) => defaultStartTimeFromNow = newDefaultSpan;
+
+        public static void SetDefaultEndTimeFromStartTime(TimeSpan newDefaultSpan) => defaultEndTimeFromStartTime = newDefaultSpan;
 
         public static Task<IEvent> GetEventByIdAsync(string eventId) => PlatformGetEventByIdAsync(eventId);
     }

@@ -86,8 +86,8 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.Deleted
             };
             var calendarSpecificEvent = string.Empty;
-            var sDate = startDate ?? DateTimeOffset.Now;
-            var eDate = endDate ?? sDate.Add(defaultDateDistance);
+            var sDate = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
+            var eDate = endDate ?? sDate.Add(defaultEndTimeFromStartTime);
             if (!string.IsNullOrEmpty(calendarId))
             {
                 calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId}={calendarId} {andCondition} ";
@@ -193,7 +193,7 @@ namespace Xamarin.Essentials
                         Status = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Status)),
                         Attendees = GetAttendeesForEvent(eventId),
                         RecurrancePattern = !string.IsNullOrEmpty(rRule) ? GetRecurranceRuleForEvent(rRule) : null,
-						Deleted = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Deleted)) == 1,
+                        Deleted = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Deleted)) == 1,
                     };
                     return eventResult;
                 }

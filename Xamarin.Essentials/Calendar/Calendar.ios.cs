@@ -43,8 +43,8 @@ namespace Xamarin.Essentials
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
             var eventList = new List<Event>();
-            var startDateToConvert = startDate ?? DateTimeOffset.Now;
-            var endDateToConvert = endDate ?? startDateToConvert.Add(defaultDateDistance);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
+            var startDateToConvert = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
+            var endDateToConvert = endDate ?? startDateToConvert.Add(defaultEndTimeFromStartTime);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
             var sDate = startDateToConvert.ToNSDate();
             var eDate = endDateToConvert.ToNSDate();
             EKCalendar[] calendars;
