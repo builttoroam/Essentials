@@ -19,8 +19,11 @@ namespace Samples.View
             if (e.Item == null || !(e.Item is Event evt))
                 return;
 
-            var evnt = await Calendar.GetEventByIdAsync(evt.Id);
-            var modal = new CalendarEventPage { BindingContext = evnt };
+            var calendarEvent = await Calendar.GetEventByIdAsync((e.Item as Event)?.Id);
+            var modal = new CalendarEventPage
+            {
+                BindingContext = calendarEvent
+            };
             await Navigation.PushAsync(modal);
         }
     }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Provider;
@@ -9,6 +10,16 @@ namespace Xamarin.Essentials
     public static partial class Calendar
     {
         const string andCondition = "AND";
+        const string dailyFrequency = "DAILY";
+        const string weeklyFrequency = "WEEKLY";
+        const string monthlyFrequency = "MONTHLY";
+        const string yearlyFrequency = "YEARLY";
+        const string ruleFrequency = "FREQ=";
+        const string ruleCount = "COUNT=";
+        const string ruleInterval = "INTERVAL=";
+        const string ruleEnd = "UNTIL=";
+        const string ruleByDay = "BYDAY=";
+        const string ruleDevider = ";";
 
         static bool PlatformIsSupported => true;
 
@@ -35,7 +46,7 @@ namespace Xamarin.Essentials
                     IsReadOnly = IsCalendarReadOnly((CalendarAccess)cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel)))
                 });
             }
-
+            cur.Dispose();
             return calendars.AsReadOnly();
         }
 
@@ -104,7 +115,7 @@ namespace Xamarin.Essentials
                     End = cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend)),
                 });
             }
-
+            cur.Dispose();
             return events.AsReadOnly();
         }
 
@@ -128,17 +139,16 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.HasAttendeeData,
                 CalendarContract.Events.InterfaceConsts.HasExtendedProperties,
                 CalendarContract.Events.InterfaceConsts.Status,
+                CalendarContract.Events.InterfaceConsts.Rrule,
+                CalendarContract.Events.InterfaceConsts.Rdate
             };
             var calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.Id}={eventId}";
-            var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null);
-
             try
             {
-                cur.MoveToNext();
-                if (cur.IsFirst && cur.IsLast)
+                using (var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null))
                 {
                     var rRule = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule));
-                    return new Event
+                    var eventResult = new Event
                     {
                         Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Id)),
                         CalendarId = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CalendarId)),
@@ -152,14 +162,121 @@ namespace Xamarin.Essentials
                         HasAttendees = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasAttendeeData)) == 1,
                         HasExtendedProperties = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasExtendedProperties)) == 1,
                         Status = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Status)),
+                        Attendees = GetAttendeesForEvent(eventId),
+                        RecurrancePattern = !string.IsNullOrEmpty(rRule) ? GetRecurranceRuleForEvent(rRule) : null
                     };
+                    return eventResult;
                 }
-                throw new NullReferenceException($"[Android]: No Event found for event Id {eventId}");
             }
             catch (NullReferenceException)
             {
                 throw new NullReferenceException($"[Android]: No Event found for event Id {eventId}");
             }
+        }
+
+        static IReadOnlyList<IAttendee> GetAttendeesForEvent(string eventId)
+        {
+            var attendeesUri = CalendarContract.Attendees.ContentUri;
+            var attendeesProjection = new List<string>
+            {
+                CalendarContract.Attendees.InterfaceConsts.EventId,
+                CalendarContract.Attendees.InterfaceConsts.AttendeeEmail,
+                CalendarContract.Attendees.InterfaceConsts.AttendeeName
+            };
+            var attendeeSpecificAttendees = $"{CalendarContract.Attendees.InterfaceConsts.EventId}={eventId}";
+            var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(attendeesUri, attendeesProjection.ToArray(), attendeeSpecificAttendees, null, null);
+            var attendees = new List<IAttendee>();
+            while (cur.MoveToNext())
+            {
+                attendees.Add(new Attendee()
+                {
+                    Name = cur.GetString(attendeesProjection.IndexOf(CalendarContract.Attendees.InterfaceConsts.AttendeeName)),
+                    Email = cur.GetString(attendeesProjection.IndexOf(CalendarContract.Attendees.InterfaceConsts.AttendeeEmail)),
+                });
+            }
+            cur.Dispose();
+            return attendees.AsReadOnly();
+        }
+
+        static RecurrenceRule GetRecurranceRuleForEvent(string rule)
+        {
+            var recurranceRule = new RecurrenceRule();
+            if (rule.Contains(ruleFrequency))
+            {
+                var ruleFrequencyResult = rule.Substring(rule.IndexOf(ruleFrequency, StringComparison.Ordinal) + ruleFrequency.Length);
+                ruleFrequencyResult = ruleFrequencyResult.Contains(ruleDevider) ? ruleFrequencyResult.Substring(0, ruleFrequencyResult.IndexOf(ruleDevider)) : ruleFrequencyResult;
+                switch (ruleFrequencyResult)
+                {
+                    case dailyFrequency:
+                        recurranceRule.Frequency = RecurrenceFrequency.Daily;
+                        break;
+                    case weeklyFrequency:
+                        recurranceRule.Frequency = RecurrenceFrequency.Weekly;
+                        break;
+                    case monthlyFrequency:
+                        recurranceRule.Frequency = RecurrenceFrequency.Monthly;
+                        break;
+                    case yearlyFrequency:
+                        recurranceRule.Frequency = RecurrenceFrequency.Yearly;
+                        break;
+                }
+            }
+
+            if (rule.Contains(ruleInterval))
+            {
+                var ruleIntervalResult = rule.Substring(rule.IndexOf(ruleInterval, StringComparison.Ordinal) + ruleInterval.Length);
+                ruleIntervalResult = ruleIntervalResult.Contains(ruleDevider) ? ruleIntervalResult.Substring(0, ruleIntervalResult.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleIntervalResult;
+                recurranceRule.Interval = int.Parse(ruleIntervalResult);
+            }
+
+            if (rule.Contains(ruleCount))
+            {
+                var ruleCountResult = rule.Substring(rule.IndexOf(ruleCount, StringComparison.Ordinal) + ruleCount.Length);
+                ruleCountResult = ruleCountResult.Contains(ruleDevider) ? ruleCountResult.Substring(0, ruleCountResult.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleCountResult;
+                recurranceRule.TotalOccurences = int.Parse(ruleCountResult);
+            }
+
+            if (rule.Contains(ruleEnd))
+            {
+                var ruleEndDate = rule.Substring(rule.IndexOf(ruleEnd, StringComparison.Ordinal) + ruleEnd.Length);
+                ruleEndDate = ruleEndDate.Contains(ruleDevider) ? ruleEndDate.Substring(0, ruleEndDate.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleEndDate;
+                recurranceRule.EndDate = DateTime.Parse(ruleEndDate).ToLocalTime();
+            }
+
+            if (rule.Contains(ruleByDay))
+            {
+                var ruleOccurenceDays = rule.Substring(rule.IndexOf(ruleByDay, StringComparison.Ordinal) + ruleByDay.Length);
+                ruleOccurenceDays = ruleOccurenceDays.Contains(ruleDevider) ? ruleOccurenceDays.Substring(0, ruleOccurenceDays.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleOccurenceDays;
+                recurranceRule.DaysOfTheWeek = new List<DayOfTheWeek>();
+                foreach (var d in ruleOccurenceDays.Split(','))
+                {
+                    switch (d)
+                    {
+                        case "MO":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Monday);
+                            break;
+                        case "TU":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Tuesday);
+                            break;
+                        case "WE":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Wednesday);
+                            break;
+                        case "TH":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Thursday);
+                            break;
+                        case "FR":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Friday);
+                            break;
+                        case "SA":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Saturday);
+                            break;
+                        case "SU":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Sunday);
+                            break;
+                    }
+                }
+            }
+            return recurranceRule;
         }
     }
 }
