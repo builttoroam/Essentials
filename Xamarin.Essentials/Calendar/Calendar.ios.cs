@@ -106,9 +106,9 @@ namespace Xamarin.Essentials
             {
                 e = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
             }
-            catch (NullReferenceException ex)
+            catch (NullReferenceException)
             {
-                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
+                throw new NullReferenceException($"[iOS]: No Event found for event Id {eventId}");
             }
 
             return new Event
