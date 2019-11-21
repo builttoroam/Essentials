@@ -17,9 +17,9 @@
     <views:BasePage.Content>
         <StackLayout>
             <Label Text="{Binding Title}"
-                 FontSize="34"
-                 TextColor="Black"
-                 HorizontalTextAlignment="Center"/>
+                   FontSize="34"
+                   TextColor="Black"
+                   HorizontalTextAlignment="Center"/>
           <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition/>
