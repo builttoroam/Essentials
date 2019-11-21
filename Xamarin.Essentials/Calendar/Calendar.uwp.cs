@@ -9,6 +9,10 @@ namespace Xamarin.Essentials
     {
         static bool PlatformIsSupported => true;
 
+        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
+
+        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
         static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
@@ -85,6 +89,7 @@ namespace Xamarin.Essentials
             try
             {
                 e = await instance.GetAppointmentAsync(eventId);
+                e.DetailsKind = AppointmentDetailsKind.PlainText;
             }
             catch (Exception ex)
             {
@@ -100,13 +105,10 @@ namespace Xamarin.Essentials
                 Location = e.Location,
                 Start = e.StartTime.ToUnixTimeMilliseconds(),
                 End = e.StartTime.Add(e.Duration).ToUnixTimeMilliseconds(),
+                AllDay = e.AllDay,
                 Attendees = GetAttendeesForEvent(e.Invitees)
             };
         }
-
-        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
-
-        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
         static IReadOnlyList<IAttendee> GetAttendeesForEvent(IList<AppointmentInvitee> inviteList)
         {
@@ -121,33 +123,6 @@ namespace Xamarin.Essentials
                 });
             }
             return attendees.AsReadOnly();
-        }
-
-        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
-        {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
-
-            var instance = await CalendarRequest.GetInstanceAsync();
-
-            var app = new Appointment()
-            {
-                Subject = newEvent.Title,
-                Details = newEvent.Description,
-                Location = newEvent.Location,
-                StartTime = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0),
-                Duration = new TimeSpan((DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0) - DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0)).Ticks),
-                AllDay = newEvent.AllDay
-            };
-            try
-            {
-                var cal = await instance.GetAppointmentCalendarAsync(newEvent.CalendarId);
-                await cal.SaveAppointmentAsync(app);
-                return app.LocalId;
-            }
-            catch (NullReferenceException ex)
-            {
-                throw ex;
-            }
         }
     }
 }
