@@ -71,20 +71,12 @@
                 Text="Load Calendars"
                 Command="{Binding GetCalendars}"/>
             </Grid>
-          <Grid Grid.Row="1">
-              <Grid.ColumnDefinitions>
-                  <ColumnDefinition/>
-                  <ColumnDefinition Width="Auto"/>
-              </Grid.ColumnDefinitions>
-              <Picker x:Name="SelectedCalendar"
-                      Title="Select a Calendar"
-                      ItemsSource="{Binding Calendars}"
-                      ItemDisplayBinding="{Binding Name}"
-                      SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
-              <Button Grid.Column="1"
-                      Text="Add"
-                      Clicked="OnAddEventButtonClicked"/>
-          </Grid>
+            <Picker x:Name="SelectedCalendar"
+                    Grid.Row="1"
+                    Title="Select a Calendar"
+                    ItemsSource="{Binding Calendars}"
+                    ItemDisplayBinding="{Binding Name}"
+                    SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
             <Grid Grid.Row="2">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -110,7 +102,7 @@
                Text="Start Date"
                HorizontalTextAlignment="Center"
                VerticalTextAlignment="Center"/>
-               <DatePicker Date="{Binding StartDate}"
+                <DatePicker Date="{Binding StartDate}"
                     MinimumDate="1970-01-01"
                     IsEnabled="{Binding StartDatePickersEnabled}"
                     Grid.Row = "0"

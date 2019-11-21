@@ -11,18 +11,12 @@ namespace Xamarin.Essentials
     public static partial class Calendar
     {
         const string andCondition = "AND";
-        const string dailyFrequency = "DAILY";
-        const string weeklyFrequency = "WEEKLY";
-        const string monthlyFrequency = "MONTHLY";
-        const string yearlyFrequency = "YEARLY";
-        const string ruleFrequency = "FREQ=";
-        const string ruleCount = "COUNT=";
-        const string ruleInterval = "INTERVAL=";
-        const string ruleEnd = "UNTIL=";
-        const string ruleByDay = "BYDAY=";
-        const string ruleDevider = ";";
 
         static bool PlatformIsSupported => true;
+
+        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
+
+        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
         static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
         {
@@ -67,10 +61,6 @@ namespace Xamarin.Essentials
             }
         }
 
-        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
-
-        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
-
         static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
@@ -113,40 +103,6 @@ namespace Xamarin.Essentials
             return events.AsReadOnly();
         }
 
-        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
-        {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
-
-            var result = 0;
-            if (string.IsNullOrEmpty(newEvent.CalendarId))
-            {
-                return string.Empty;
-            }
-            var eventUri = CalendarContract.Events.ContentUri;
-            var eventValues = new ContentValues();
-
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.CalendarId, newEvent.CalendarId);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, newEvent.Title);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, newEvent.Description);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, newEvent.Location);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, newEvent.AllDay);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, newEvent.Start.ToString());
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.End.ToString());
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
-
-            try
-            {
-                var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
-                result = Convert.ToInt32(resultUri.LastPathSegment);
-            }
-            catch (NullReferenceException ex)
-            {
-                throw ex;
-            }
-
-            return result.ToString();
-        }
-
         static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
@@ -162,13 +118,6 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.AllDay,
                 CalendarContract.Events.InterfaceConsts.Dtstart,
                 CalendarContract.Events.InterfaceConsts.Dtend,
-                CalendarContract.Events.InterfaceConsts.Duration,
-                CalendarContract.Events.InterfaceConsts.HasAlarm,
-                CalendarContract.Events.InterfaceConsts.HasAttendeeData,
-                CalendarContract.Events.InterfaceConsts.HasExtendedProperties,
-                CalendarContract.Events.InterfaceConsts.Status,
-                CalendarContract.Events.InterfaceConsts.Rrule,
-                CalendarContract.Events.InterfaceConsts.Rdate,
                 CalendarContract.Events.InterfaceConsts.Deleted
             };
             var calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.Id}={eventId}";
@@ -187,12 +136,7 @@ namespace Xamarin.Essentials
                         AllDay = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 1,
                         Start = cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart)),
                         End = cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend)),
-                        HasAlarm = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasAlarm)) == 1,
-                        HasAttendees = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasAttendeeData)) == 1,
-                        HasExtendedProperties = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.HasExtendedProperties)) == 1,
-                        Status = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Status)),
                         Attendees = GetAttendeesForEvent(eventId),
-                        RecurrancePattern = !string.IsNullOrEmpty(rRule) ? GetRecurranceRuleForEvent(rRule) : null,
                         Deleted = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Deleted)) == 1,
                     };
                     return eventResult;
@@ -226,87 +170,6 @@ namespace Xamarin.Essentials
             }
             cur.Dispose();
             return attendees.AsReadOnly();
-        }
-
-        static RecurrenceRule GetRecurranceRuleForEvent(string rule)
-        {
-            var recurranceRule = new RecurrenceRule();
-            if (rule.Contains(ruleFrequency))
-            {
-                var ruleFrequencyResult = rule.Substring(rule.IndexOf(ruleFrequency, StringComparison.Ordinal) + ruleFrequency.Length);
-                ruleFrequencyResult = ruleFrequencyResult.Contains(ruleDevider) ? ruleFrequencyResult.Substring(0, ruleFrequencyResult.IndexOf(ruleDevider)) : ruleFrequencyResult;
-                switch (ruleFrequencyResult)
-                {
-                    case dailyFrequency:
-                        recurranceRule.Frequency = RecurrenceFrequency.Daily;
-                        break;
-                    case weeklyFrequency:
-                        recurranceRule.Frequency = RecurrenceFrequency.Weekly;
-                        break;
-                    case monthlyFrequency:
-                        recurranceRule.Frequency = RecurrenceFrequency.Monthly;
-                        break;
-                    case yearlyFrequency:
-                        recurranceRule.Frequency = RecurrenceFrequency.Yearly;
-                        break;
-                }
-            }
-
-            if (rule.Contains(ruleInterval))
-            {
-                var ruleIntervalResult = rule.Substring(rule.IndexOf(ruleInterval, StringComparison.Ordinal) + ruleInterval.Length);
-                ruleIntervalResult = ruleIntervalResult.Contains(ruleDevider) ? ruleIntervalResult.Substring(0, ruleIntervalResult.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleIntervalResult;
-                recurranceRule.Interval = int.Parse(ruleIntervalResult);
-            }
-
-            if (rule.Contains(ruleCount))
-            {
-                var ruleCountResult = rule.Substring(rule.IndexOf(ruleCount, StringComparison.Ordinal) + ruleCount.Length);
-                ruleCountResult = ruleCountResult.Contains(ruleDevider) ? ruleCountResult.Substring(0, ruleCountResult.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleCountResult;
-                recurranceRule.TotalOccurences = int.Parse(ruleCountResult);
-            }
-
-            if (rule.Contains(ruleEnd))
-            {
-                var ruleEndDate = rule.Substring(rule.IndexOf(ruleEnd, StringComparison.Ordinal) + ruleEnd.Length);
-                ruleEndDate = ruleEndDate.Contains(ruleDevider) ? ruleEndDate.Substring(0, ruleEndDate.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleEndDate;
-                recurranceRule.EndDate = DateTime.Parse(ruleEndDate).ToLocalTime();
-            }
-
-            if (rule.Contains(ruleByDay))
-            {
-                var ruleOccurenceDays = rule.Substring(rule.IndexOf(ruleByDay, StringComparison.Ordinal) + ruleByDay.Length);
-                ruleOccurenceDays = ruleOccurenceDays.Contains(ruleDevider) ? ruleOccurenceDays.Substring(0, ruleOccurenceDays.IndexOf(ruleDevider, StringComparison.Ordinal)) : ruleOccurenceDays;
-                recurranceRule.DaysOfTheWeek = new List<DayOfTheWeek>();
-                foreach (var d in ruleOccurenceDays.Split(','))
-                {
-                    switch (d)
-                    {
-                        case "MO":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Monday);
-                            break;
-                        case "TU":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Tuesday);
-                            break;
-                        case "WE":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Wednesday);
-                            break;
-                        case "TH":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Thursday);
-                            break;
-                        case "FR":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Friday);
-                            break;
-                        case "SA":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Saturday);
-                            break;
-                        case "SU":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Sunday);
-                            break;
-                    }
-                }
-            }
-            return recurranceRule;
         }
     }
 }

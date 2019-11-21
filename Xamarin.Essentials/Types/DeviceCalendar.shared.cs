@@ -3,6 +3,18 @@ using System.Collections.Generic;
 
 namespace Xamarin.Essentials
 {
+    public interface ICalendar
+    {
+        string Id { get; }
+
+        string Name { get; }
+
+        bool IsReadOnly { get; }
+
+        // Android specific function, as android has a period of time where calendars are 'soft-deleted'
+        bool Deleted { get; }
+    }
+
     [Preserve(AllMembers = true)]
     public class DeviceCalendar : ICalendar
     {
@@ -15,48 +27,28 @@ namespace Xamarin.Essentials
         public bool Deleted { get; set; }
     }
 
-    public interface ICalendar
-    {
-        string Id { get; set; }
-
-        string Name { get; set; }
-
-        bool IsReadOnly { get; set; }
-
-        bool Deleted { get; set; }
-    }
-
     public interface IEvent
     {
-        string Id { get; set; }
+        string Id { get; }
 
-        string CalendarId { get; set; }
+        string CalendarId { get; }
 
-        string Title { get; set; }
+        string Title { get; }
 
-        string Description { get; set; }
+        string Description { get; }
 
-        string Location { get; set; }
+        string Location { get; }
 
-        bool AllDay { get; set; }
+        bool AllDay { get; }
 
-        long? Start { get; set; }
+        long? Start { get; }
 
-        long? End { get; set; }
+        long? End { get; }
 
-        bool HasAlarm { get; set; }
+        IReadOnlyList<IAttendee> Attendees { get; }
 
-        bool HasAttendees { get; set; }
-
-        bool HasExtendedProperties { get; set; }
-
-        string Status { get; set; }
-
-        IReadOnlyList<IAttendee> Attendees { get; set; }
-
-        RecurrenceRule RecurrancePattern { get; set; }
-
-        bool Deleted { get; set; }
+        // Android specific function, as android has a period of time where calendar events are 'soft-deleted'
+        bool Deleted { get; }
     }
 
     [Preserve(AllMembers = true)]
@@ -82,46 +74,16 @@ namespace Xamarin.Essentials
 
         public DateTimeOffset? EndDate => End.HasValue ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds((long)End.Value).ToLocalTime() : null;
 
-        public bool HasAlarm { get; set; }
-
-        public bool HasAttendees { get; set; }
-
-        public bool HasExtendedProperties { get; set; }
-
-        public string Status { get; set; }
-
         public IReadOnlyList<IAttendee> Attendees { get; set; }
-
-        public RecurrenceRule RecurrancePattern { get; set; }
 
         public bool Deleted { get; set; }
     }
 
-    public class RecurrenceRule
-    {
-        public int TotalOccurences { get; set; }
-
-        public int Interval { get; set; }
-
-        public DateTime EndDate { get; set; }
-
-        public RecurrenceFrequency Frequency { get; set; }
-
-        // Only allow event to occur on these days [not available for daily]
-        public List<DayOfTheWeek> DaysOfTheWeek { get; set; }
-
-        public List<int> DaysOfTheMonth { get; set; }
-
-        public List<int> WeeksOfTheYear { get; set; }
-
-        public List<int> SetPositions { get; set; }
-    }
-
     public interface IAttendee
     {
-        string Name { get; set; }
+        string Name { get; }
 
-        string Email { get; set; }
+        string Email { get; }
     }
 
     [Preserve(AllMembers = true)]
@@ -130,29 +92,5 @@ namespace Xamarin.Essentials
         public string Name { get; set; }
 
         public string Email { get; set; }
-    }
-
-    public interface IAttendeeDetails
-    {
-    }
-
-    public enum RecurrenceFrequency
-    {
-        Daily,
-        Weekly,
-        Fortnightly,
-        Monthly,
-        Yearly
-    }
-
-    public enum DayOfTheWeek
-    {
-        Monday,
-        Tuesday,
-        Wednesday,
-        Thursday,
-        Friday,
-        Saturday,
-        Sunday
     }
 }

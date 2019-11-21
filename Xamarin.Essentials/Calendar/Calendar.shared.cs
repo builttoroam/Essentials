@@ -6,25 +6,23 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
+        static TimeSpan defaultStartTimeFromNow = TimeSpan.Zero;
+
+        static TimeSpan defaultEndTimeFromStartTime = TimeSpan.FromDays(14);
+
         public static bool IsSupported => PlatformIsSupported;
 
-        public static Task<IReadOnlyList<ICalendar>> GetCalendarsAsync() => PlatformGetCalendarsAsync();
+        public static void SetDefaultStartTimeOffset(TimeSpan newTimeOffset) => defaultStartTimeFromNow = newTimeOffset;
 
-        public static Task<IReadOnlyList<IEvent>> GetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => PlatformGetEventsAsync(calendarId, startDate, endDate);
+        public static void SetDefaultEndTimeOffset(TimeSpan newTimeOffset) => defaultEndTimeFromStartTime = newTimeOffset;
 
         public static Task RequestCalendarReadAccess() => PlatformRequestCalendarReadAccess();
 
         public static Task RequestCalendarWriteAccess() => PlatformRequestCalendarWriteAccess();
 
-        public static Task<string> CreateCalendarEvent(IEvent newEvent) => PlatformCreateCalendarEvent(newEvent);
+        public static Task<IReadOnlyList<ICalendar>> GetCalendarsAsync() => PlatformGetCalendarsAsync();
 
-        static TimeSpan defaultEndTimeFromStartTime = TimeSpan.FromDays(14);
-
-        static TimeSpan defaultStartTimeFromNow = TimeSpan.Zero;
-
-        public static void SetDefaultStartTimeFromNow(TimeSpan newDefaultSpan) => defaultStartTimeFromNow = newDefaultSpan;
-
-        public static void SetDefaultEndTimeFromStartTime(TimeSpan newDefaultSpan) => defaultEndTimeFromStartTime = newDefaultSpan;
+        public static Task<IReadOnlyList<IEvent>> GetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => PlatformGetEventsAsync(calendarId, startDate, endDate);
 
         public static Task<IEvent> GetEventByIdAsync(string eventId) => PlatformGetEventByIdAsync(eventId);
     }
