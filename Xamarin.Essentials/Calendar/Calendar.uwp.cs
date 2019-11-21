@@ -91,9 +91,9 @@ namespace Xamarin.Essentials
                 e = await instance.GetAppointmentAsync(eventId);
                 e.DetailsKind = AppointmentDetailsKind.PlainText;
             }
-            catch (Exception ex)
+            catch (NullReferenceException)
             {
-                throw ex;
+                throw new NullReferenceException($"[UWP]: No Event found for event Id {eventId}");
             }
 
             return new Event()
