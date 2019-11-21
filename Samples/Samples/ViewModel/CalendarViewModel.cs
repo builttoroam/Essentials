@@ -8,6 +8,10 @@ namespace Samples.ViewModel
 {
     public class CalendarViewModel : BaseViewModel
     {
+        const int endDateDaysToOffset = 14;
+
+        const string endOfDay = "23:59";
+
         public CalendarViewModel()
         {
             GetCalendars = new Command(OnClickGetCalendars);
@@ -61,9 +65,11 @@ namespace Samples.ViewModel
 
         public TimeSpan StartTime { get; set; }
 
-        public DateTime EndDate { get; set; } = DateTime.Now;
+        public DateTime EndDate { get; set; } = DateTime.Now.AddDays(endDateDaysToOffset);
 
-        public TimeSpan EndTime { get; set; }
+        public TimeSpan EndTime { get; set; } = TimeSpan.Parse(endOfDay);
+
+        public bool HasCalendarReadAccess { get; set; }
 
         public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
 
