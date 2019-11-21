@@ -72,7 +72,7 @@
                            Grid.Column="1"
                            BindableLayout.ItemsSource="{Binding Attendees}">
                   <BindableLayout.ItemTemplate>
-                    <DataTemplate x:DataType="essentials:IAttendee">
+                    <DataTemplate x:DataType="essentials:Attendee">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>

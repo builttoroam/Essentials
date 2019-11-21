@@ -25,7 +25,7 @@ namespace Samples.ViewModel
             EndDateEnabledCheckBoxChanged = new Command(OnEndCheckboxChanged);
         }
 
-        ICalendar selectedCalendar;
+        DeviceCalendar selectedCalendar;
 
         bool startdatePickersEnabled;
 
@@ -71,11 +71,11 @@ namespace Samples.ViewModel
 
         public bool HasCalendarReadAccess { get; set; }
 
-        public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
+        public ObservableCollection<DeviceCalendar> Calendars { get; } = new ObservableCollection<DeviceCalendar>();
 
-        public ObservableCollection<IEvent> Events { get; } = new ObservableCollection<IEvent>();
+        public ObservableCollection<Event> Events { get; } = new ObservableCollection<Event>();
 
-        public ICalendar SelectedCalendar
+        public DeviceCalendar SelectedCalendar
         {
             get => selectedCalendar;
 
