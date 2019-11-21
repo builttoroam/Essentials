@@ -13,13 +13,13 @@ namespace Xamarin.Essentials
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
-        static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
+        static async Task<IReadOnlyList<DeviceCalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
             var instance = await CalendarRequest.GetInstanceAsync();
             var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
-            var calendars = new List<ICalendar>();
+            var calendars = new List<DeviceCalendar>();
             foreach (var c in uwpCalendarList)
             {
                 calendars.Add(new DeviceCalendar()
@@ -32,7 +32,7 @@ namespace Xamarin.Essentials
             return calendars.AsReadOnly();
         }
 
-        static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<IReadOnlyList<Event>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -58,8 +58,8 @@ namespace Xamarin.Essentials
                         Id = e.LocalId,
                         CalendarId = e.CalendarId,
                         Title = e.Subject,
-                        Start = e.StartTime.ToUnixTimeMilliseconds(),
-                        End = e.StartTime.Add(e.Duration).ToUnixTimeMilliseconds()
+                        StartDate = e.StartTime,
+                        EndDate = e.StartTime.Add(e.Duration)
                     });
                 }
             }
@@ -79,7 +79,7 @@ namespace Xamarin.Essentials
             return eventList.AsReadOnly();
         }
 
-        static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
+        static async Task<Event> PlatformGetEventByIdAsync(string eventId)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -103,16 +103,16 @@ namespace Xamarin.Essentials
                 Title = e.Subject,
                 Description = e.Details,
                 Location = e.Location,
-                Start = e.StartTime.ToUnixTimeMilliseconds(),
-                End = e.StartTime.Add(e.Duration).ToUnixTimeMilliseconds(),
+                StartDate = e.StartTime,
+                EndDate = e.StartTime.Add(e.Duration),
                 AllDay = e.AllDay,
                 Attendees = GetAttendeesForEvent(e.Invitees)
             };
         }
 
-        static IReadOnlyList<IAttendee> GetAttendeesForEvent(IList<AppointmentInvitee> inviteList)
+        static IReadOnlyList<Attendee> GetAttendeesForEvent(IList<AppointmentInvitee> inviteList)
         {
-            var attendees = new List<IAttendee>();
+            var attendees = new List<Attendee>();
 
             foreach (var attendee in inviteList)
             {

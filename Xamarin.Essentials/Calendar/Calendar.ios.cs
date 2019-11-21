@@ -15,7 +15,7 @@ namespace Xamarin.Essentials
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
-        static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
+        static async Task<IReadOnlyList<DeviceCalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -42,7 +42,7 @@ namespace Xamarin.Essentials
             return calendarList.AsReadOnly();
         }
 
-        static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<IReadOnlyList<Event>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -73,8 +73,8 @@ namespace Xamarin.Essentials
                     Id = e.CalendarItemIdentifier,
                     CalendarId = e.Calendar.CalendarIdentifier,
                     Title = e.Title,
-                    Start = e.StartDate.ToEpochTime(),
-                    End = e.EndDate.ToEpochTime()
+                    StartDate = e.StartDate.ToDateTimeOffset(),
+                    EndDate = e.EndDate.ToDateTimeOffset()
                 });
             }
             eventList.Sort((x, y) =>
@@ -97,7 +97,7 @@ namespace Xamarin.Essentials
             return eventList.AsReadOnly();
         }
 
-        static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
+        static async Task<Event> PlatformGetEventByIdAsync(string eventId)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -118,16 +118,16 @@ namespace Xamarin.Essentials
                 Title = e.Title,
                 Description = e.Notes,
                 Location = e.Location,
-                Start = e.StartDate.ToEpochTime(),
-                End = e.EndDate.ToEpochTime(),
+                StartDate = e.StartDate.ToDateTimeOffset(),
+                EndDate = e.EndDate.ToDateTimeOffset(),
                 AllDay = e.AllDay,
-                Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<IAttendee>()
+                Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<Attendee>()
             };
         }
 
-        static IReadOnlyList<IAttendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
+        static IReadOnlyList<Attendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
         {
-            var attendees = new List<IAttendee>();
+            var attendees = new List<Attendee>();
 
             foreach (var attendee in inviteList)
             {
