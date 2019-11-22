@@ -73,7 +73,7 @@ namespace Samples.ViewModel
 
         public ObservableCollection<DeviceCalendar> Calendars { get; } = new ObservableCollection<DeviceCalendar>();
 
-        public ObservableCollection<Event> Events { get; } = new ObservableCollection<Event>();
+        public ObservableCollection<DeviceEvent> Events { get; } = new ObservableCollection<DeviceEvent>();
 
         public DeviceCalendar SelectedCalendar
         {
