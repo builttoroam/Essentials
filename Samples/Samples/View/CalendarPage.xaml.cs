@@ -16,10 +16,10 @@ namespace Samples.View
 
         async void OnEventTapped(object sender, ItemTappedEventArgs e)
         {
-            if (e.Item == null || !(e.Item is Event evt))
+            if (e.Item == null || !(e.Item is DeviceEvent evt))
                 return;
 
-            var calendarEvent = await Calendar.GetEventByIdAsync((e.Item as Event)?.Id);
+            var calendarEvent = await Calendar.GetEventByIdAsync((e.Item as DeviceEvent)?.Id);
             var modal = new CalendarEventPage
             {
                 BindingContext = calendarEvent

@@ -22,8 +22,8 @@ namespace Xamarin.Essentials
 
         public static Task<List<DeviceCalendar>> GetCalendarsAsync() => PlatformGetCalendarsAsync();
 
-        public static Task<List<Event>> GetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => PlatformGetEventsAsync(calendarId, startDate, endDate);
+        public static Task<List<DeviceEvent>> GetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => PlatformGetEventsAsync(calendarId, startDate, endDate);
 
-        public static Task<Event> GetEventByIdAsync(string eventId) => PlatformGetEventByIdAsync(eventId);
+        public static Task<DeviceEvent> GetEventByIdAsync(string eventId) => PlatformGetEventByIdAsync(eventId);
     }
 }

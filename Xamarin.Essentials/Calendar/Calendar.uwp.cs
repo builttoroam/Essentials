@@ -32,7 +32,7 @@ namespace Xamarin.Essentials
             return calendars;
         }
 
-        static async Task<List<Event>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<List<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -48,12 +48,12 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync();
             var events = await instance.FindAppointmentsAsync(sDate, eDate.Subtract(sDate), options);
-            var eventList = new List<Event>();
+            var eventList = new List<DeviceEvent>();
             foreach (var e in events)
             {
                 if (calendarId == null || e.CalendarId == calendarId)
                 {
-                    eventList.Add(new Event
+                    eventList.Add(new DeviceEvent
                     {
                         Id = e.LocalId,
                         CalendarId = e.CalendarId,
@@ -79,7 +79,7 @@ namespace Xamarin.Essentials
             return eventList;
         }
 
-        static async Task<Event> PlatformGetEventByIdAsync(string eventId)
+        static async Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -96,7 +96,7 @@ namespace Xamarin.Essentials
                 throw new NullReferenceException($"[UWP]: No Event found for event Id {eventId}");
             }
 
-            return new Event()
+            return new DeviceEvent()
             {
                 Id = e.LocalId,
                 CalendarId = e.CalendarId,
@@ -110,13 +110,13 @@ namespace Xamarin.Essentials
             };
         }
 
-        static List<Attendee> GetAttendeesForEvent(IList<AppointmentInvitee> inviteList)
+        static List<DeviceEventAttendee> GetAttendeesForEvent(IList<AppointmentInvitee> inviteList)
         {
-            var attendees = new List<Attendee>();
+            var attendees = new List<DeviceEventAttendee>();
 
             foreach (var attendee in inviteList)
             {
-                attendees.Add(new Attendee()
+                attendees.Add(new DeviceEventAttendee()
                 {
                     Name = attendee.DisplayName,
                     Email = attendee.Address

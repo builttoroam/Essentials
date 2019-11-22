@@ -42,11 +42,11 @@ namespace Xamarin.Essentials
             return calendarList;
         }
 
-        static async Task<List<Event>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<List<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var eventList = new List<Event>();
+            var eventList = new List<DeviceEvent>();
             var startDateToConvert = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var endDateToConvert = endDate ?? startDateToConvert.Add(defaultEndTimeFromStartTime);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
             var sDate = startDateToConvert.ToNSDate();
@@ -68,7 +68,7 @@ namespace Xamarin.Essentials
 
             foreach (var e in events)
             {
-                eventList.Add(new Event
+                eventList.Add(new DeviceEvent
                 {
                     Id = e.CalendarItemIdentifier,
                     CalendarId = e.Calendar.CalendarIdentifier,
@@ -97,7 +97,7 @@ namespace Xamarin.Essentials
             return eventList;
         }
 
-        static async Task<Event> PlatformGetEventByIdAsync(string eventId)
+        static async Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -111,7 +111,7 @@ namespace Xamarin.Essentials
                 throw new NullReferenceException($"[iOS]: No Event found for event Id {eventId}");
             }
 
-            return new Event
+            return new DeviceEvent
             {
                 Id = e.CalendarItemIdentifier,
                 CalendarId = e.Calendar.CalendarIdentifier,
@@ -121,17 +121,17 @@ namespace Xamarin.Essentials
                 StartDate = e.StartDate.ToDateTimeOffset(),
                 EndDate = e.EndDate.ToDateTimeOffset(),
                 AllDay = e.AllDay,
-                Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<Attendee>()
+                Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<DeviceEventAttendee>()
             };
         }
 
-        static List<Attendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
+        static List<DeviceEventAttendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
         {
-            var attendees = new List<Attendee>();
+            var attendees = new List<DeviceEventAttendee>();
 
             foreach (var attendee in inviteList)
             {
-                attendees.Add(new Attendee()
+                attendees.Add(new DeviceEventAttendee()
                 {
                     Name = attendee.Name,
                     Email = attendee.Name

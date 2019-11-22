@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
     }
 
     [Preserve(AllMembers = true)]
-    public class Event
+    public class DeviceEvent
     {
         public string Id { get; set; }
 
@@ -32,11 +32,11 @@ namespace Xamarin.Essentials
 
         public DateTimeOffset? EndDate { get; set; }
 
-        public List<Attendee> Attendees { get; set; }
+        public List<DeviceEventAttendee> Attendees { get; set; }
     }
 
     [Preserve(AllMembers = true)]
-    public class Attendee
+    public class DeviceEventAttendee
     {
         public string Name { get; set; }
 

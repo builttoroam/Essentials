@@ -14,7 +14,7 @@
             <converters:CheckBoxEventArgsConverter x:Key="CheckBoxEventArgsConverter" />
             <converters:DateSelectedEventArgsConverter x:Key="DateSelectedEventArgsConverter" />
             <converters:TimeSelectedEventArgsConverter x:Key="TimeSelectedEventArgsConverter" />
-            <DataTemplate x:DataType="essentials:Event"
+            <DataTemplate x:DataType="essentials:DeviceEvent"
                           x:Key="EventItemTemplate">
                 <ViewCell>
                     <StackLayout>
