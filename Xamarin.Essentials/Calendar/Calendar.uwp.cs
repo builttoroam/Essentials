@@ -13,7 +13,7 @@ namespace Xamarin.Essentials
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
-        static async Task<IReadOnlyList<DeviceCalendar>> PlatformGetCalendarsAsync()
+        static async Task<List<DeviceCalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -29,10 +29,10 @@ namespace Xamarin.Essentials
                     IsReadOnly = c.OtherAppWriteAccess != AppointmentCalendarOtherAppWriteAccess.Limited
                 });
             }
-            return calendars.AsReadOnly();
+            return calendars;
         }
 
-        static async Task<IReadOnlyList<Event>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<List<Event>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -76,7 +76,7 @@ namespace Xamarin.Essentials
                 return !y.EndDate.HasValue ? 1 : x.StartDate.Value.CompareTo(y.EndDate.Value);
             });
 
-            return eventList.AsReadOnly();
+            return eventList;
         }
 
         static async Task<Event> PlatformGetEventByIdAsync(string eventId)
@@ -110,7 +110,7 @@ namespace Xamarin.Essentials
             };
         }
 
-        static IReadOnlyList<Attendee> GetAttendeesForEvent(IList<AppointmentInvitee> inviteList)
+        static List<Attendee> GetAttendeesForEvent(IList<AppointmentInvitee> inviteList)
         {
             var attendees = new List<Attendee>();
 
@@ -122,7 +122,7 @@ namespace Xamarin.Essentials
                     Email = attendee.Address
                 });
             }
-            return attendees.AsReadOnly();
+            return attendees;
         }
     }
 }

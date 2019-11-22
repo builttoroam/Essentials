@@ -18,7 +18,7 @@ namespace Xamarin.Essentials
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
-        static async Task<IReadOnlyList<DeviceCalendar>> PlatformGetCalendarsAsync()
+        static async Task<List<DeviceCalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -43,7 +43,7 @@ namespace Xamarin.Essentials
                 });
             }
             cur.Dispose();
-            return calendars.AsReadOnly();
+            return calendars;
         }
 
         static bool IsCalendarReadOnly(CalendarAccess accessLevel)
@@ -60,7 +60,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        static async Task<IReadOnlyList<Event>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<List<Event>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -99,7 +99,7 @@ namespace Xamarin.Essentials
                 });
             }
             cur.Dispose();
-            return events.AsReadOnly();
+            return events;
         }
 
         static async Task<Event> PlatformGetEventByIdAsync(string eventId)
@@ -145,7 +145,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        static IReadOnlyList<Attendee> GetAttendeesForEvent(string eventId)
+        static List<Attendee> GetAttendeesForEvent(string eventId)
         {
             var attendeesUri = CalendarContract.Attendees.ContentUri;
             var attendeesProjection = new List<string>
@@ -166,7 +166,7 @@ namespace Xamarin.Essentials
                 });
             }
             cur.Dispose();
-            return attendees.AsReadOnly();
+            return attendees;
         }
     }
 }

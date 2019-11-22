@@ -32,7 +32,7 @@ namespace Xamarin.Essentials
 
         public DateTimeOffset? EndDate { get; set; }
 
-        public IReadOnlyList<Attendee> Attendees { get; set; }
+        public List<Attendee> Attendees { get; set; }
     }
 
     [Preserve(AllMembers = true)]
