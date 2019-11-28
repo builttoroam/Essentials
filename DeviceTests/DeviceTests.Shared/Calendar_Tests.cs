@@ -33,13 +33,20 @@ namespace DeviceTests
             });
         }
 
-        [Fact]
+        [Theory]
+        [InlineData("ThisIsAFakeId")]
+        [InlineData("-1")]
+        [InlineData("")]
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
-        public Task Get_Event_By_Bad_Id()
+        public Task Get_Event_By_Bad_Id(string calendarId)
         {
             return Utils.OnMainThread(async () =>
             {
-                await Assert.ThrowsAsync<NullReferenceException>(() => Calendar.GetEventByIdAsync("ThisIsAFakeId"));
+#if __IOS__
+                await Assert.ThrowsAsync<NullReferenceException>(() => Calendar.GetEventByIdAsync(calendarId));
+#else
+                await Assert.ThrowsAsync<ArgumentException>(() => Calendar.GetEventByIdAsync(calendarId));
+#endif
             });
         }
     }

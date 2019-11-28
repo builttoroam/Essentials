@@ -118,10 +118,17 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.Dtstart,
                 CalendarContract.Events.InterfaceConsts.Dtend
             };
-            var calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.Id}={eventId}";
-            try
+
+            // Android event ids are always integers
+            if (!int.TryParse(eventId, out var resultId))
             {
-                using (var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null))
+                throw new ArgumentException($"[Android]: No Event found for event Id {eventId}");
+            }
+
+            var calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.Id}={resultId}";
+            using (var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, null))
+            {
+                if (cur.Count > 0)
                 {
                     cur.MoveToNext();
                     var eventResult = new DeviceEvent
@@ -138,10 +145,10 @@ namespace Xamarin.Essentials
                     };
                     return eventResult;
                 }
-            }
-            catch (NullReferenceException)
-            {
-                throw new NullReferenceException($"[Android]: No Event found for event Id {eventId}");
+                else
+                {
+                    throw new ArgumentException($"[Android]: No Event found for event Id {eventId}");
+                }
             }
         }
 
