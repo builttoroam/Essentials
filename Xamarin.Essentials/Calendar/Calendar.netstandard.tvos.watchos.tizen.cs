@@ -6,8 +6,6 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
-        static bool PlatformIsSupported => false;
-
         static Task PlatformRequestCalendarReadAccess() => throw new NotImplementedException();
 
         static Task PlatformRequestCalendarWriteAccess() => throw new NotImplementedException();

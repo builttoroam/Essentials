@@ -9,8 +9,6 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
-        static bool PlatformIsSupported => true;
-
         static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
