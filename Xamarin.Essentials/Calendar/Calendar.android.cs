@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.Database;
 using Android.Provider;
+using Java.Security;
 
 namespace Xamarin.Essentials
 {
@@ -79,8 +80,8 @@ namespace Xamarin.Essentials
             {
                 calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId}={calendarId} {andCondition} ";
             }
-            calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtstart} >= {sDate.ToUnixTimeMilliseconds()} {andCondition} ";
-            calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {eDate.ToUnixTimeMilliseconds()} {andCondition} ";
+            calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtstart} >= {sDate.ToUniversalTime().ToUnixTimeMilliseconds()} {andCondition} ";
+            calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {eDate.ToUniversalTime().ToUnixTimeMilliseconds()} {andCondition} ";
             calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Deleted} != 1";
 
             using (var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, $"{CalendarContract.Events.InterfaceConsts.Dtstart} ASC"))
@@ -139,6 +140,7 @@ namespace Xamarin.Essentials
                         Location = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventLocation)),
                         AllDay = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 1,
                         StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart))),
+                        Duration = TimeSpan.FromMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend)) - cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart))),
                         EndDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend))),
                         Attendees = GetAttendeesForEvent(eventId)
                     };

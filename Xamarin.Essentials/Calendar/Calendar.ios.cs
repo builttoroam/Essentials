@@ -58,7 +58,7 @@ namespace Xamarin.Essentials
             }
             catch (NullReferenceException ex)
             {
-                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
+                throw new NullReferenceException($"iOS: Unexpected null reference exception {ex.Message}");
             }
 
             var query = CalendarRequest.Instance.PredicateForEvents(sDate, eDate, calendars);
@@ -117,6 +117,7 @@ namespace Xamarin.Essentials
                 Description = e.Notes,
                 Location = e.Location,
                 StartDate = e.StartDate.ToDateTimeOffset(),
+                Duration = e.EndDate.ToDateTimeOffset() - e.StartDate.ToDateTimeOffset(),
                 EndDate = e.EndDate.ToDateTimeOffset(),
                 AllDay = e.AllDay,
                 Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<DeviceEventAttendee>()

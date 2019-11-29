@@ -12,6 +12,7 @@
     <views:BasePage.Resources>
         <ResourceDictionary>
             <x:String x:Key="DateDisplayFormatter">{0:dd/MM/yy hh:mm tt}</x:String>
+            <x:String x:Key="TimeSpanFormatter">{0:h\:mm}</x:String>
         </ResourceDictionary>
     </views:BasePage.Resources>
     <views:BasePage.Content>
@@ -57,6 +58,16 @@
                    TextColor="Black"
                    HorizontalTextAlignment="Center"/>
           </Grid>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Text="Duration: "/>
+                <Label Grid.Column="1"  
+                       Text="{Binding Duration, StringFormat={StaticResource TimeSpanFormatter}}"/>
+            </Grid>
+            
           <ScrollView>
             <Grid>
                 <Grid.ColumnDefinitions>

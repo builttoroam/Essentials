@@ -106,6 +106,7 @@ namespace Xamarin.Essentials
                 Description = e.Details,
                 Location = e.Location,
                 StartDate = e.StartTime,
+                Duration = e.Duration,
                 EndDate = e.StartTime.Add(e.Duration),
                 AllDay = e.AllDay,
                 Attendees = GetAttendeesForEvent(e.Invitees)

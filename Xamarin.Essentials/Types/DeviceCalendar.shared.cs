@@ -30,6 +30,8 @@ namespace Xamarin.Essentials
 
         public DateTimeOffset? StartDate { get; set; }
 
+        public TimeSpan Duration { get; set; }
+
         public DateTimeOffset? EndDate { get; set; }
 
         public List<DeviceEventAttendee> Attendees { get; set; }
