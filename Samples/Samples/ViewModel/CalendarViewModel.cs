@@ -201,7 +201,7 @@ namespace Samples.ViewModel
                 return;
 
             Events.Clear();
-            var events = await Calendar.GetEventsAsync(calendarId, startDate?.ToUniversalTime(), endDate?.ToUniversalTime());
+            var events = await Calendar.GetEventsAsync(calendarId, startDate, endDate);
             foreach (var calendarEvent in events)
             {
                 Events.Add(calendarEvent);
