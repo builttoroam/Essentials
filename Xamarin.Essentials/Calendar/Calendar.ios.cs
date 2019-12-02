@@ -117,7 +117,6 @@ namespace Xamarin.Essentials
                 Description = e.Notes,
                 Location = e.Location,
                 StartDate = e.StartDate.ToDateTimeOffset(),
-                Duration = e.EndDate.ToDateTimeOffset() - e.StartDate.ToDateTimeOffset(),
                 EndDate = e.EndDate.ToDateTimeOffset(),
                 AllDay = e.AllDay,
                 Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<DeviceEventAttendee>()
