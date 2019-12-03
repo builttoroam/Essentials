@@ -63,15 +63,7 @@ namespace Xamarin.Essentials
             }
             eventList.Sort((x, y) =>
             {
-                if (!x.StartDate.HasValue)
-                {
-                    if (!y.EndDate.HasValue)
-                    {
-                        return 0;
-                    }
-                    return -1;
-                }
-                return !y.EndDate.HasValue ? 1 : x.StartDate.Value.CompareTo(y.EndDate.Value);
+                return x.StartDate.CompareTo(y.EndDate);
             });
 
             return eventList;

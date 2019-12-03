@@ -28,11 +28,15 @@ namespace Xamarin.Essentials
 
         public bool AllDay { get; set; }
 
-        public DateTimeOffset? StartDate { get; set; }
+        public DateTimeOffset StartDate { get; set; }
 
-        public TimeSpan Duration => EndDate.HasValue && StartDate.HasValue ? EndDate.Value - StartDate.Value : TimeSpan.Zero;
+        public TimeSpan Duration
+        {
+            get => EndDate - StartDate;
+            set => EndDate = StartDate.Add(value);
+        }
 
-        public DateTimeOffset? EndDate { get; set; }
+        public DateTimeOffset EndDate { get; set; }
 
         public List<DeviceEventAttendee> Attendees { get; set; }
     }
