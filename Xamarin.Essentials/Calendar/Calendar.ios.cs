@@ -13,7 +13,7 @@ namespace Xamarin.Essentials
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
-        static async Task<List<DeviceCalendar>> PlatformGetCalendarsAsync()
+        static async Task<IEnumerable<DeviceCalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -37,10 +37,10 @@ namespace Xamarin.Essentials
                     IsReadOnly = !t.AllowsContentModifications
                 });
             }
-            return calendarList;
+            return calendarList.AsEnumerable();
         }
 
-        static async Task<List<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -92,7 +92,7 @@ namespace Xamarin.Essentials
                 return x.StartDate.Value.CompareTo(y.EndDate.Value);
             });
 
-            return eventList;
+            return eventList.AsEnumerable();
         }
 
         static async Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId)
@@ -124,7 +124,7 @@ namespace Xamarin.Essentials
             };
         }
 
-        static List<DeviceEventAttendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
+        static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<EKParticipant> inviteList)
         {
             var attendees = new List<DeviceEventAttendee>();
 
@@ -136,7 +136,7 @@ namespace Xamarin.Essentials
                     Email = attendee.Name
                 });
             }
-            return attendees;
+            return attendees.AsEnumerable();
         }
     }
 }
