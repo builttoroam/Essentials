@@ -28,7 +28,7 @@ namespace Xamarin.Essentials
                     IsReadOnly = c.OtherAppWriteAccess != AppointmentCalendarOtherAppWriteAccess.Limited
                 });
             }
-            return calendars.AsEnumerable();
+            return calendars;
         }
 
         static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
@@ -75,7 +75,7 @@ namespace Xamarin.Essentials
                 return !y.EndDate.HasValue ? 1 : x.StartDate.Value.CompareTo(y.EndDate.Value);
             });
 
-            return eventList.AsEnumerable();
+            return eventList;
         }
 
         static async Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId)
@@ -126,7 +126,7 @@ namespace Xamarin.Essentials
                     Email = attendee.Address
                 });
             }
-            return attendees.AsEnumerable();
+            return attendees;
         }
     }
 }

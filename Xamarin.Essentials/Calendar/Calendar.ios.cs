@@ -37,7 +37,7 @@ namespace Xamarin.Essentials
                     IsReadOnly = !t.AllowsContentModifications
                 });
             }
-            return calendarList.AsEnumerable();
+            return calendarList;
         }
 
         static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
@@ -92,7 +92,7 @@ namespace Xamarin.Essentials
                 return x.StartDate.Value.CompareTo(y.EndDate.Value);
             });
 
-            return eventList.AsEnumerable();
+            return eventList;
         }
 
         static async Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId)
@@ -136,7 +136,7 @@ namespace Xamarin.Essentials
                     Email = attendee.Name
                 });
             }
-            return attendees.AsEnumerable();
+            return attendees;
         }
     }
 }

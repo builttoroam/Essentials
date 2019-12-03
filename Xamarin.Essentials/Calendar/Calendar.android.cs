@@ -42,7 +42,7 @@ namespace Xamarin.Essentials
                 });
             }
             cur.Dispose();
-            return calendars.AsEnumerable();
+            return calendars;
         }
 
         static bool IsCalendarReadOnly(CalendarAccess accessLevel)
@@ -98,7 +98,7 @@ namespace Xamarin.Essentials
                         EndDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend)))
                     });
                 }
-                return events.AsEnumerable();
+                return events;
             }
         }
 
@@ -174,7 +174,7 @@ namespace Xamarin.Essentials
                 });
             }
             cur.Dispose();
-            return attendees.AsEnumerable();
+            return attendees;
         }
     }
 }
