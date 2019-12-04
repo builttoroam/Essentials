@@ -58,7 +58,7 @@ namespace Xamarin.Essentials
                         CalendarId = e.CalendarId,
                         Title = e.Subject,
                         StartDate = e.StartTime,
-                        EndDate = e.StartTime.Add(e.Duration)
+                        EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
                     });
                 }
             }
@@ -107,9 +107,7 @@ namespace Xamarin.Essentials
                 Description = e.Details,
                 Location = e.Location,
                 StartDate = e.StartTime,
-                Duration = e.Duration,
-                EndDate = e.StartTime.Add(e.Duration),
-                AllDay = e.AllDay,
+                EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
                 Attendees = GetAttendeesForEvent(e.Invitees)
             };
         }
