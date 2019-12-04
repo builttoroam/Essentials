@@ -57,21 +57,13 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Grid HeightRequest="60">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Button Text="Request Read Access"
-                        Command="{Binding RequestCalendarReadAccessCommand}" />
+            <StackLayout>
+                <Label Text="Quickly view a range of calendars and upcoming events." FontAttributes="Bold" Margin="12" />
                 <Button Grid.Column="1"
-                        Text="Request Write Access"
-                        Command="{Binding RequestCalendarWriteAccessCommand}" />
-                <Button Grid.Column="2"
                         Text="Load Calendars"
-                        Command="{Binding GetCalendars}" />
-            </Grid>
+                        Command="{Binding GetCalendars}" 
+                        HorizontalOptions="Center"/>
+            </StackLayout>
             <Picker x:Name="SelectedCalendar"
                     Grid.Row="1"
                     Title="Select a Calendar"
