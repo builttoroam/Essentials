@@ -47,10 +47,6 @@ namespace Samples.ViewModel
 
         public ICommand EndDateEnabledCheckBoxChanged { get; }
 
-        public ICommand RequestCalendarReadAccessCommand { get; }
-
-        public ICommand RequestCalendarWriteAccessCommand { get; }
-
         public ICommand StartDateSelectedCommand { get; }
 
         public ICommand StartTimeSelectedCommand { get; }
