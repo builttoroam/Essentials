@@ -15,8 +15,6 @@ namespace Samples.ViewModel
         public CalendarViewModel()
         {
             GetCalendars = new Command(OnClickGetCalendars);
-            RequestCalendarReadAccessCommand = new Command(OnRequestCalendarReadAccess);
-            RequestCalendarWriteAccessCommand = new Command(OnRequestCalendarWriteAccess);
             StartDateSelectedCommand = new Command(OnStartDateSelected);
             StartTimeSelectedCommand = new Command(OnStartTimeSelected);
             EndDateSelectedCommand = new Command(OnEndDateSelected);
@@ -160,38 +158,6 @@ namespace Samples.ViewModel
         }
 
         void OnChangeRequestCalendarSpecificEvents(string calendarId = null, DateTime? startDateTime = null, DateTime? endDateTime = null) => RefreshEventList(calendarId, startDateTime, endDateTime);
-
-        async void OnRequestCalendarWriteAccess()
-        {
-            try
-            {
-                await Calendar.RequestCalendarWriteAccess();
-            }
-            catch (PermissionException ex)
-            {
-                await DisplayAlertAsync($"Unable to request calendar write access: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlertAsync($"Unable to request calendar write access: {ex.Message}");
-            }
-        }
-
-        async void OnRequestCalendarReadAccess()
-        {
-            try
-            {
-                await Calendar.RequestCalendarReadAccess();
-            }
-            catch (PermissionException ex)
-            {
-                await DisplayAlertAsync($"Unable to request calendar read access: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlertAsync($"Unable to request calendar read access: {ex.Message}");
-            }
-        }
 
         async void RefreshEventList(string calendarId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
