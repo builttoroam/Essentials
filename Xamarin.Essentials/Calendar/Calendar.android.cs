@@ -25,18 +25,19 @@ namespace Xamarin.Essentials
             };
             var queryConditions = $"{CalendarContract.Calendars.InterfaceConsts.Deleted} != 1";
 
-            var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(calendarsUri, calendarsProjection.ToArray(), queryConditions, null, null);
-            var calendars = new List<DeviceCalendar>();
-            while (cur.MoveToNext())
+            using (var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(calendarsUri, calendarsProjection.ToArray(), queryConditions, null, null))
             {
-                calendars.Add(new DeviceCalendar()
+                var calendars = new List<DeviceCalendar>();
+                while (cur.MoveToNext())
                 {
-                    Id = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.Id)),
-                    Name = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName)),
-                });
+                    calendars.Add(new DeviceCalendar()
+                    {
+                        Id = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.Id)),
+                        Name = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName)),
+                    });
+                }
+                return calendars;
             }
-            cur.Dispose();
-            return calendars;
         }
 
         static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)

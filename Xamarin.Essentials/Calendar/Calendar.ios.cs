@@ -22,16 +22,13 @@ namespace Xamarin.Essentials
             {
                 throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
             }
-            var calendarList = new List<DeviceCalendar>();
+            var calendarList = (from calendar in calendars
+                                select new DeviceCalendar
+                                {
+                                    Id = calendar.CalendarIdentifier,
+                                    Name = calendar.Title
+                                }).ToList();
 
-            foreach (var t in calendars)
-            {
-                calendarList.Add(new DeviceCalendar
-                {
-                    Id = t.CalendarIdentifier,
-                    Name = t.Title
-                });
-            }
             return calendarList;
         }
 
@@ -39,7 +36,6 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var eventList = new List<DeviceEvent>();
             var startDateToConvert = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var endDateToConvert = endDate ?? startDateToConvert.Add(defaultEndTimeFromStartTime);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
             var sDate = startDateToConvert.ToNSDate();
@@ -59,25 +55,17 @@ namespace Xamarin.Essentials
             var query = CalendarRequest.Instance.PredicateForEvents(sDate, eDate, calendars);
             var events = CalendarRequest.Instance.EventsMatching(query);
 
-            foreach (var e in events)
-            {
-                eventList.Add(new DeviceEvent
-                {
-                    Id = e.CalendarItemIdentifier,
-                    CalendarId = e.Calendar.CalendarIdentifier,
-                    Title = e.Title,
-                    StartDate = e.StartDate.ToDateTimeOffset(),
-                    EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTimeOffset() : null
-                });
-            }
-            eventList.Sort((x, y) =>
-            {
-                if (!y.EndDate.HasValue)
-                {
-                    return 0;
-                }
-                return x.StartDate.CompareTo(y.EndDate.Value);
-            });
+            var eventList = (from e in events
+                            select new DeviceEvent
+                            {
+                                Id = e.CalendarItemIdentifier,
+                                CalendarId = e.Calendar.CalendarIdentifier,
+                                Title = e.Title,
+                                StartDate = e.StartDate.ToDateTimeOffset(),
+                                EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTimeOffset() : null
+                            })
+                            .OrderBy(e => e.StartDate)
+                            .ToList();
 
             return eventList;
         }
@@ -111,16 +99,15 @@ namespace Xamarin.Essentials
 
         static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<EKParticipant> inviteList)
         {
-            var attendees = new List<DeviceEventAttendee>();
+            var attendees = (from attendee in inviteList
+                             select new DeviceEventAttendee
+                             {
+                                 Name = attendee.Name,
+                                 Email = attendee.Name
+                             })
+                            .OrderBy(e => e.Name)
+                            .ToList();
 
-            foreach (var attendee in inviteList)
-            {
-                attendees.Add(new DeviceEventAttendee()
-                {
-                    Name = attendee.Name,
-                    Email = attendee.Name
-                });
-            }
             return attendees;
         }
     }
