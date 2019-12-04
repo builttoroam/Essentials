@@ -161,9 +161,6 @@ namespace Xamarin.Essentials
                 case PermissionType.CalendarRead:
                     permissions.Add((Manifest.Permission.ReadCalendar, true));
                     break;
-                case PermissionType.CalendarWrite:
-                    permissions.Add((Manifest.Permission.WriteCalendar, true));
-                    break;
                 case PermissionType.Flashlight:
                     permissions.Add((Manifest.Permission.Camera, true));
                     permissions.Add((Manifest.Permission.Flashlight, false));

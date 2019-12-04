@@ -50,8 +50,6 @@ namespace Xamarin.Essentials
             {
                 case PermissionType.CalendarRead:
                     return CheckCalendarReadAsync();
-                case PermissionType.CalendarWrite:
-                    return CheckCalendarWriteAsync();
                 case PermissionType.LocationWhenInUse:
                     return CheckLocationAsync();
                 default:
@@ -90,18 +88,6 @@ namespace Xamarin.Essentials
             }
             return PermissionStatus.Denied;
         }
-
-        static async Task<PermissionStatus> CheckCalendarWriteAsync()
-        {
-            if (!MainThread.IsMainThread)
-                throw new PermissionException("Permission request must be invoked on main thread.");
-
-            if (await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite) != null)
-            {
-                return PermissionStatus.Granted;
-            }
-            return PermissionStatus.Denied;
-        }
     }
 
     static class PermissionTypeExtensions
@@ -113,7 +99,6 @@ namespace Xamarin.Essentials
                 case PermissionType.LocationWhenInUse:
                     return new[] { "location" };
                 case PermissionType.CalendarRead:
-                case PermissionType.CalendarWrite:
                     return new[] { "appointments" };
                 default:
                     return null;
