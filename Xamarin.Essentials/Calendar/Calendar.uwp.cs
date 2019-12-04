@@ -14,15 +14,14 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync();
             var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
-            var calendars = new List<DeviceCalendar>();
-            foreach (var c in uwpCalendarList)
-            {
-                calendars.Add(new DeviceCalendar()
-                {
-                    Id = c.LocalId,
-                    Name = c.DisplayName
-                });
-            }
+
+            var calendars = (from calendar in uwpCalendarList
+                                select new DeviceCalendar
+                                {
+                                    Id = calendar.LocalId,
+                                    Name = calendar.DisplayName
+                                }).ToList();
+
             return calendars;
         }
 
@@ -43,29 +42,19 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync();
             var events = await instance.FindAppointmentsAsync(sDate, eDate.Subtract(sDate), options);
-            var eventList = new List<DeviceEvent>();
-            foreach (var e in events)
-            {
-                if (calendarId == null || e.CalendarId == calendarId)
-                {
-                    eventList.Add(new DeviceEvent
-                    {
-                        Id = e.LocalId,
-                        CalendarId = e.CalendarId,
-                        Title = e.Subject,
-                        StartDate = e.StartTime,
-                        EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
-                    });
-                }
-            }
-            eventList.Sort((x, y) =>
-            {
-                if (!y.EndDate.HasValue)
-                {
-                    return 0;
-                }
-                return x.StartDate.CompareTo(y.EndDate.Value);
-            });
+
+            var eventList = (from e in events
+                             select new DeviceEvent
+                             {
+                                 Id = e.LocalId,
+                                 CalendarId = e.CalendarId,
+                                 Title = e.Subject,
+                                 StartDate = e.StartTime,
+                                 EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null
+                             })
+                            .Where(e => e.CalendarId == calendarId || calendarId == null)
+                            .OrderBy(e => e.StartDate)
+                            .ToList();
 
             return eventList;
         }
@@ -106,16 +95,15 @@ namespace Xamarin.Essentials
 
         static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<AppointmentInvitee> inviteList)
         {
-            var attendees = new List<DeviceEventAttendee>();
+            var attendees = (from attendee in inviteList
+                             select new DeviceEventAttendee
+                             {
+                                 Name = attendee.DisplayName,
+                                 Email = attendee.Address
+                             })
+                            .OrderBy(e => e.Name)
+                            .ToList();
 
-            foreach (var attendee in inviteList)
-            {
-                attendees.Add(new DeviceEventAttendee()
-                {
-                    Name = attendee.DisplayName,
-                    Email = attendee.Address
-                });
-            }
             return attendees;
         }
     }
