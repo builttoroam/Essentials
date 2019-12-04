@@ -10,10 +10,6 @@ namespace Xamarin.Essentials
 
         static TimeSpan defaultEndTimeFromStartTime = TimeSpan.FromDays(14);
 
-        public static void SetDefaultStartTimeOffset(TimeSpan newTimeOffset) => defaultStartTimeFromNow = newTimeOffset;
-
-        public static void SetDefaultEndTimeOffset(TimeSpan newTimeOffset) => defaultEndTimeFromStartTime = newTimeOffset;
-
         public static Task RequestCalendarReadAccess() => PlatformRequestCalendarReadAccess();
 
         public static Task RequestCalendarWriteAccess() => PlatformRequestCalendarWriteAccess();
