@@ -72,7 +72,7 @@ namespace Xamarin.Essentials
                     CalendarId = e.Calendar.CalendarIdentifier,
                     Title = e.Title,
                     StartDate = e.StartDate.ToDateTimeOffset(),
-                    EndDate = e.EndDate.ToDateTimeOffset()
+                    EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTimeOffset() : null
                 });
             }
             eventList.Sort((x, y) =>
@@ -109,8 +109,7 @@ namespace Xamarin.Essentials
                 Description = e.Notes,
                 Location = e.Location,
                 StartDate = e.StartDate.ToDateTimeOffset(),
-                EndDate = e.EndDate.ToDateTimeOffset(),
-                AllDay = e.AllDay,
+                EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTimeOffset() : null,
                 Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<DeviceEventAttendee>()
             };
         }
