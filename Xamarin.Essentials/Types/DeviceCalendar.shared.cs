@@ -26,11 +26,39 @@ namespace Xamarin.Essentials
 
         public string Location { get; set; }
 
-        public bool AllDay { get; set; }
+        public bool AllDay
+        {
+            get => !EndDate.HasValue;
+            set
+            {
+                if (value)
+                {
+                    EndDate = null;
+                }
+                else
+                {
+                    EndDate = StartDate;
+                }
+            }
+        }
 
-        public DateTimeOffset? StartDate { get; set; }
+        public DateTimeOffset StartDate { get; set; }
 
-        public TimeSpan Duration { get; set; }
+        public TimeSpan? Duration
+        {
+            get => EndDate.HasValue ? EndDate - StartDate : null;
+            set
+            {
+                if (value.HasValue)
+                {
+                    EndDate = StartDate.Add(value.Value);
+                }
+                else
+                {
+                    EndDate = null;
+                }
+            }
+        }
 
         public DateTimeOffset? EndDate { get; set; }
 

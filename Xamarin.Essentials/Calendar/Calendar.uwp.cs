@@ -39,6 +39,7 @@ namespace Xamarin.Essentials
             options.FetchProperties.Add(AppointmentProperties.Subject);
             options.FetchProperties.Add(AppointmentProperties.StartTime);
             options.FetchProperties.Add(AppointmentProperties.Duration);
+            options.FetchProperties.Add(AppointmentProperties.AllDay);
             var sDate = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var eDate = endDate ?? sDate.Add(defaultEndTimeFromStartTime);
 
@@ -58,21 +59,17 @@ namespace Xamarin.Essentials
                         CalendarId = e.CalendarId,
                         Title = e.Subject,
                         StartDate = e.StartTime,
-                        EndDate = e.StartTime.Add(e.Duration)
+                        EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
                     });
                 }
             }
             eventList.Sort((x, y) =>
             {
-                if (!x.StartDate.HasValue)
+                if (!y.EndDate.HasValue)
                 {
-                    if (!y.EndDate.HasValue)
-                    {
-                        return 0;
-                    }
-                    return -1;
+                    return 0;
                 }
-                return !y.EndDate.HasValue ? 1 : x.StartDate.Value.CompareTo(y.EndDate.Value);
+                return x.StartDate.CompareTo(y.EndDate.Value);
             });
 
             return eventList;
@@ -107,9 +104,7 @@ namespace Xamarin.Essentials
                 Description = e.Details,
                 Location = e.Location,
                 StartDate = e.StartTime,
-                Duration = e.Duration,
-                EndDate = e.StartTime.Add(e.Duration),
-                AllDay = e.AllDay,
+                EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
                 Attendees = GetAttendeesForEvent(e.Invitees)
             };
         }
