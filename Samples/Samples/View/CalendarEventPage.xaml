@@ -66,7 +66,8 @@
                 </Grid.ColumnDefinitions>
                 <Label Text="Duration: "/>
                 <Label Grid.Column="1"  
-                       Text="{Binding Duration, StringFormat={StaticResource TimeSpanFormatter}}"/>
+                       Text="{Binding Duration, StringFormat={StaticResource TimeSpanFormatter}}"
+                       HorizontalTextAlignment="Center"/>
             </Grid>
             
           <ScrollView>

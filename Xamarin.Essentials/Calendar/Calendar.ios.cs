@@ -33,8 +33,7 @@ namespace Xamarin.Essentials
                 calendarList.Add(new DeviceCalendar
                 {
                     Id = t.CalendarIdentifier,
-                    Name = t.Title,
-                    IsReadOnly = !t.AllowsContentModifications
+                    Name = t.Title
                 });
             }
             return calendarList;

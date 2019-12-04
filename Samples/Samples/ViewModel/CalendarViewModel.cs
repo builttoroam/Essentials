@@ -111,7 +111,7 @@ namespace Samples.ViewModel
         async void OnClickGetCalendars()
         {
             Calendars.Clear();
-            Calendars.Add(new DeviceCalendar() { Id = null, IsReadOnly = true, Name = "All" });
+            Calendars.Add(new DeviceCalendar() { Id = null, Name = "All" });
             var calendars = await Calendar.GetCalendarsAsync();
             foreach (var calendar in calendars)
             {
