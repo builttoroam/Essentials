@@ -25,8 +25,7 @@ namespace Xamarin.Essentials
             var calendarsProjection = new List<string>
             {
                 CalendarContract.Calendars.InterfaceConsts.Id,
-                CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName,
-                CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel
+                CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName
             };
             var queryConditions = $"{CalendarContract.Calendars.InterfaceConsts.Deleted} != 1";
 
@@ -38,25 +37,10 @@ namespace Xamarin.Essentials
                 {
                     Id = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.Id)),
                     Name = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName)),
-                    IsReadOnly = IsCalendarReadOnly((CalendarAccess)cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel)))
                 });
             }
             cur.Dispose();
             return calendars;
-        }
-
-        static bool IsCalendarReadOnly(CalendarAccess accessLevel)
-        {
-            switch (accessLevel)
-            {
-                case CalendarAccess.AccessContributor:
-                case CalendarAccess.AccessRoot:
-                case CalendarAccess.AccessOwner:
-                case CalendarAccess.AccessEditor:
-                    return false;
-                default:
-                    return true;
-            }
         }
 
         static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)

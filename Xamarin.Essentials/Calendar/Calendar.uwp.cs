@@ -24,8 +24,7 @@ namespace Xamarin.Essentials
                 calendars.Add(new DeviceCalendar()
                 {
                     Id = c.LocalId,
-                    Name = c.DisplayName,
-                    IsReadOnly = c.OtherAppWriteAccess != AppointmentCalendarOtherAppWriteAccess.Limited
+                    Name = c.DisplayName
                 });
             }
             return calendars;

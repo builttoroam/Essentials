@@ -9,8 +9,6 @@ namespace Xamarin.Essentials
         public string Id { get; set; }
 
         public string Name { get; set; }
-
-        public bool IsReadOnly { get; set; }
     }
 
     [Preserve(AllMembers = true)]
