@@ -39,6 +39,7 @@ namespace Xamarin.Essentials
             options.FetchProperties.Add(AppointmentProperties.Subject);
             options.FetchProperties.Add(AppointmentProperties.StartTime);
             options.FetchProperties.Add(AppointmentProperties.Duration);
+            options.FetchProperties.Add(AppointmentProperties.AllDay);
             var sDate = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var eDate = endDate ?? sDate.Add(defaultEndTimeFromStartTime);
 
@@ -64,15 +65,11 @@ namespace Xamarin.Essentials
             }
             eventList.Sort((x, y) =>
             {
-                if (!x.StartDate.HasValue)
+                if (!y.EndDate.HasValue)
                 {
-                    if (!y.EndDate.HasValue)
-                    {
-                        return 0;
-                    }
-                    return -1;
+                    return 0;
                 }
-                return !y.EndDate.HasValue ? 1 : x.StartDate.Value.CompareTo(y.EndDate.Value);
+                return x.StartDate.CompareTo(y.EndDate.Value);
             });
 
             return eventList;

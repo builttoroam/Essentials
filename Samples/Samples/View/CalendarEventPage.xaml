@@ -51,7 +51,8 @@
                    HorizontalTextAlignment="Center"/>
             <Label Grid.Column="2"
                    Grid.Row="2"
-                   Text="-"/>
+                   Text="-"
+                   IsVisible="{Binding AllDay, Converter={StaticResource NegativeConverter}}"/>
             <Label Grid.Column="3"
                    Grid.Row="2"
                    Text="{Binding EndDate, StringFormat={StaticResource DateDisplayFormatter}, Mode=OneWay}"
