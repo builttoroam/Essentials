@@ -10,9 +10,9 @@ namespace Xamarin.Essentials
 
         static Task PlatformRequestCalendarWriteAccess() => throw new NotImplementedException();
 
-        static Task<List<DeviceCalendar>> PlatformGetCalendarsAsync() => throw new NotImplementedException();
+        static Task<IEnumerable<DeviceCalendar>> PlatformGetCalendarsAsync() => throw new NotImplementedException();
 
-        static Task<List<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => throw new NotImplementedException();
+        static Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => throw new NotImplementedException();
 
         static Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId) => throw new NotImplementedException();
     }

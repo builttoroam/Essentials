@@ -34,7 +34,7 @@ namespace Xamarin.Essentials
 
         public DateTimeOffset? EndDate { get; set; }
 
-        public List<DeviceEventAttendee> Attendees { get; set; }
+        public IEnumerable<DeviceEventAttendee> Attendees { get; set; }
     }
 
     [Preserve(AllMembers = true)]

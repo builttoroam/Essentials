@@ -13,7 +13,7 @@ namespace Xamarin.Essentials
 
         static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
-        static async Task<List<DeviceCalendar>> PlatformGetCalendarsAsync()
+        static async Task<IEnumerable<DeviceCalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -40,7 +40,7 @@ namespace Xamarin.Essentials
             return calendarList;
         }
 
-        static async Task<List<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -124,7 +124,7 @@ namespace Xamarin.Essentials
             };
         }
 
-        static List<DeviceEventAttendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
+        static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<EKParticipant> inviteList)
         {
             var attendees = new List<DeviceEventAttendee>();
 
