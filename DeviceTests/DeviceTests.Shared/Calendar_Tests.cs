@@ -43,9 +43,9 @@ namespace DeviceTests
             return Utils.OnMainThread(async () =>
             {
 #if __IOS__
-                await Assert.ThrowsAsync<NullReferenceException>(() => Calendar.GetEventByIdAsync(calendarId));
+                await Assert.ThrowsAsync<NullReferenceException>(() => Calendar.GetEventByIdAsync(eventId));
 #else
-                await Assert.ThrowsAsync<ArgumentException>(() => Calendar.GetEventByIdAsync(calendarId));
+                await Assert.ThrowsAsync<ArgumentException>(() => Calendar.GetEventByIdAsync(eventId));
 #endif
             });
         }
