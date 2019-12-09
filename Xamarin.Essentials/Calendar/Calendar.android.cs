@@ -90,7 +90,12 @@ namespace Xamarin.Essentials
             var eDate = endDate ?? sDate.Add(defaultDateDistance);
             if (!string.IsNullOrEmpty(calendarId))
             {
-                calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId}={calendarId} {andCondition} ";
+                // Match other platforms where if you pass in a bad id return an empty list, this must be a bad id as android ids can only be integers.
+                if (!int.TryParse(calendarId, out var resultId))
+                {
+                    return new List<DeviceEvent>();
+                }
+                calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId}={resultId} {andCondition} ";
             }
             calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtstart} >= {sDate.ToUnixTimeMilliseconds()} {andCondition} ";
             calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Dtend} <= {eDate.ToUnixTimeMilliseconds()}";
