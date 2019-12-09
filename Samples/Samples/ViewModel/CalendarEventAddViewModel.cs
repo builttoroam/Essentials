@@ -117,15 +117,15 @@ namespace Samples.ViewModel
         {
             var startDto = new DateTimeOffset(StartDate + StartTime);
             var endDto = new DateTimeOffset(EndDate + EndTime);
-            var newEvent = new Event()
+            var newEvent = new DeviceEvent()
             {
                 CalendarId = CalendarId,
                 Title = EventTitle,
                 AllDay = AllDay,
                 Description = Description,
                 Location = EventLocation,
-                Start = startDto.ToUnixTimeMilliseconds(),
-                End = endDto.ToUnixTimeMilliseconds()
+                StartDate = startDto,
+                EndDate = endDto
             };
 
             var eventId = await Calendar.CreateCalendarEvent(newEvent);

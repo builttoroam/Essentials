@@ -20,7 +20,7 @@ namespace Xamarin.Essentials
                                 {
                                     Id = calendar.LocalId,
                                     Name = calendar.DisplayName,
-									IsReadOnly = c.OtherAppWriteAccess != AppointmentCalendarOtherAppWriteAccess.Limited
+                                    IsReadOnly = calendar.OtherAppWriteAccess != AppointmentCalendarOtherAppWriteAccess.Limited
                                 }).ToList();
 
             return calendars;
@@ -29,6 +29,7 @@ namespace Xamarin.Essentials
         static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
+            calendarId = "123456";
 
             var options = new FindAppointmentsOptions();
             options.FetchProperties.Add(AppointmentProperties.Subject);
@@ -107,8 +108,8 @@ namespace Xamarin.Essentials
 
             return attendees;
         }
-		
-		static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
+
+        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -119,8 +120,8 @@ namespace Xamarin.Essentials
                 Subject = newEvent.Title,
                 Details = newEvent.Description,
                 Location = newEvent.Location,
-                StartTime = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0),
-                Duration = new TimeSpan(newEvent.EndDate - newEvent.StartDate),
+                StartTime = newEvent.StartDate,
+                Duration = newEvent.EndDate.HasValue ? newEvent.EndDate.Value - newEvent.StartDate : TimeSpan.FromDays(1),
                 AllDay = newEvent.AllDay
             };
             try
@@ -133,6 +134,6 @@ namespace Xamarin.Essentials
             {
                 throw ex;
             }
-		}
+        }
     }
 }

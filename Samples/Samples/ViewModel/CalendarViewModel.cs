@@ -24,7 +24,7 @@ namespace Samples.ViewModel
         }
 
         DeviceCalendar selectedCalendar;
-		
+
         bool startdatePickersEnabled;
 
         bool enddatePickersEnabled;

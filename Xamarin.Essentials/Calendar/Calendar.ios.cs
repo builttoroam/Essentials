@@ -27,7 +27,7 @@ namespace Xamarin.Essentials
                                 {
                                     Id = calendar.CalendarIdentifier,
                                     Name = calendar.Title,
-									IsReadOnly = !t.AllowsContentModifications
+                                    IsReadOnly = !calendar.AllowsContentModifications
                                 }).ToList();
 
             return calendarList;
@@ -36,6 +36,7 @@ namespace Xamarin.Essentials
         static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
+            calendarId = "123456";
 
             var startDateToConvert = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var endDateToConvert = endDate ?? startDateToConvert.Add(defaultEndTimeFromStartTime);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
@@ -111,8 +112,8 @@ namespace Xamarin.Essentials
 
             return attendees;
         }
-		
-		static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
+
+        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -123,12 +124,12 @@ namespace Xamarin.Essentials
             evnt.Location = newEvent.Location;
             evnt.AllDay = newEvent.AllDay;
             evnt.StartDate = newEvent.StartDate.ToNSDate();
-            evnt.EndDate = newEvent.EndDate.ToNSDate();
+            evnt.EndDate = newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToNSDate() : newEvent.StartDate.AddDays(1).ToNSDate();
             if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
             {
                 return evnt.EventIdentifier;
             }
             throw new Exception(error.DebugDescription);
-		}
+        }
     }
 }

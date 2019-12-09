@@ -21,7 +21,7 @@ namespace Xamarin.Essentials
             var calendarsProjection = new List<string>
             {
                 CalendarContract.Calendars.InterfaceConsts.Id,
-				CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel,
+                CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel,
                 CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName
             };
             var queryConditions = $"{CalendarContract.Calendars.InterfaceConsts.Deleted} != 1";
@@ -34,11 +34,25 @@ namespace Xamarin.Essentials
                     calendars.Add(new DeviceCalendar()
                     {
                         Id = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.Id)),
-						IsReadOnly = IsCalendarReadOnly((CalendarAccess)cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel))),
+                        IsReadOnly = IsCalendarReadOnly((CalendarAccess)cur.GetInt(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel))),
                         Name = cur.GetString(calendarsProjection.IndexOf(CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName)),
                     });
                 }
                 return calendars;
+            }
+        }
+
+        static bool IsCalendarReadOnly(CalendarAccess accessLevel)
+        {
+            switch (accessLevel)
+            {
+                case CalendarAccess.AccessContributor:
+                case CalendarAccess.AccessRoot:
+                case CalendarAccess.AccessOwner:
+                case CalendarAccess.AccessEditor:
+                    return false;
+                default:
+                    return true;
             }
         }
 
@@ -157,8 +171,8 @@ namespace Xamarin.Essentials
             cur.Dispose();
             return attendees;
         }
-		
-		static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
+
+        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -176,7 +190,7 @@ namespace Xamarin.Essentials
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, newEvent.Location);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, newEvent.AllDay);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, newEvent.StartDate.ToUnixTimeMilliseconds().ToString());
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.EndDate.ToUnixTimeMilliseconds().ToString());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToUnixTimeMilliseconds().ToString() : newEvent.StartDate.AddDays(1).ToString());
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
 
             try

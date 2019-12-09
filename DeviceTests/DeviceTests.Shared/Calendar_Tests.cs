@@ -38,7 +38,7 @@ namespace DeviceTests
         [InlineData("-1")]
         [InlineData("")]
         [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
-        public Task Get_Event_By_Bad_Id(string calendarId)
+        public Task Get_Event_By_Bad_Id(string eventId)
         {
             return Utils.OnMainThread(async () =>
             {

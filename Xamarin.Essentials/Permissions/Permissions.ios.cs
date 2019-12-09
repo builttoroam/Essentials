@@ -157,6 +157,7 @@ namespace Xamarin.Essentials
             });
             return tcs.Task;
         }
+
         static Task<PermissionStatus> RequestRemindersAsync()
         {
             var tcs = new TaskCompletionSource<PermissionStatus>(CalendarRequest.Instance);

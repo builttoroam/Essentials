@@ -58,16 +58,6 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <Grid HeightRequest="60">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Button Text="Request Read Access"
-                Command="{Binding RequestCalendarReadAccessCommand}"/>
-                <Button Grid.Column="1"
-                Text="Request Write Access"
-                Command="{Binding RequestCalendarWriteAccessCommand}"/>
                 <Button Grid.Column="2"
                 Text="Load Calendars"
                 Command="{Binding GetCalendars}"/>
