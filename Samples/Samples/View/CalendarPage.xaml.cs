@@ -18,7 +18,7 @@ namespace Samples.View
         {
             var modal = new CalendarEventAddPage();
 
-            if (!(SelectedCalendar.SelectedItem is ICalendar tst) || string.IsNullOrEmpty(tst.Id))
+            if (!(SelectedCalendar.SelectedItem is DeviceCalendar tst) || string.IsNullOrEmpty(tst.Id))
                 return;
 
             modal.BindingContext = new CalendarEventAddViewModel(tst.Id, tst.Name);
@@ -27,10 +27,10 @@ namespace Samples.View
 
         async void OnEventTapped(object sender, ItemTappedEventArgs e)
         {
-            if (e.Item == null || !(e.Item is Event evt))
+            if (e.Item == null || !(e.Item is DeviceEvent evt))
                 return;
 
-            var calendarEvent = await Calendar.GetEventByIdAsync((e.Item as Event)?.Id);
+            var calendarEvent = await Calendar.GetEventByIdAsync((e.Item as DeviceEvent)?.Id);
             var modal = new CalendarEventPage
             {
                 BindingContext = calendarEvent

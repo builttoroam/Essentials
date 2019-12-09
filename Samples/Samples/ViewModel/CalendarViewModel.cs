@@ -8,11 +8,13 @@ namespace Samples.ViewModel
 {
     public class CalendarViewModel : BaseViewModel
     {
+        const int endDateDaysToOffset = 14;
+
+        const string endOfDay = "23:59";
+
         public CalendarViewModel()
         {
             GetCalendars = new Command(OnClickGetCalendars);
-            RequestCalendarReadAccessCommand = new Command(OnRequestCalendarReadAccess);
-            RequestCalendarWriteAccessCommand = new Command(OnRequestCalendarWriteAccess);
             StartDateSelectedCommand = new Command(OnStartDateSelected);
             StartTimeSelectedCommand = new Command(OnStartTimeSelected);
             EndDateSelectedCommand = new Command(OnEndDateSelected);
@@ -21,8 +23,8 @@ namespace Samples.ViewModel
             EndDateEnabledCheckBoxChanged = new Command(OnEndCheckboxChanged);
         }
 
-        ICalendar selectedCalendar;
-
+        DeviceCalendar selectedCalendar;
+		
         bool startdatePickersEnabled;
 
         bool enddatePickersEnabled;
@@ -45,10 +47,6 @@ namespace Samples.ViewModel
 
         public ICommand EndDateEnabledCheckBoxChanged { get; }
 
-        public ICommand RequestCalendarReadAccessCommand { get; }
-
-        public ICommand RequestCalendarWriteAccessCommand { get; }
-
         public ICommand StartDateSelectedCommand { get; }
 
         public ICommand StartTimeSelectedCommand { get; }
@@ -61,17 +59,17 @@ namespace Samples.ViewModel
 
         public TimeSpan StartTime { get; set; }
 
-        public DateTime EndDate { get; set; } = DateTime.Now.AddDays(14);
+        public DateTime EndDate { get; set; } = DateTime.Now.AddDays(endDateDaysToOffset);
 
-        public TimeSpan EndTime { get; set; } = TimeSpan.Parse("23:59");
+        public TimeSpan EndTime { get; set; } = TimeSpan.Parse(endOfDay);
 
         public bool HasCalendarReadAccess { get; set; }
 
-        public ObservableCollection<ICalendar> Calendars { get; } = new ObservableCollection<ICalendar>();
+        public ObservableCollection<DeviceCalendar> Calendars { get; } = new ObservableCollection<DeviceCalendar>();
 
-        public ObservableCollection<IEvent> Events { get; } = new ObservableCollection<IEvent>();
+        public ObservableCollection<DeviceEvent> Events { get; } = new ObservableCollection<DeviceEvent>();
 
-        public ICalendar SelectedCalendar
+        public DeviceCalendar SelectedCalendar
         {
             get => selectedCalendar;
 
@@ -107,6 +105,7 @@ namespace Samples.ViewModel
         async void OnClickGetCalendars()
         {
             Calendars.Clear();
+
             Calendars.Add(new DeviceCalendar() { Id = null, IsReadOnly = true, Name = "All" });
             var calendars = await Calendar.GetCalendarsAsync();
             foreach (var calendar in calendars)
@@ -157,38 +156,6 @@ namespace Samples.ViewModel
 
         void OnChangeRequestCalendarSpecificEvents(string calendarId = null, DateTime? startDateTime = null, DateTime? endDateTime = null) => RefreshEventList(calendarId, startDateTime, endDateTime);
 
-        async void OnRequestCalendarWriteAccess()
-        {
-            try
-            {
-                await Calendar.RequestCalendarWriteAccess();
-            }
-            catch (PermissionException ex)
-            {
-                await DisplayAlertAsync($"Unable to request calendar write access: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlertAsync($"Unable to request calendar write access: {ex.Message}");
-            }
-        }
-
-        async void OnRequestCalendarReadAccess()
-        {
-            try
-            {
-                await Calendar.RequestCalendarReadAccess();
-            }
-            catch (PermissionException ex)
-            {
-                await DisplayAlertAsync($"Unable to request calendar read access: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                await DisplayAlertAsync($"Unable to request calendar read access: {ex.Message}");
-            }
-        }
-
         async void RefreshEventList(string calendarId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
             startDate = StartDatePickersEnabled && !startDate.HasValue ? (DateTime?)StartDate.Date + StartTime : startDate;
@@ -197,7 +164,8 @@ namespace Samples.ViewModel
                 return;
 
             Events.Clear();
-            var events = await Calendar.GetEventsAsync(calendarId, startDate?.ToUniversalTime(), endDate?.ToUniversalTime());
+
+            var events = await Calendar.GetEventsAsync(calendarId, startDate, endDate);
             foreach (var calendarEvent in events)
             {
                 Events.Add(calendarEvent);

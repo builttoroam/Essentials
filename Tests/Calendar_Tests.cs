@@ -7,15 +7,6 @@ namespace Tests
     public class Calendar_Tests
     {
         [Fact]
-        public async Task Calendar_RequestCalendarReadAccess_Fail_On_NetStandard() => await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Calendar.RequestCalendarReadAccess());
-
-        [Fact]
-        public async Task Calendar_RequestCalendarWriteAccess_Fail_On_NetStandard() => await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Calendar.RequestCalendarWriteAccess());
-
-        [Fact]
-        public void Calendar_IsSupported_Fail_On_NetStandard() => Assert.Throws<NotImplementedInReferenceAssemblyException>(() => Calendar.IsSupported);
-
-        [Fact]
         public async Task Calendar_Get_Calendar_List_Fail_On_NetStandard() => await Assert.ThrowsAsync<NotImplementedInReferenceAssemblyException>(() => Calendar.GetCalendarsAsync());
 
         [Fact]

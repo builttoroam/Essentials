@@ -9,9 +9,7 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
-        static bool PlatformIsSupported => true;
-
-        static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
+        static async Task<IEnumerable<DeviceCalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -24,25 +22,21 @@ namespace Xamarin.Essentials
             {
                 throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
             }
-            var calendarList = new List<DeviceCalendar>();
+            var calendarList = (from calendar in calendars
+                                select new DeviceCalendar
+                                {
+                                    Id = calendar.CalendarIdentifier,
+                                    Name = calendar.Title,
+									IsReadOnly = !t.AllowsContentModifications
+                                }).ToList();
 
-            foreach (var t in calendars)
-            {
-                calendarList.Add(new DeviceCalendar
-                {
-                    Id = t.CalendarIdentifier,
-                    Name = t.Title,
-                    IsReadOnly = !t.AllowsContentModifications
-                });
-            }
-            return calendarList.AsReadOnly();
+            return calendarList;
         }
 
-        static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var eventList = new List<Event>();
             var startDateToConvert = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var endDateToConvert = endDate ?? startDateToConvert.Add(defaultEndTimeFromStartTime);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
             var sDate = startDateToConvert.ToNSDate();
@@ -56,48 +50,28 @@ namespace Xamarin.Essentials
             }
             catch (NullReferenceException ex)
             {
-                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
+                throw new NullReferenceException($"iOS: Unexpected null reference exception {ex.Message}");
             }
 
             var query = CalendarRequest.Instance.PredicateForEvents(sDate, eDate, calendars);
             var events = CalendarRequest.Instance.EventsMatching(query);
 
-            foreach (var e in events)
-            {
-                eventList.Add(new Event
-                {
-                    Id = e.CalendarItemIdentifier,
-                    CalendarId = e.Calendar.CalendarIdentifier,
-                    Title = e.Title,
-                    Start = e.StartDate.ToEpochTime(),
-                    End = e.EndDate.ToEpochTime()
-                });
-            }
-            eventList.Sort((x, y) =>
-            {
-                if (!x.StartDate.HasValue)
-                {
-                    if (!y.EndDate.HasValue)
-                    {
-                        return 0;
-                    }
-                    return -1;
-                }
-                if (!y.EndDate.HasValue)
-                {
-                    return 1;
-                }
-                return x.StartDate.Value.CompareTo(y.EndDate.Value);
-            });
+            var eventList = (from e in events
+                            select new DeviceEvent
+                            {
+                                Id = e.CalendarItemIdentifier,
+                                CalendarId = e.Calendar.CalendarIdentifier,
+                                Title = e.Title,
+                                StartDate = e.StartDate.ToDateTimeOffset(),
+                                EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTimeOffset() : null
+                            })
+                            .OrderBy(e => e.StartDate)
+                            .ToList();
 
-            return eventList.AsReadOnly();
+            return eventList;
         }
 
-        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
-
-        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
-
-        static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
+        static async Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -111,38 +85,34 @@ namespace Xamarin.Essentials
                 throw new NullReferenceException($"[iOS]: No Event found for event Id {eventId}");
             }
 
-            return new Event
+            return new DeviceEvent
             {
                 Id = e.CalendarItemIdentifier,
+                CalendarId = e.Calendar.CalendarIdentifier,
                 Title = e.Title,
                 Description = e.Notes,
                 Location = e.Location,
-                Start = e.StartDate.ToEpochTime(),
-                End = e.EndDate.ToEpochTime(),
-                Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<IAttendee>()
+                StartDate = e.StartDate.ToDateTimeOffset(),
+                EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTimeOffset() : null,
+                Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<DeviceEventAttendee>()
             };
         }
 
-        static IReadOnlyList<IAttendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
+        static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<EKParticipant> inviteList)
         {
-            var attendees = new List<IAttendee>();
+            var attendees = (from attendee in inviteList
+                             select new DeviceEventAttendee
+                             {
+                                 Name = attendee.Name,
+                                 Email = attendee.Name
+                             })
+                            .OrderBy(e => e.Name)
+                            .ToList();
 
-            foreach (var attendee in inviteList)
-            {
-                attendees.Add(new Attendee()
-                {
-                    Name = attendee.Name,
-                    Email = attendee.Name
-                });
-            }
-            return attendees.AsReadOnly();
+            return attendees;
         }
-
-        static async Task<PermissionStatus> PlatformCheckCalendarReadAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarRead);
-
-        static async Task<PermissionStatus> PlatformCheckCalendarWriteAccess() => await Permissions.CheckStatusAsync(PermissionType.CalendarWrite);
-
-        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
+		
+		static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -152,13 +122,13 @@ namespace Xamarin.Essentials
             evnt.Notes = newEvent.Description;
             evnt.Location = newEvent.Location;
             evnt.AllDay = newEvent.AllDay;
-            evnt.StartDate = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0).ToNSDate();
-            evnt.EndDate = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0).ToNSDate();
+            evnt.StartDate = newEvent.StartDate.ToNSDate();
+            evnt.EndDate = newEvent.EndDate.ToNSDate();
             if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
             {
                 return evnt.EventIdentifier;
             }
             throw new Exception(error.DebugDescription);
-        }
+		}
     }
 }

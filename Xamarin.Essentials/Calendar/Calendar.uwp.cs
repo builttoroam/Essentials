@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Appointments;
 
@@ -7,28 +8,25 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
-        static bool PlatformIsSupported => true;
-
-        static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
+        static async Task<IEnumerable<DeviceCalendar>> PlatformGetCalendarsAsync()
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
             var instance = await CalendarRequest.GetInstanceAsync();
             var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
-            var calendars = new List<ICalendar>();
-            foreach (var c in uwpCalendarList)
-            {
-                calendars.Add(new DeviceCalendar()
-                {
-                    Id = c.LocalId,
-                    Name = c.DisplayName,
-                    IsReadOnly = c.OtherAppWriteAccess != AppointmentCalendarOtherAppWriteAccess.Limited
-                });
-            }
-            return calendars.AsReadOnly();
+
+            var calendars = (from calendar in uwpCalendarList
+                                select new DeviceCalendar
+                                {
+                                    Id = calendar.LocalId,
+                                    Name = calendar.DisplayName,
+									IsReadOnly = c.OtherAppWriteAccess != AppointmentCalendarOtherAppWriteAccess.Limited
+                                }).ToList();
+
+            return calendars;
         }
 
-        static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -36,6 +34,7 @@ namespace Xamarin.Essentials
             options.FetchProperties.Add(AppointmentProperties.Subject);
             options.FetchProperties.Add(AppointmentProperties.StartTime);
             options.FetchProperties.Add(AppointmentProperties.Duration);
+            options.FetchProperties.Add(AppointmentProperties.AllDay);
             var sDate = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var eDate = endDate ?? sDate.Add(defaultEndTimeFromStartTime);
 
@@ -44,38 +43,24 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync();
             var events = await instance.FindAppointmentsAsync(sDate, eDate.Subtract(sDate), options);
-            var eventList = new List<Event>();
-            foreach (var e in events)
-            {
-                if (calendarId == null || e.CalendarId == calendarId)
-                {
-                    eventList.Add(new Event
-                    {
-                        Id = e.LocalId,
-                        CalendarId = e.CalendarId,
-                        Title = e.Subject,
-                        Start = e.StartTime.ToUnixTimeMilliseconds(),
-                        End = e.StartTime.Add(e.Duration).ToUnixTimeMilliseconds()
-                    });
-                }
-            }
-            eventList.Sort((x, y) =>
-            {
-                if (!x.StartDate.HasValue)
-                {
-                    if (!y.EndDate.HasValue)
-                    {
-                        return 0;
-                    }
-                    return -1;
-                }
-                return !y.EndDate.HasValue ? 1 : x.StartDate.Value.CompareTo(y.EndDate.Value);
-            });
 
-            return eventList.AsReadOnly();
+            var eventList = (from e in events
+                             select new DeviceEvent
+                             {
+                                 Id = e.LocalId,
+                                 CalendarId = e.CalendarId,
+                                 Title = e.Subject,
+                                 StartDate = e.StartTime,
+                                 EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null
+                             })
+                            .Where(e => e.CalendarId == calendarId || calendarId == null)
+                            .OrderBy(e => e.StartDate)
+                            .ToList();
+
+            return eventList;
         }
 
-        static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
+        static async Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -85,45 +70,45 @@ namespace Xamarin.Essentials
             try
             {
                 e = await instance.GetAppointmentAsync(eventId);
+                e.DetailsKind = AppointmentDetailsKind.PlainText;
             }
-            catch (Exception ex)
+            catch (ArgumentException)
             {
-                throw ex;
+                throw new ArgumentException($"[UWP]: No Event found for event Id {eventId}");
+            }
+            catch (NullReferenceException)
+            {
+                throw new NullReferenceException($"[UWP]: No Event found for event Id {eventId}");
             }
 
-            return new Event()
+            return new DeviceEvent()
             {
                 Id = e.LocalId,
                 CalendarId = e.CalendarId,
                 Title = e.Subject,
                 Description = e.Details,
                 Location = e.Location,
-                Start = e.StartTime.ToUnixTimeMilliseconds(),
-                End = e.StartTime.Add(e.Duration).ToUnixTimeMilliseconds(),
+                StartDate = e.StartTime,
+                EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
                 Attendees = GetAttendeesForEvent(e.Invitees)
             };
         }
 
-        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
-
-        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
-
-        static IReadOnlyList<IAttendee> GetAttendeesForEvent(IList<AppointmentInvitee> inviteList)
+        static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<AppointmentInvitee> inviteList)
         {
-            var attendees = new List<IAttendee>();
+            var attendees = (from attendee in inviteList
+                             select new DeviceEventAttendee
+                             {
+                                 Name = attendee.DisplayName,
+                                 Email = attendee.Address
+                             })
+                            .OrderBy(e => e.Name)
+                            .ToList();
 
-            foreach (var attendee in inviteList)
-            {
-                attendees.Add(new Attendee()
-                {
-                    Name = attendee.DisplayName,
-                    Email = attendee.Address
-                });
-            }
-            return attendees.AsReadOnly();
+            return attendees;
         }
-
-        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
+		
+		static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -135,7 +120,7 @@ namespace Xamarin.Essentials
                 Details = newEvent.Description,
                 Location = newEvent.Location,
                 StartTime = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0),
-                Duration = new TimeSpan((DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0) - DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0)).Ticks),
+                Duration = new TimeSpan(newEvent.EndDate - newEvent.StartDate),
                 AllDay = newEvent.AllDay
             };
             try
@@ -148,6 +133,6 @@ namespace Xamarin.Essentials
             {
                 throw ex;
             }
-        }
+		}
     }
 }

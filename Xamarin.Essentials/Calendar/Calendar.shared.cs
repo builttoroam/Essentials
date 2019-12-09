@@ -6,26 +6,16 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
-        public static bool IsSupported => PlatformIsSupported;
-
-        public static Task<IReadOnlyList<ICalendar>> GetCalendarsAsync() => PlatformGetCalendarsAsync();
-
-        public static Task<IReadOnlyList<IEvent>> GetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => PlatformGetEventsAsync(calendarId, startDate, endDate);
-
-        public static Task RequestCalendarReadAccess() => PlatformRequestCalendarReadAccess();
-
-        public static Task RequestCalendarWriteAccess() => PlatformRequestCalendarWriteAccess();
-
-        public static Task<string> CreateCalendarEvent(IEvent newEvent) => PlatformCreateCalendarEvent(newEvent);
+        static TimeSpan defaultStartTimeFromNow = TimeSpan.Zero;
 
         static TimeSpan defaultEndTimeFromStartTime = TimeSpan.FromDays(14);
 
-        static TimeSpan defaultStartTimeFromNow = TimeSpan.Zero;
+        public static Task<IEnumerable<DeviceCalendar>> GetCalendarsAsync() => PlatformGetCalendarsAsync();
 
-        public static void SetDefaultStartTimeFromNow(TimeSpan newDefaultSpan) => defaultStartTimeFromNow = newDefaultSpan;
+        public static Task<IEnumerable<DeviceEvent>> GetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => PlatformGetEventsAsync(calendarId, startDate, endDate);
 
-        public static void SetDefaultEndTimeFromStartTime(TimeSpan newDefaultSpan) => defaultEndTimeFromStartTime = newDefaultSpan;
-
-        public static Task<IEvent> GetEventByIdAsync(string eventId) => PlatformGetEventByIdAsync(eventId);
+        public static Task<DeviceEvent> GetEventByIdAsync(string eventId) => PlatformGetEventByIdAsync(eventId);
+		
+		public static Task<string> CreateCalendarEvent(DeviceEvent newEvent) => PlatformCreateCalendarEvent(newEvent);
     }
 }

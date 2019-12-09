@@ -6,18 +6,12 @@ namespace Xamarin.Essentials
 {
     public static partial class Calendar
     {
-        static bool PlatformIsSupported => false;
+        static Task<IEnumerable<DeviceCalendar>> PlatformGetCalendarsAsync() => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync() => throw new NotImplementedException();
+        static Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null) => throw new NotImplementedException();
-
-        static Task<IEvent> PlatformGetEventByIdAsync(string eventId) => throw new NotImplementedException();
-
-        static Task PlatformRequestCalendarReadAccess() => throw new NotImplementedException();
-
-        static Task PlatformRequestCalendarWriteAccess() => throw new NotImplementedException();
-
-        static Task<string> PlatformCreateCalendarEvent(IEvent newEvent) => throw new NotImplementedException();
+        static Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+		
+		static Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent) => throw new NotImplementedException();
     }
 }
