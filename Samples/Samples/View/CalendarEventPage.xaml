@@ -17,11 +17,26 @@
     </views:BasePage.Resources>
     <views:BasePage.Content>
         <StackLayout>
-            <Label Text="{Binding Title}"
+            <Label x:Name="EventId"
+                   Text="{Binding Id}"
+                   IsVisible="False"/>
+            <Label x:Name="CalendarId"
+                   Text="{Binding CalendarId}"
+                   IsVisible="False"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Label Text="{Binding Title}"
                    FontSize="34"
                    TextColor="Black"
                    HorizontalTextAlignment="Center"/>
-          <Grid>
+                <Button Grid.Column="1"
+                      Text="Delete"
+                      Clicked="OnDeleteEventButtonClicked"/>
+            </Grid>
+            <Grid>
             <Grid.ColumnDefinitions>
               <ColumnDefinition/>
               <ColumnDefinition/>

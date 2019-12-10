@@ -130,5 +130,16 @@ namespace Xamarin.Essentials
             }
             throw new Exception(error.DebugDescription);
         }
+
+        static async Task<string> PlatformDeleteCalendarEventById(string eventId, string calendarId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
+            {
+                return evnt.EventIdentifier;
+            }
+            throw new Exception(error.DebugDescription);
+        }
     }
 }

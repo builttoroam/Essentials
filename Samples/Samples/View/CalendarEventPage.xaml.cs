@@ -11,5 +11,18 @@ namespace Samples.View
         {
             InitializeComponent();
         }
+
+        async void OnDeleteEventButtonClicked(object sender, EventArgs e)
+        {
+            if (!(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId.ToString()))
+                return;
+
+            var calendarEvent = await Calendar.GetEventByIdAsync(eventId.ToString());
+
+            if (!(calendarEvent is DeviceEvent))
+                return;
+
+            await Calendar.DeleteCalendarEventById(eventId, CalendarId.Text);
+        }
     }
 }

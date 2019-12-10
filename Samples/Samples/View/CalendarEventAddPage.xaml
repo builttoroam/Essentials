@@ -97,6 +97,7 @@
                Grid.Column="0"/>
         <DatePicker Date="{Binding EndDate}"
                     MinimumDate="1970-01-01"
+                    IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
                     Grid.Row="1"
                     Grid.Column="1"/>
         <TimePicker Time="{Binding EndTime}"

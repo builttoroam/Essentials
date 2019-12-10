@@ -65,7 +65,19 @@ namespace Samples.ViewModel
 
         public bool HasCalendarReadAccess { get; set; }
 
-        public ObservableCollection<DeviceCalendar> Calendars { get; } = new ObservableCollection<DeviceCalendar>();
+        ObservableCollection<DeviceCalendar> calendars = new ObservableCollection<DeviceCalendar>();
+
+        public ObservableCollection<DeviceCalendar> Calendars
+        {
+            get => calendars;
+            set
+            {
+                if (value != null)
+                {
+                    calendars = new ObservableCollection<DeviceCalendar>(value);
+                }
+            }
+        }
 
         public ObservableCollection<DeviceEvent> Events { get; } = new ObservableCollection<DeviceEvent>();
 
