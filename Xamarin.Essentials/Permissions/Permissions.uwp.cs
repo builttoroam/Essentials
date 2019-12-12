@@ -96,7 +96,7 @@ namespace Xamarin.Essentials
             if (!MainThread.IsMainThread)
                 throw new PermissionException("Permission request must be invoked on main thread.");
 
-            if (await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite) != null)
+            if (await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AppCalendarsReadWrite) != null)
             {
                 return PermissionStatus.Granted;
             }

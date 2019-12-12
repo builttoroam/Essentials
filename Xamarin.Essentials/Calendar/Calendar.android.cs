@@ -97,11 +97,11 @@ namespace Xamarin.Essentials
                         CalendarId = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CalendarId)),
                         Title = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Title)),
                         StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart))),
-                        EndDate = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 0 ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend))) : null
+                        EndDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend)))
                     });
                 }
             }
-            if (events.Count == 0)
+            if (events.Count == 0 && !string.IsNullOrEmpty(calendarId))
             {
                 // Make sure this calendar exists by testing retrieval
                 try
@@ -225,6 +225,19 @@ namespace Xamarin.Essentials
             return attendees;
         }
 
+        static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var calendarUri = CalendarContract.Calendars.ContentUri;
+            var cursor = Platform.AppContext.ApplicationContext.ContentResolver;
+            var calendarValues = new ContentValues();
+            calendarValues.Put(CalendarContract.Calendars.Name, newCalendar.Name);
+            calendarValues.Put(CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName, newCalendar.Name);
+            var result = cursor.Insert(calendarUri, calendarValues);
+            return result.ToString();
+        }
+
         static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
@@ -259,5 +272,7 @@ namespace Xamarin.Essentials
 
             return result.ToString();
         }
+
+        static Task<string> PlatformDeleteCalendarEventById(string eventId, string calendarId) => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

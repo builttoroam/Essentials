@@ -14,6 +14,14 @@ namespace Samples.View
             InitializeComponent();
         }
 
+        async void OnAddCalendarButtonClicked(object sender, EventArgs e)
+        {
+            var modal = new CalendarAddPage();
+
+            modal.BindingContext = new CalendarAddViewModel();
+            await Navigation.PushAsync(modal);
+        }
+
         async void OnAddEventButtonClicked(object sender, EventArgs e)
         {
             var modal = new CalendarEventAddPage();

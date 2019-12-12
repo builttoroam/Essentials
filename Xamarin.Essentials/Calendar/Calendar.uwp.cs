@@ -12,7 +12,7 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var instance = await CalendarRequest.GetInstanceAsync();
+            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
             var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
 
             var calendars = (from calendar in uwpCalendarList
@@ -20,7 +20,9 @@ namespace Xamarin.Essentials
                                 {
                                     Id = calendar.LocalId,
                                     Name = calendar.DisplayName,
-                                    IsReadOnly = calendar.OtherAppWriteAccess != AppointmentCalendarOtherAppWriteAccess.Limited
+
+                                        // This logic seems reversed but I'm unsure why, this actually works as expected.
+                                    IsReadOnly = calendar.CanCreateOrUpdateAppointments
                                 }).ToList();
 
             return calendars;
@@ -41,7 +43,7 @@ namespace Xamarin.Essentials
             if (eDate < sDate)
                 eDate = sDate;
 
-            var instance = await CalendarRequest.GetInstanceAsync();
+            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
             var events = await instance.FindAppointmentsAsync(sDate, eDate.Subtract(sDate), options);
 
             var eventList = (from e in events
@@ -67,7 +69,7 @@ namespace Xamarin.Essentials
 
         static async Task<DeviceCalendar> GetCalendarById(string calendarId)
         {
-            var instance = await CalendarRequest.GetInstanceAsync();
+            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
             var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
 
             var result = (from calendar in uwpCalendarList
@@ -89,7 +91,7 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var instance = await CalendarRequest.GetInstanceAsync();
+            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
 
             Appointment e;
             try
@@ -153,14 +155,43 @@ namespace Xamarin.Essentials
             };
             try
             {
+                // ShowAddAppointmentAsync might be the way to deal with uwp, but it requires a UI Windows.Foundation.Rect object which may be hard to access within here
                 var cal = await instance.GetAppointmentCalendarAsync(newEvent.CalendarId);
                 await cal.SaveAppointmentAsync(app);
-                return app.LocalId;
+
+                if (!string.IsNullOrEmpty(app.LocalId))
+                    return app.LocalId;
+
+                throw new ArgumentException("[UWP]: Could not create appointment with supplied parameters");
             }
             catch (NullReferenceException ex)
             {
                 throw ex;
             }
         }
+
+        static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var instance = await CalendarRequest.GetInstanceAsync();
+
+            try
+            {
+                // var appointmentStore = await AppointmentManager.RequestStoreAsync(AppointmentStoreAccessType.AppCalendarsReadWrite);
+                var cal = await instance.CreateAppointmentCalendarAsync(newCalendar.Name);
+
+                if (cal != null)
+                    return cal.LocalId;
+
+                throw new ArgumentException("[UWP]: Could not create appointment with supplied parameters");
+            }
+            catch (NullReferenceException ex)
+            {
+                throw ex;
+            }
+        }
+
+        static Task<string> PlatformDeleteCalendarEventById(string eventId, string calendarId) => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

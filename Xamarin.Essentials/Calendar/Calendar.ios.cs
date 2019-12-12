@@ -132,10 +132,18 @@ namespace Xamarin.Essentials
         static async Task<string> PlatformDeleteCalendarEventById(string eventId, string calendarId)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            return "work in progress!";
+        }
 
-            if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
+        static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var calendar = EKCalendar.Create(EKEntityType.Event, CalendarRequest.Instance);
+
+            if (CalendarRequest.Instance.SaveCalendar(calendar, true, out var error))
             {
-                return evnt.EventIdentifier;
+                return calendar.CalendarIdentifier;
             }
             throw new Exception(error.DebugDescription);
         }
