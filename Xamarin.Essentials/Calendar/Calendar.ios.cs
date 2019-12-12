@@ -138,11 +138,7 @@ namespace Xamarin.Essentials
             return attendees.AsReadOnly();
         }
 
-        static async Task<string> PlatformDeleteCalendarEventById(string eventId, string calendarId)
-        {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
-            return "work in progress!";
-        }
+        static Task<string> PlatformDeleteCalendarEventById(string eventId, string calendarId) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
         static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)
         {
