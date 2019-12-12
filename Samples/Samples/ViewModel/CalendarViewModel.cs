@@ -41,6 +41,8 @@ namespace Samples.ViewModel
             set => SetProperty(ref enddatePickersEnabled, value);
         }
 
+        public bool CanCreateCalendarEvent => !string.IsNullOrWhiteSpace(SelectedCalendar?.Name) && SelectedCalendar?.Name != "All" && !SelectedCalendar.IsReadOnly;
+
         public ICommand GetCalendars { get; }
 
         public ICommand StartDateEnabledCheckBoxChanged { get; }
@@ -78,6 +80,7 @@ namespace Samples.ViewModel
                 if (SetProperty(ref selectedCalendar, value) && selectedCalendar != null)
                 {
                     OnChangeRequestCalendarSpecificEvents(selectedCalendar.Id);
+                    OnPropertyChanged(nameof(CanCreateCalendarEvent));
                 }
             }
         }

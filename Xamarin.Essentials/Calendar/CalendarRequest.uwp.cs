@@ -9,11 +9,14 @@ namespace Xamarin.Essentials
     {
         static AppointmentStore uwpAppointmentStore;
 
-        public static async System.Threading.Tasks.Task<AppointmentStore> GetInstanceAsync(AppointmentStoreAccessType type = AppointmentStoreAccessType.AllCalendarsReadOnly)
+        static AppointmentStoreAccessType lastRequestType;
+
+        public static async System.Threading.Tasks.Task<AppointmentStore> GetInstanceAsync(AppointmentStoreAccessType type = AppointmentStoreAccessType.AppCalendarsReadWrite)
         {
-            if (uwpAppointmentStore == null)
+            if (uwpAppointmentStore == null || lastRequestType != type)
             {
                 uwpAppointmentStore = await AppointmentManager.RequestStoreAsync(type);
+                lastRequestType = type;
             }
 
             return uwpAppointmentStore;
