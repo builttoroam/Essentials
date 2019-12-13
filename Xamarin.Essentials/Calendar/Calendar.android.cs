@@ -273,6 +273,26 @@ namespace Xamarin.Essentials
             return result.ToString();
         }
 
-        static Task<string> PlatformDeleteCalendarEventById(string eventId, string calendarId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+        static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            if (string.IsNullOrEmpty(eventId))
+            {
+                throw new ArgumentException("[Android]: You must supply an event id to delete an event.");
+            }
+
+            var calendarEvent = await GetEventByIdAsync(eventId);
+
+            if (calendarEvent.CalendarId != calendarId)
+            {
+                throw new ArgumentOutOfRangeException("[Android]: Supplied event does not belong to supplied calendar");
+            }
+
+            var eventUri = ContentUris.WithAppendedId(CalendarContract.Events.ContentUri, long.Parse(eventId));
+            var result = Platform.AppContext.ApplicationContext.ContentResolver.Delete(eventUri, null, null);
+
+            return result > 0;
+        }
     }
 }

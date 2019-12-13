@@ -129,7 +129,28 @@ namespace Xamarin.Essentials
             throw new Exception(error.DebugDescription);
         }
 
-        static Task<string> PlatformDeleteCalendarEventById(string eventId, string calendarId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+        static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            if (string.IsNullOrEmpty(eventId))
+            {
+                throw new ArgumentException("[iOS]: You must supply an event id to delete an event.");
+            }
+
+            var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+
+            if (calendarEvent.Calendar.CalendarIdentifier != calendarId)
+            {
+                throw new ArgumentOutOfRangeException("[iOS]: Supplied event does not belong to supplied calendar.");
+            }
+
+            if (CalendarRequest.Instance.RemoveEvent(calendarEvent, EKSpan.ThisEvent, true, out var error))
+            {
+                return true;
+            }
+            throw new Exception(error.DebugDescription);
+        }
 
         static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)
         {
