@@ -218,5 +218,65 @@ namespace Xamarin.Essentials
 
             return false;
         }
+
+        static async Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var instance = await CalendarRequest.GetInstanceAsync();
+
+            try
+            {
+                var calendarEvent = await instance.GetAppointmentAsync(eventId);
+                var cal = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
+                var cntInvitiees = calendarEvent.Invitees.Count;
+
+                if (calendarEvent == null)
+                    return false;
+
+                calendarEvent.Invitees.Add(new AppointmentInvitee() { DisplayName = newAttendee.Name, Address = newAttendee.Email });
+
+                await cal.SaveAppointmentAsync(calendarEvent);
+                if (calendarEvent.Invitees.Count == cntInvitiees + 1)
+                    return true;
+
+                throw new ArgumentException("[UWP]: Could not create attendee for event with supplied parameters");
+            }
+            catch (NullReferenceException ex)
+            {
+                throw ex;
+            }
+        }
+
+        static async Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var instance = await CalendarRequest.GetInstanceAsync();
+
+            try
+            {
+                var calendarEvent = await instance.GetAppointmentAsync(eventId);
+                var cal = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
+                var cntInvitiees = calendarEvent.Invitees.Count;
+
+                if (calendarEvent == null)
+                    return false;
+
+                var attendeeToRemove = calendarEvent.Invitees.Where(x => x.DisplayName == newAttendee.Name && x.Address == newAttendee.Email).First();
+
+                calendarEvent.Invitees.Remove(attendeeToRemove);
+
+                await cal.SaveAppointmentAsync(calendarEvent);
+                if (calendarEvent.Invitees.Count == cntInvitiees - 1)
+                    return true;
+
+                throw new ArgumentException("[UWP]: Could not remove attendee from event with supplied parameters");
+            }
+            catch (NullReferenceException ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

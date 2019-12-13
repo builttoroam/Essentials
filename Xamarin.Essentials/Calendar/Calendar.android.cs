@@ -294,5 +294,9 @@ namespace Xamarin.Essentials
 
             return result > 0;
         }
+
+        static Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+        static Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }
