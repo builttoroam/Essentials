@@ -23,6 +23,8 @@ namespace Samples.View
                 return;
 
             await Calendar.DeleteCalendarEventById(eventId, CalendarId.Text);
+            await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+            await Navigation.PopAsync();
         }
     }
 }
