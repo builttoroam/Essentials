@@ -153,21 +153,14 @@ namespace Xamarin.Essentials
                 Duration = newEvent.EndDate.HasValue ? newEvent.EndDate.Value - newEvent.StartDate : TimeSpan.FromDays(1),
                 AllDay = newEvent.AllDay
             };
-            try
-            {
-                // ShowAddAppointmentAsync might be the way to deal with uwp, but it requires a UI Windows.Foundation.Rect object which may be hard to access within here
-                var cal = await instance.GetAppointmentCalendarAsync(newEvent.CalendarId);
-                await cal.SaveAppointmentAsync(app);
 
-                if (!string.IsNullOrEmpty(app.LocalId))
-                    return app.LocalId;
+            var cal = await instance.GetAppointmentCalendarAsync(newEvent.CalendarId);
+            await cal.SaveAppointmentAsync(app);
 
-                throw new ArgumentException("[UWP]: Could not create appointment with supplied parameters");
-            }
-            catch (NullReferenceException ex)
-            {
-                throw ex;
-            }
+            if (!string.IsNullOrEmpty(app.LocalId))
+                return app.LocalId;
+
+            throw new ArgumentException("[UWP]: Could not create appointment with supplied parameters");
         }
 
         static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)
@@ -176,20 +169,12 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync();
 
-            try
-            {
-                // var appointmentStore = await AppointmentManager.RequestStoreAsync(AppointmentStoreAccessType.AppCalendarsReadWrite);
-                var cal = await instance.CreateAppointmentCalendarAsync(newCalendar.Name);
+            var cal = await instance.CreateAppointmentCalendarAsync(newCalendar.Name);
 
-                if (cal != null)
-                    return cal.LocalId;
+            if (cal != null)
+                return cal.LocalId;
 
-                throw new ArgumentException("[UWP]: Could not create appointment with supplied parameters");
-            }
-            catch (NullReferenceException ex)
-            {
-                throw ex;
-            }
+            throw new ArgumentException("[UWP]: Could not create appointment with supplied parameters");
         }
 
         static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)
@@ -225,27 +210,17 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync();
 
-            try
-            {
-                var calendarEvent = await instance.GetAppointmentAsync(eventId);
-                var cal = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
-                var cntInvitiees = calendarEvent.Invitees.Count;
+            var calendarEvent = await instance.GetAppointmentAsync(eventId);
+            var cal = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
+            var cntInvitiees = calendarEvent.Invitees.Count;
 
-                if (calendarEvent == null)
-                    return false;
+            if (calendarEvent == null)
+                throw new ArgumentException("[UWP]: You must supply a valid event id to add an attendee to.");
 
-                calendarEvent.Invitees.Add(new AppointmentInvitee() { DisplayName = newAttendee.Name, Address = newAttendee.Email });
+            calendarEvent.Invitees.Add(new AppointmentInvitee() { DisplayName = newAttendee.Name, Address = newAttendee.Email });
+            await cal.SaveAppointmentAsync(calendarEvent);
 
-                await cal.SaveAppointmentAsync(calendarEvent);
-                if (calendarEvent.Invitees.Count == cntInvitiees + 1)
-                    return true;
-
-                throw new ArgumentException("[UWP]: Could not create attendee for event with supplied parameters");
-            }
-            catch (NullReferenceException ex)
-            {
-                throw ex;
-            }
+            return calendarEvent.Invitees.Count == cntInvitiees + 1;
         }
 
         static async Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId)
@@ -254,29 +229,20 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync();
 
-            try
+            var calendarEvent = await instance.GetAppointmentAsync(eventId);
+            var cal = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
+
+            if (calendarEvent == null)
+                throw new ArgumentException("[UWP]: You must supply a valid event id to remove an attendee from.");
+
+            var attendeesToRemove = calendarEvent.Invitees.Where(x => x.DisplayName == newAttendee.Name && x.Address == newAttendee.Email);
+            foreach (var attendee in attendeesToRemove)
             {
-                var calendarEvent = await instance.GetAppointmentAsync(eventId);
-                var cal = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
-                var cntInvitiees = calendarEvent.Invitees.Count;
-
-                if (calendarEvent == null)
-                    return false;
-
-                var attendeeToRemove = calendarEvent.Invitees.Where(x => x.DisplayName == newAttendee.Name && x.Address == newAttendee.Email).First();
-
-                calendarEvent.Invitees.Remove(attendeeToRemove);
-
-                await cal.SaveAppointmentAsync(calendarEvent);
-                if (calendarEvent.Invitees.Count == cntInvitiees - 1)
-                    return true;
-
-                throw new ArgumentException("[UWP]: Could not remove attendee from event with supplied parameters");
+                calendarEvent.Invitees.Remove(attendee);
             }
-            catch (NullReferenceException ex)
-            {
-                throw ex;
-            }
+            await cal.SaveAppointmentAsync(calendarEvent);
+
+            return attendeesToRemove.Count() > 0;
         }
     }
 }

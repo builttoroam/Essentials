@@ -260,15 +260,8 @@ namespace Xamarin.Essentials
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Deleted, 0);
 
-            try
-            {
-                var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
-                result = Convert.ToInt32(resultUri.LastPathSegment);
-            }
-            catch (NullReferenceException ex)
-            {
-                throw ex;
-            }
+            var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
+            result = Convert.ToInt32(resultUri.LastPathSegment);
 
             return result.ToString();
         }
@@ -295,8 +288,48 @@ namespace Xamarin.Essentials
             return result > 0;
         }
 
-        static Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+        static async Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
-        static Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+            var calendarEvent = await GetEventByIdAsync(eventId);
+
+            if (calendarEvent == null)
+            {
+                throw new ArgumentException("[Android]: You must supply a valid event id to add an attendee to an event.");
+            }
+
+            var attendeeUri = CalendarContract.Attendees.ContentUri;
+            var attendeeValues = new ContentValues();
+
+            attendeeValues.Put(CalendarContract.Attendees.InterfaceConsts.EventId, eventId);
+            attendeeValues.Put(CalendarContract.Attendees.InterfaceConsts.AttendeeEmail, newAttendee.Email);
+            attendeeValues.Put(CalendarContract.Attendees.InterfaceConsts.AttendeeName, newAttendee.Name);
+
+            var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(attendeeUri, attendeeValues);
+            var result = Convert.ToInt32(resultUri.LastPathSegment);
+
+            return result > 0;
+        }
+
+        static async Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var calendarEvent = await GetEventByIdAsync(eventId);
+
+            if (calendarEvent == null)
+            {
+                throw new ArgumentException("[Android]: You must supply a valid event id to remove an attendee from an event.");
+            }
+
+            var attendeesUri = CalendarContract.Attendees.ContentUri;
+            var attendeeSpecificAttendees = $"{CalendarContract.Attendees.InterfaceConsts.AttendeeName}={newAttendee.Name} {andCondition}";
+            attendeeSpecificAttendees = $"{CalendarContract.Attendees.InterfaceConsts.AttendeeEmail}={newAttendee.Email}";
+
+            var result = Platform.AppContext.ApplicationContext.ContentResolver.Delete(attendeesUri, attendeeSpecificAttendees, null);
+
+            return result > 0;
+        }
     }
 }

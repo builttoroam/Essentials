@@ -57,7 +57,10 @@ namespace Samples.View
                 if (success)
                 {
                     var lst = ViewModel.Attendees.ToList();
-                    lst.Remove(attendee);
+                    foreach (var a in lst.Where(x => x.Email == attendee.Email && x.Name == attendee.Name))
+                    {
+                        lst.Remove(a);
+                    }
                     BindingContext = new DeviceEvent()
                     {
                         AllDay = ViewModel.AllDay,
