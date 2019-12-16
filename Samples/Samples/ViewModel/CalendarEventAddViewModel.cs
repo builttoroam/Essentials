@@ -35,11 +35,35 @@ namespace Samples.ViewModel
             }
         }
 
-        public bool CanCreateEvent => !string.IsNullOrWhiteSpace(EventTitle) && ((EndDate.Date == StartDate.Date && (EndTime > StartTime || AllDay)) || EndDate.Date > StartDate.Date);
+        public bool CanCreateEvent => !string.IsNullOrWhiteSpace(EventTitle) && !string.IsNullOrWhiteSpace(Description) && !string.IsNullOrWhiteSpace(EventLocation) && ((EndDate.Date == StartDate.Date && (EndTime > StartTime || AllDay)) || EndDate.Date > StartDate.Date);
 
-        public string Description { get; set; }
+        string description;
 
-        public string EventLocation { get; set; }
+        public string Description
+        {
+            get => description;
+            set
+            {
+                if (SetProperty(ref description, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateEvent));
+                }
+            }
+        }
+
+        string eventLocation;
+
+        public string EventLocation
+        {
+            get => eventLocation;
+            set
+            {
+                if (SetProperty(ref eventLocation, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateEvent));
+                }
+            }
+        }
 
         bool allDay;
 

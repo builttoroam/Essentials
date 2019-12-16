@@ -14,6 +14,16 @@ namespace Samples.View
             InitializeComponent();
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            var vm = BindingContext as CalendarViewModel;
+
+            vm?.RefreshCalendars();
+            vm?.OnChangeRequestCalendarSpecificEvents();
+        }
+
         async void OnAddCalendarButtonClicked(object sender, EventArgs e)
         {
             var modal = new CalendarAddPage();
