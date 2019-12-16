@@ -176,6 +176,16 @@ namespace Xamarin.Essentials
 
         static Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+        static async Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+
+            var calendarEventAttendees = calendarEvent.Attendees.ToList();
+            calendarEventAttendees.RemoveAll(x => x.Name == newAttendee.Name);
+
+            return true;
+        }
     }
 }

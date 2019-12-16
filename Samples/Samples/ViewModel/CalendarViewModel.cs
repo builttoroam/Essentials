@@ -105,6 +105,8 @@ namespace Samples.ViewModel
             }
         }
 
+        public void RefreshCalendars() => OnClickGetCalendars();
+
         async void OnClickGetCalendars()
         {
             CalendarList.Clear();
@@ -156,7 +158,7 @@ namespace Samples.ViewModel
             RefreshEventList();
         }
 
-        void OnChangeRequestCalendarSpecificEvents(string calendarId = null, DateTime? startDateTime = null, DateTime? endDateTime = null) => RefreshEventList(calendarId, startDateTime, endDateTime);
+        public void OnChangeRequestCalendarSpecificEvents(string calendarId = null, DateTime? startDateTime = null, DateTime? endDateTime = null) => RefreshEventList(calendarId, startDateTime, endDateTime);
 
         async void RefreshEventList(string calendarId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
