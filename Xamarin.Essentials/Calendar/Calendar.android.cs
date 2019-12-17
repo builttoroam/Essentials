@@ -342,8 +342,8 @@ namespace Xamarin.Essentials
             }
 
             var attendeesUri = CalendarContract.Attendees.ContentUri;
-            var attendeeSpecificAttendees = $"{CalendarContract.Attendees.InterfaceConsts.AttendeeName}={newAttendee.Name} {andCondition}";
-            attendeeSpecificAttendees = $"{CalendarContract.Attendees.InterfaceConsts.AttendeeEmail}={newAttendee.Email}";
+            var attendeeSpecificAttendees = $"{CalendarContract.Attendees.InterfaceConsts.AttendeeName}='{newAttendee.Name}' {andCondition} ";
+            attendeeSpecificAttendees += $"{CalendarContract.Attendees.InterfaceConsts.AttendeeEmail}='{newAttendee.Email}'";
 
             var result = Platform.AppContext.ApplicationContext.ContentResolver.Delete(attendeesUri, attendeeSpecificAttendees, null);
 
