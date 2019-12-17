@@ -138,23 +138,18 @@ namespace Xamarin.Essentials
             return attendees;
         }
 
-        static async Task<string> PlatformCreateOrUpdateCalendarEvent(DeviceEvent newEvent)
+        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
+            if (string.IsNullOrEmpty(newEvent.CalendarId))
+            {
+                return string.Empty;
+            }
+
             var instance = await CalendarRequest.GetInstanceAsync();
 
-            Appointment app = null;
-
-            if (newEvent.Id != null)
-            {
-                app = await instance.GetAppointmentAsync(newEvent.Id);
-            }
-            else
-            {
-                app = new Appointment();
-            }
-
+            var app = new Appointment();
             app.Subject = newEvent.Title;
             app.Details = newEvent.Description;
             app.Location = newEvent.Location;
@@ -169,6 +164,45 @@ namespace Xamarin.Essentials
                 return app.LocalId;
 
             throw new ArgumentException("[UWP]: Could not create appointment with supplied parameters");
+        }
+
+        static async Task<bool> PlatformUpdateCalendarEvent(DeviceEvent eventToUpdate)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var existingEvent = await GetEventByIdAsync(eventToUpdate.Id);
+
+            Appointment thisEvent = null;
+            var instance = await CalendarRequest.GetInstanceAsync();
+            if (string.IsNullOrEmpty(eventToUpdate.CalendarId) || existingEvent == null)
+            {
+                return false;
+            }
+            else if (existingEvent.CalendarId != eventToUpdate.CalendarId)
+            {
+                await DeleteCalendarEventById(existingEvent.Id, existingEvent.CalendarId);
+                thisEvent = new Appointment();
+            }
+            else
+            {
+                thisEvent = await instance.GetAppointmentAsync(eventToUpdate.Id);
+            }
+
+            thisEvent.Subject = eventToUpdate.Title;
+            thisEvent.Details = eventToUpdate.Description;
+            thisEvent.Location = eventToUpdate.Location;
+            thisEvent.StartTime = eventToUpdate.StartDate;
+            thisEvent.Duration = eventToUpdate.EndDate.HasValue ? eventToUpdate.EndDate.Value - eventToUpdate.StartDate : TimeSpan.FromDays(1);
+            thisEvent.AllDay = eventToUpdate.AllDay;
+
+            var cal = await instance.GetAppointmentCalendarAsync(eventToUpdate.CalendarId);
+            await cal.SaveAppointmentAsync(thisEvent);
+
+            if (!string.IsNullOrEmpty(thisEvent.LocalId))
+            {
+                return true;
+            }
+            throw new ArgumentException("[UWP]: Could not update appointment with supplied parameters");
         }
 
         static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)

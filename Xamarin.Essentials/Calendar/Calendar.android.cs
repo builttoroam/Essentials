@@ -248,7 +248,7 @@ namespace Xamarin.Essentials
             return result.ToString();
         }
 
-        static async Task<string> PlatformCreateOrUpdateCalendarEvent(DeviceEvent newEvent)
+        static async Task<string> PlatformCreateEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -271,17 +271,51 @@ namespace Xamarin.Essentials
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventEndTimezone, TimeZoneInfo.Local.Id);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Deleted, 0);
 
-            if (newEvent.Id == null)
+            var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
+            if (int.TryParse(resultUri.LastPathSegment, out result))
             {
-                var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
-                result = Convert.ToInt32(resultUri.LastPathSegment);
                 return result.ToString();
             }
-            else
+            throw new ArgumentException("[Android]: Could not create appointment with supplied parameters");
+        }
+
+        static async Task<bool> PlatformUpdateCalendarEvent(DeviceEvent eventToUpdate)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var thisEvent = await GetEventByIdAsync(eventToUpdate.Id);
+
+            var eventUri = CalendarContract.Events.ContentUri;
+            var eventValues = new ContentValues();
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.CalendarId, eventToUpdate.CalendarId);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, eventToUpdate.Title);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, eventToUpdate.Description);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, eventToUpdate.Location);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, eventToUpdate.AllDay);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, eventToUpdate.StartDate.ToUnixTimeMilliseconds().ToString());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, eventToUpdate.EndDate.HasValue ? eventToUpdate.EndDate.Value.ToUnixTimeMilliseconds().ToString() : eventToUpdate.StartDate.AddDays(1).ToUnixTimeMilliseconds().ToString());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventEndTimezone, TimeZoneInfo.Local.Id);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Deleted, 0);
+
+            if (string.IsNullOrEmpty(eventToUpdate.CalendarId) || thisEvent == null)
             {
-                var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Update(eventUri, eventValues, $"{CalendarContract.Attendees.InterfaceConsts.Id}={newEvent.Id}", null);
-                return resultUri.ToString();
+                return false;
             }
+            else if (thisEvent.CalendarId != eventToUpdate.CalendarId)
+            {
+                await DeleteCalendarEventById(thisEvent.Id, thisEvent.CalendarId);
+                var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
+                if (int.TryParse(resultUri.LastPathSegment, out var result))
+                {
+                    return true;
+                }
+            }
+            else if (Platform.AppContext.ApplicationContext.ContentResolver.Update(eventUri, eventValues, $"{CalendarContract.Attendees.InterfaceConsts.Id}={eventToUpdate.Id}", null) > 0)
+            {
+                return true;
+            }
+            throw new ArgumentException("[Android]: Could not update appointment with supplied parameters");
         }
 
         static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)

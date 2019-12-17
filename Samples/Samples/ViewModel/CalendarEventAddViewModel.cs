@@ -170,15 +170,17 @@ namespace Samples.ViewModel
                 EndDate = !AllDay ? (DateTimeOffset?)endDto : null
             };
 
-            var eventId = await Calendar.CreateOrUpdateCalendarEvent(newEvent);
-
             if (string.IsNullOrEmpty(EventId))
             {
+                var eventId = await Calendar.CreateCalendarEvent(newEvent);
                 await DisplayAlertAsync("Created event id: " + eventId);
             }
             else
             {
-                await DisplayAlertAsync("Updated event id: " + newEvent.Id);
+                if (await Calendar.UpdateCalendarEvent(newEvent))
+                {
+                    await DisplayAlertAsync("Updated event id: " + newEvent.Id);
+                }
             }
         }
     }

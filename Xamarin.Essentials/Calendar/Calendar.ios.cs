@@ -110,18 +110,16 @@ namespace Xamarin.Essentials
             return attendees;
         }
 
-        static async Task<string> PlatformCreateOrUpdateCalendarEvent(DeviceEvent newEvent)
+        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
-            EKEvent evnt = null;
-            if (newEvent.Id != null)
+
+            if (string.IsNullOrEmpty(newEvent.CalendarId))
             {
-                evnt = CalendarRequest.Instance.GetCalendarItem(newEvent.Id) as EKEvent;
+                return string.Empty;
             }
-            else
-            {
-                evnt = EKEvent.FromStore(CalendarRequest.Instance);
-            }
+
+            var evnt = EKEvent.FromStore(CalendarRequest.Instance);
             evnt.Title = newEvent.Title;
             evnt.Calendar = CalendarRequest.Instance.GetCalendar(newEvent.CalendarId);
             evnt.Notes = newEvent.Description;
@@ -134,7 +132,43 @@ namespace Xamarin.Essentials
             {
                 return evnt.EventIdentifier;
             }
-            throw new Exception(error.DebugDescription);
+            throw new ArgumentException("[iOS]: Could not create appointment with supplied parameters");
+        }
+
+        static async Task<bool> PlatformUpdateCalendarEvent(DeviceEvent eventToUpdate)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var existingEvent = await GetEventByIdAsync(eventToUpdate.Id);
+            EKEvent thisEvent = null;
+
+            if (string.IsNullOrEmpty(eventToUpdate.CalendarId) || existingEvent == null)
+            {
+                return false;
+            }
+            else if (existingEvent.CalendarId != eventToUpdate.CalendarId)
+            {
+                await DeleteCalendarEventById(existingEvent.Id, existingEvent.CalendarId);
+                thisEvent = EKEvent.FromStore(CalendarRequest.Instance);
+            }
+            else
+            {
+                thisEvent = CalendarRequest.Instance.GetCalendarItem(eventToUpdate.Id) as EKEvent;
+            }
+
+            thisEvent.Title = eventToUpdate.Title;
+            thisEvent.Calendar = CalendarRequest.Instance.GetCalendar(eventToUpdate.CalendarId);
+            thisEvent.Notes = eventToUpdate.Description;
+            thisEvent.Location = eventToUpdate.Location;
+            thisEvent.AllDay = eventToUpdate.AllDay;
+            thisEvent.StartDate = eventToUpdate.StartDate.ToNSDate();
+            thisEvent.EndDate = eventToUpdate.EndDate.HasValue ? eventToUpdate.EndDate.Value.ToNSDate() : eventToUpdate.StartDate.AddDays(1).ToNSDate();
+
+            if (CalendarRequest.Instance.SaveEvent(thisEvent, EKSpan.ThisEvent, true, out var error))
+            {
+                return true;
+            }
+            throw new ArgumentException("[iOS]: Could not update appointment with supplied parameters");
         }
 
         static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)

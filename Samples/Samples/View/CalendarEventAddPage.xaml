@@ -18,7 +18,7 @@
     <StackLayout>
       <Grid>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition/>
+          <ColumnDefinition Width="Auto"/>
           <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
@@ -72,7 +72,7 @@
       </Grid>
       <Grid>
         <Grid.ColumnDefinitions>
-          <ColumnDefinition/>
+          <ColumnDefinition Width="Auto"/>
           <ColumnDefinition/>
           <ColumnDefinition/>
         </Grid.ColumnDefinitions>
