@@ -92,7 +92,9 @@ namespace Samples.View
         {
             var modal = new CalendarEventAddPage();
 
-            modal.BindingContext = new CalendarEventAddViewModel(ViewModel.CalendarId, $"Edit: {ViewModel.Title}", ViewModel);
+            var calendarName = (await Calendar.GetCalendarsAsync()).Where(x => x.Id == ViewModel.CalendarId).First().Name;
+
+            modal.BindingContext = new CalendarEventAddViewModel(ViewModel.CalendarId, calendarName, ViewModel);
             await Navigation.PushAsync(modal);
         }
     }

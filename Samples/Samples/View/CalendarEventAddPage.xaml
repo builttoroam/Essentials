@@ -30,8 +30,7 @@
         </Grid.RowDefinitions>
         <Label Text="Calendar:"
                HorizontalTextAlignment="Center"/>
-        <Entry IsReadOnly="true"
-               Text="{Binding CalendarName}"
+        <Label Text="{Binding CalendarName}"
                Grid.Row="0"
                Grid.Column="1"/>
 
