@@ -157,6 +157,9 @@ namespace Xamarin.Essentials
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
             var calendar = EKCalendar.Create(EKEntityType.Event, CalendarRequest.Instance);
+            calendar.Title = newCalendar.Name;
+            var source = CalendarRequest.Instance.Sources.Where(x => x.SourceType == EKSourceType.Local).FirstOrDefault();
+            calendar.Source = source;
 
             if (CalendarRequest.Instance.SaveCalendar(calendar, true, out var error))
             {
@@ -165,6 +168,7 @@ namespace Xamarin.Essentials
             throw new Exception(error.DebugDescription);
         }
 
+        // Not possible at this point in time from what I've found - https://stackoverflow.com/questions/28826222/add-invitees-to-calendar-event-programmatically-ios
         static Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
         static async Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId)
