@@ -21,7 +21,6 @@ namespace Samples.View
             var vm = BindingContext as CalendarViewModel;
 
             vm?.RefreshCalendars();
-            vm?.OnChangeRequestCalendarSpecificEvents();
         }
 
         async void OnAddCalendarButtonClicked(object sender, EventArgs e)

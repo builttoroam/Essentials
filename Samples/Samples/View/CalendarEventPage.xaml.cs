@@ -17,6 +17,15 @@ namespace Samples.View
             InitializeComponent();
         }
 
+        protected async override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            var vm = BindingContext as DeviceEvent;
+            var evnt = await Calendar.GetEventByIdAsync(vm.Id);
+            BindingContext = evnt;
+        }
+
         async void OnDeleteEventButtonClicked(object sender, EventArgs e)
         {
             if (!(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId.ToString()))
@@ -57,9 +66,10 @@ namespace Samples.View
                 if (success)
                 {
                     var lst = ViewModel.Attendees.ToList();
-                    foreach (var a in lst.Where(x => x.Email == attendee.Email && x.Name == attendee.Name))
+                    var attendeeToRemove = lst.Where(x => x.Email == attendee.Email && x.Name == attendee.Name).FirstOrDefault();
+                    if (attendeeToRemove != null)
                     {
-                        lst.Remove(a);
+                        lst.Remove(attendeeToRemove);
                     }
                     BindingContext = new DeviceEvent()
                     {

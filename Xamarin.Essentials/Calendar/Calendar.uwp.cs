@@ -235,14 +235,13 @@ namespace Xamarin.Essentials
             if (calendarEvent == null)
                 throw new ArgumentException("[UWP]: You must supply a valid event id to remove an attendee from.");
 
-            var attendeesToRemove = calendarEvent.Invitees.Where(x => x.DisplayName == newAttendee.Name && x.Address == newAttendee.Email);
-            foreach (var attendee in attendeesToRemove)
-            {
-                calendarEvent.Invitees.Remove(attendee);
-            }
+            var attendeeToRemove = calendarEvent.Invitees.Where(x => x.DisplayName == newAttendee.Name && x.Address == newAttendee.Email).FirstOrDefault();
+
+            calendarEvent.Invitees.Remove(attendeeToRemove);
+
             await cal.SaveAppointmentAsync(calendarEvent);
 
-            return attendeesToRemove.Count() > 0;
+            return attendeeToRemove != null;
         }
     }
 }
