@@ -18,7 +18,7 @@ namespace Xamarin.Essentials
 
         public static Task<string> CreateCalendar(DeviceCalendar newCalendar) => PlatformCreateCalendar(newCalendar);
 
-        public static Task<string> CreateCalendarEvent(DeviceEvent newEvent) => PlatformCreateCalendarEvent(newEvent);
+        public static Task<string> CreateOrUpdateCalendarEvent(DeviceEvent newEvent) => PlatformCreateOrUpdateCalendarEvent(newEvent);
 
         public static Task<bool> DeleteCalendarEventById(string eventId, string calendarId) => PlatformDeleteCalendarEventById(eventId, calendarId);
 

@@ -87,5 +87,13 @@ namespace Samples.View
                 }
             }
         }
+
+        async void OnEditEventButtonClicked(object sender, EventArgs e)
+        {
+            var modal = new CalendarEventAddPage();
+
+            modal.BindingContext = new CalendarEventAddViewModel(ViewModel.CalendarId, $"Edit: {ViewModel.Title}", ViewModel);
+            await Navigation.PushAsync(modal);
+        }
     }
 }

@@ -138,21 +138,29 @@ namespace Xamarin.Essentials
             return attendees;
         }
 
-        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
+        static async Task<string> PlatformCreateOrUpdateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
             var instance = await CalendarRequest.GetInstanceAsync();
 
-            var app = new Appointment()
+            Appointment app = null;
+
+            if (newEvent.Id != null)
             {
-                Subject = newEvent.Title,
-                Details = newEvent.Description,
-                Location = newEvent.Location,
-                StartTime = newEvent.StartDate,
-                Duration = newEvent.EndDate.HasValue ? newEvent.EndDate.Value - newEvent.StartDate : TimeSpan.FromDays(1),
-                AllDay = newEvent.AllDay
-            };
+                app = await instance.GetAppointmentAsync(newEvent.Id);
+            }
+            else
+            {
+                app = new Appointment();
+            }
+
+            app.Subject = newEvent.Title;
+            app.Details = newEvent.Description;
+            app.Location = newEvent.Location;
+            app.StartTime = newEvent.StartDate;
+            app.Duration = newEvent.EndDate.HasValue ? newEvent.EndDate.Value - newEvent.StartDate : TimeSpan.FromDays(1);
+            app.AllDay = newEvent.AllDay;
 
             var cal = await instance.GetAppointmentCalendarAsync(newEvent.CalendarId);
             await cal.SaveAppointmentAsync(app);

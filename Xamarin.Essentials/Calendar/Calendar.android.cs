@@ -50,9 +50,9 @@ namespace Xamarin.Essentials
                 case CalendarAccess.AccessRoot:
                 case CalendarAccess.AccessOwner:
                 case CalendarAccess.AccessEditor:
-                    return false;
-                default:
                     return true;
+                default:
+                    return false;
             }
         }
 
@@ -232,13 +232,23 @@ namespace Xamarin.Essentials
             var calendarUri = CalendarContract.Calendars.ContentUri;
             var cursor = Platform.AppContext.ApplicationContext.ContentResolver;
             var calendarValues = new ContentValues();
+            calendarValues.Put(CalendarContract.Calendars.InterfaceConsts.AccountName, "Xamarin.Essentials.Calendar");
+            calendarValues.Put(CalendarContract.Calendars.InterfaceConsts.AccountType, CalendarContract.AccountTypeLocal);
             calendarValues.Put(CalendarContract.Calendars.Name, newCalendar.Name);
             calendarValues.Put(CalendarContract.Calendars.InterfaceConsts.CalendarDisplayName, newCalendar.Name);
+            calendarValues.Put(CalendarContract.Calendars.InterfaceConsts.CalendarAccessLevel, CalendarAccess.AccessOwner.ToString());
+            calendarValues.Put(CalendarContract.Calendars.InterfaceConsts.Visible, true);
+            calendarValues.Put(CalendarContract.Calendars.InterfaceConsts.SyncEvents, true);
+            calendarUri = calendarUri.BuildUpon()
+                    .AppendQueryParameter(CalendarContract.CallerIsSyncadapter, "true")
+                    .AppendQueryParameter(CalendarContract.Calendars.InterfaceConsts.AccountName, "Xamarin.Essentials.Calendar")
+                    .AppendQueryParameter(CalendarContract.Calendars.InterfaceConsts.AccountType, CalendarContract.AccountTypeLocal)
+                    .Build();
             var result = cursor.Insert(calendarUri, calendarValues);
             return result.ToString();
         }
 
-        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
+        static async Task<string> PlatformCreateOrUpdateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -256,14 +266,22 @@ namespace Xamarin.Essentials
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, newEvent.Location);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, newEvent.AllDay);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, newEvent.StartDate.ToUnixTimeMilliseconds().ToString());
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToUnixTimeMilliseconds().ToString() : newEvent.StartDate.AddDays(1).ToString());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToUnixTimeMilliseconds().ToString() : newEvent.StartDate.AddDays(1).ToUnixTimeMilliseconds().ToString());
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventEndTimezone, TimeZoneInfo.Local.Id);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Deleted, 0);
 
-            var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
-            result = Convert.ToInt32(resultUri.LastPathSegment);
-
-            return result.ToString();
+            if (newEvent.Id == null)
+            {
+                var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
+                result = Convert.ToInt32(resultUri.LastPathSegment);
+                return result.ToString();
+            }
+            else
+            {
+                var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Update(eventUri, eventValues, $"{CalendarContract.Attendees.InterfaceConsts.Id}={newEvent.Id}", null);
+                return resultUri.ToString();
+            }
         }
 
         static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)

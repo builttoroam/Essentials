@@ -14,7 +14,7 @@ namespace Xamarin.Essentials
 
         static Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
-        static Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent) => throw ExceptionUtils.NotSupportedOrImplementedException;
+        static Task<string> PlatformCreateOrUpdateCalendarEvent(DeviceEvent newEvent) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
         static Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId) => throw ExceptionUtils.NotSupportedOrImplementedException;
 

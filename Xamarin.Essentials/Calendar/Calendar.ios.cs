@@ -110,11 +110,18 @@ namespace Xamarin.Essentials
             return attendees;
         }
 
-        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
+        static async Task<string> PlatformCreateOrUpdateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
-
-            var evnt = EKEvent.FromStore(CalendarRequest.Instance);
+            EKEvent evnt = null;
+            if (newEvent.Id != null)
+            {
+                evnt = CalendarRequest.Instance.GetCalendarItem(newEvent.Id) as EKEvent;
+            }
+            else
+            {
+                evnt = EKEvent.FromStore(CalendarRequest.Instance);
+            }
             evnt.Title = newEvent.Title;
             evnt.Calendar = CalendarRequest.Instance.GetCalendar(newEvent.CalendarId);
             evnt.Notes = newEvent.Description;
@@ -122,6 +129,7 @@ namespace Xamarin.Essentials
             evnt.AllDay = newEvent.AllDay;
             evnt.StartDate = newEvent.StartDate.ToNSDate();
             evnt.EndDate = newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToNSDate() : newEvent.StartDate.AddDays(1).ToNSDate();
+
             if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
             {
                 return evnt.EventIdentifier;

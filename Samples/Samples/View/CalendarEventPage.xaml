@@ -27,6 +27,7 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Label x:Name="EventName" 
                     Text="{Binding Title}"
@@ -34,6 +35,9 @@
                    TextColor="Black"
                    HorizontalTextAlignment="Center"/>
                 <Button Grid.Column="1"
+                      Text="Edit"
+                      Clicked="OnEditEventButtonClicked"/>
+                <Button Grid.Column="2"
                       Text="Delete"
                       Clicked="OnDeleteEventButtonClicked"/>
             </Grid>
