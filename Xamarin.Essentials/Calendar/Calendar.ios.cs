@@ -188,7 +188,13 @@ namespace Xamarin.Essentials
             var calendarEventAttendees = calendarEvent.Attendees.ToList();
             calendarEventAttendees.RemoveAll(x => x.Name == newAttendee.Name);
 
-            return true;
+            // calendarEvent.Attendees = calendarEventAttendees; - readonly cannot be done at this stage.
+
+            if (CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.ThisEvent, true, out var error))
+            {
+                return true;
+            }
+            throw new Exception(error.DebugDescription);
         }
     }
 }
