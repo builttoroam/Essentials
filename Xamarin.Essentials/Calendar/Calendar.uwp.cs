@@ -110,7 +110,12 @@ namespace Xamarin.Essentials
                     throw new ArgumentOutOfRangeException($"[UWP]: No Event found for event Id {eventId}");
                 }
             }
-
+            var rules = new RecurrenceRule();
+            rules.Interval = e.Recurrence.Interval;
+            rules.TotalOccurences = e.Recurrence.Occurrences;
+            rules.EndDate = e.Recurrence.Until;
+            rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+            rules.Frequency = (RecurrenceFrequency)e.Recurrence.Unit;
             return new DeviceEvent()
             {
                 Id = e.LocalId,
@@ -120,8 +125,24 @@ namespace Xamarin.Essentials
                 Location = e.Location,
                 StartDate = e.StartTime,
                 EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
-                Attendees = GetAttendeesForEvent(e.Invitees)
+                Attendees = GetAttendeesForEvent(e.Invitees),
+                RecurrancePattern = rules
             };
+        }
+
+        static List<int> ConvertBitFlagToIntList(int wholeNumber, int maxValue)
+        {
+            var currentVal = wholeNumber;
+            var toReturn = new List<int>();
+            for (var i = maxValue; i > 0; i /= 2)
+            {
+                if (currentVal >= i)
+                {
+                    toReturn.Add((int)Math.Log(i, 2));
+                    currentVal -= i;
+                }
+            }
+            return toReturn;
         }
 
         static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<AppointmentInvitee> inviteList)

@@ -63,6 +63,8 @@ namespace Xamarin.Essentials
         public DateTimeOffset? EndDate { get; set; }
 
         public IEnumerable<DeviceEventAttendee> Attendees { get; set; }
+
+        public RecurrenceRule RecurrancePattern { get; set; }
     }
 
     [Preserve(AllMembers = true)]
@@ -73,5 +75,52 @@ namespace Xamarin.Essentials
         public string Email { get; set; }
 
         public bool Required { get; set; }
+    }
+
+    [Preserve(AllMembers = true)]
+    public class RecurrenceRule
+    {
+        public uint? TotalOccurences { get; set; }
+
+        public uint Interval { get; set; }
+
+        public DateTimeOffset? EndDate { get; set; }
+
+        public RecurrenceFrequency Frequency { get; set; }
+
+        // Only allow event to occur on these days [not available for daily]
+        public List<DayOfTheWeek> DaysOfTheWeek { get; set; }
+
+        public List<int> DaysOfTheMonth { get; set; }
+
+        public List<int> WeeksOfTheYear { get; set; }
+
+        public List<int> MonthsOfTheYear { get; set; }
+
+        public List<int> DaysOfTheYear { get; set; }
+
+        public List<int> DayIterationOffSetPosition { get; set; }
+
+        public DayOfTheWeek StartOfTheWeek { get; set; }
+    }
+
+    public enum RecurrenceFrequency
+    {
+        Daily = 0,
+        Weekly = 1,
+        Monthly = 2,
+        Yearly = 3
+    }
+
+    public enum DayOfTheWeek
+    {
+        NotSet = 0,
+        Sunday = 1,
+        Monday = 2,
+        Tuesday = 3,
+        Wednesday = 4,
+        Thursday = 5,
+        Friday = 6,
+        Saturday = 7
     }
 }

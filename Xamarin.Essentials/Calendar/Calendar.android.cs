@@ -12,6 +12,10 @@ namespace Xamarin.Essentials
     public static partial class Calendar
     {
         const string andCondition = "AND";
+        const string dailyFrequency = "DAILY";
+        const string weeklyFrequency = "WEEKLY";
+        const string monthlyFrequency = "MONTHLY";
+        const string yearlyFrequency = "YEARLY";
 
         static async Task<IEnumerable<DeviceCalendar>> PlatformGetCalendarsAsync()
         {
@@ -166,7 +170,9 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.EventLocation,
                 CalendarContract.Events.InterfaceConsts.AllDay,
                 CalendarContract.Events.InterfaceConsts.Dtstart,
-                CalendarContract.Events.InterfaceConsts.Dtend
+                CalendarContract.Events.InterfaceConsts.Dtend,
+                CalendarContract.Events.InterfaceConsts.Rrule,
+                CalendarContract.Events.InterfaceConsts.Rdate
             };
 
             // Android event ids are always integers
@@ -190,7 +196,8 @@ namespace Xamarin.Essentials
                         Location = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventLocation)),
                         StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart))),
                         EndDate = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 0 ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend))) : null,
-                        Attendees = GetAttendeesForEvent(eventId)
+                        Attendees = GetAttendeesForEvent(eventId),
+                        RecurrancePattern = !string.IsNullOrEmpty(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) ? GetRecurranceRuleForEvent(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) : null
                     };
                     return eventResult;
                 }
@@ -250,7 +257,7 @@ namespace Xamarin.Essentials
             return result.ToString();
         }
 
-        static async Task<string> PlatformCreateEvent(DeviceEvent newEvent)
+        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -384,6 +391,183 @@ namespace Xamarin.Essentials
             var result = Platform.AppContext.ApplicationContext.ContentResolver.Delete(attendeesUri, attendeeSpecificAttendees, null);
 
             return result > 0;
+        }
+
+        // https://icalendar.org/iCalendar-RFC-5545/3-8-5-3-recurrence-rule.html
+        static RecurrenceRule GetRecurranceRuleForEvent(string rule)
+        {
+            var recurranceRule = new RecurrenceRule();
+            if (rule.Contains("FREQ="))
+            {
+                var ruleFrequency = rule.Substring(rule.IndexOf("FREQ=", StringComparison.Ordinal) + 5);
+                ruleFrequency = ruleFrequency.Contains(";") ? ruleFrequency.Substring(0, ruleFrequency.IndexOf(";")) : ruleFrequency;
+                switch (ruleFrequency)
+                {
+                    case dailyFrequency:
+                        recurranceRule.Frequency = RecurrenceFrequency.Daily;
+                        break;
+                    case weeklyFrequency:
+                        recurranceRule.Frequency = RecurrenceFrequency.Weekly;
+                        break;
+                    case monthlyFrequency:
+                        recurranceRule.Frequency = RecurrenceFrequency.Monthly;
+                        break;
+                    case yearlyFrequency:
+                        recurranceRule.Frequency = RecurrenceFrequency.Yearly;
+                        break;
+                }
+            }
+
+            if (rule.Contains("INTERVAL="))
+            {
+                var ruleInterval = rule.Substring(rule.IndexOf("INTERVAL=", StringComparison.Ordinal) + 9);
+                ruleInterval = ruleInterval.Contains(";") ? ruleInterval.Substring(0, ruleInterval.IndexOf(";", StringComparison.Ordinal)) : ruleInterval;
+                recurranceRule.Interval = uint.Parse(ruleInterval);
+            }
+
+            if (rule.Contains("COUNT="))
+            {
+                var ruleOccurences = rule.Substring(rule.IndexOf("COUNT=", StringComparison.Ordinal) + 6);
+                ruleOccurences = ruleOccurences.Contains(";") ? ruleOccurences.Substring(0, ruleOccurences.IndexOf(";", StringComparison.Ordinal)) : ruleOccurences;
+                recurranceRule.TotalOccurences = uint.Parse(ruleOccurences);
+            }
+
+            if (rule.Contains("UNTIL="))
+            {
+                var ruleEndDate = rule.Substring(rule.IndexOf("UNTIL=", StringComparison.Ordinal) + 6);
+                ruleEndDate = ruleEndDate.Contains(";") ? ruleEndDate.Substring(0, ruleEndDate.IndexOf(";", StringComparison.Ordinal)) : ruleEndDate;
+                recurranceRule.EndDate = DateTimeOffset.Parse(ruleEndDate).ToLocalTime();
+            }
+
+            // Every other month on the first and last Sunday of the month for 10 occurrences:
+            // DTSTART; TZID = America / New_York:19970907T090000
+            // RRULE:FREQ = MONTHLY; INTERVAL = 2; COUNT = 10; BYDAY = 1SU,-1SU
+
+            // Monthly on the second-to - last Monday of the month for 6 months:
+            // DTSTART; TZID = America / New_York:19970922T090000
+            // RRULE:FREQ = MONTHLY; COUNT = 6; BYDAY = -2MO
+            if (rule.Contains("BYDAY="))
+            {
+                var ruleOccurenceDays = rule.Substring(rule.IndexOf("BYDAY=", StringComparison.Ordinal) + 6);
+                ruleOccurenceDays = ruleOccurenceDays.Contains(";") ? ruleOccurenceDays.Substring(0, ruleOccurenceDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceDays;
+                recurranceRule.DaysOfTheWeek = new List<DayOfTheWeek>();
+                foreach (var d in ruleOccurenceDays.Split(','))
+                {
+                    switch (d)
+                    {
+                        case "MO":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Monday);
+                            break;
+                        case "TU":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Tuesday);
+                            break;
+                        case "WE":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Wednesday);
+                            break;
+                        case "TH":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Thursday);
+                            break;
+                        case "FR":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Friday);
+                            break;
+                        case "SA":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Saturday);
+                            break;
+                        case "SU":
+                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Sunday);
+                            break;
+                    }
+                }
+            }
+
+            if (rule.Contains("BYYEARDAY="))
+            {
+                var ruleOccurenceYearDays = rule.Substring(rule.IndexOf("BYYEARDAY=", StringComparison.Ordinal) + 11);
+                ruleOccurenceYearDays = ruleOccurenceYearDays.Contains(";") ? ruleOccurenceYearDays.Substring(0, ruleOccurenceYearDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceYearDays;
+                recurranceRule.DaysOfTheYear = new List<int>();
+                foreach (var d in ruleOccurenceYearDays.Split(','))
+                {
+                    recurranceRule.DaysOfTheYear.Add(int.Parse(d));
+                }
+            }
+
+            if (rule.Contains("BYMONTHDAY="))
+            {
+                var ruleOccurenceMonthDays = rule.Substring(rule.IndexOf("BYMONTHDAY=", StringComparison.Ordinal) + 11);
+                ruleOccurenceMonthDays = ruleOccurenceMonthDays.Contains(";") ? ruleOccurenceMonthDays.Substring(0, ruleOccurenceMonthDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonthDays;
+                recurranceRule.DaysOfTheMonth = new List<int>();
+                foreach (var d in ruleOccurenceMonthDays.Split(','))
+                {
+                    recurranceRule.DaysOfTheMonth.Add(int.Parse(d));
+                }
+            }
+
+            if (rule.Contains("BYMONTH="))
+            {
+                var ruleOccurenceMonths = rule.Substring(rule.IndexOf("BYMONTH=", StringComparison.Ordinal) + 8);
+                ruleOccurenceMonths = ruleOccurenceMonths.Contains(";") ? ruleOccurenceMonths.Substring(0, ruleOccurenceMonths.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonths;
+                recurranceRule.MonthsOfTheYear = new List<int>();
+                foreach (var m in ruleOccurenceMonths.Split(','))
+                {
+                    recurranceRule.MonthsOfTheYear.Add(int.Parse(m));
+                }
+            }
+
+            if (rule.Contains("BYSETPOS="))
+            {
+                var ruleDayIterationOffset = rule.Substring(rule.IndexOf("BYSETPOS=", StringComparison.Ordinal) + 9);
+                ruleDayIterationOffset = ruleDayIterationOffset.Contains(";") ? ruleDayIterationOffset.Substring(0, ruleDayIterationOffset.IndexOf(";", StringComparison.Ordinal)) : ruleDayIterationOffset;
+                recurranceRule.DayIterationOffSetPosition = new List<int>();
+                foreach (var dayIteration in ruleDayIterationOffset.Split(','))
+                {
+                    recurranceRule.DayIterationOffSetPosition.Add(int.Parse(dayIteration));
+                }
+            }
+
+            // An example where the days generated makes a difference because of WKST:
+            // DTSTART; TZID = America / New_York:19970805T090000
+            //      RRULE:FREQ = WEEKLY; INTERVAL = 2; COUNT = 4; BYDAY = TU,SU; WKST = MO
+            //                  ==> (1997 EDT) August 5,10,19,24
+            // changing only WKST from MO to SU, yields different results...
+            // DTSTART; TZID = America / New_York:19970805T090000
+            //      RRULE:FREQ = WEEKLY; INTERVAL = 2; COUNT = 4; BYDAY = TU,SU; WKST = SU
+            //                  ==> (1997 EDT) August 5,17,19,31
+            // An example where an invalid date(i.e., February 30) is ignored.
+            // DTSTART; TZID = America / New_York:20070115T090000
+            //     RRULE:FREQ = MONTHLY; BYMONTHDAY = 15,30; COUNT = 5
+            //           ==> (2007 EST) January 15,30
+            //               (2007 EST) February 15
+            //               (2007 EDT) March 15,30
+            if (rule.Contains("WKST="))
+            {
+                var ruleStartOfTheWeek = rule.Substring(rule.IndexOf("WKST=", StringComparison.Ordinal) + 9);
+                ruleStartOfTheWeek = ruleStartOfTheWeek.Contains(";") ? ruleStartOfTheWeek.Substring(0, ruleStartOfTheWeek.IndexOf(";", StringComparison.Ordinal)) : ruleStartOfTheWeek;
+                switch (ruleStartOfTheWeek)
+                {
+                    case "MO":
+                        recurranceRule.StartOfTheWeek = DayOfTheWeek.Monday;
+                        break;
+                    case "TU":
+                        recurranceRule.StartOfTheWeek = DayOfTheWeek.Tuesday;
+                        break;
+                    case "WE":
+                        recurranceRule.StartOfTheWeek = DayOfTheWeek.Wednesday;
+                        break;
+                    case "TH":
+                        recurranceRule.StartOfTheWeek = DayOfTheWeek.Thursday;
+                        break;
+                    case "FR":
+                        recurranceRule.StartOfTheWeek = DayOfTheWeek.Friday;
+                        break;
+                    case "SA":
+                        recurranceRule.StartOfTheWeek = DayOfTheWeek.Saturday;
+                        break;
+                    case "SU":
+                        recurranceRule.StartOfTheWeek = DayOfTheWeek.Sunday;
+                        break;
+                }
+            }
+            return recurranceRule;
         }
     }
 }
