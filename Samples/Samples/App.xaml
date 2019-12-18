@@ -7,6 +7,7 @@
         <ResourceDictionary>
             <x:String x:Key="DateDisplayFormatter">{0:dd/MM/yy hh:mm tt}</x:String>
             <converters:NegativeConverter x:Key="NegativeConverter" />
+            <converters:AttendeeRequiredColorConverter x:Key="AttendeeRequiredColorConverter" />
             <Style TargetType="Page" ApplyToDerivedTypes="True">
                 <Setter Property="Visual" Value="Material" />
             </Style>

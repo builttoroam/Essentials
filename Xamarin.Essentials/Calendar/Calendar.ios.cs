@@ -102,7 +102,8 @@ namespace Xamarin.Essentials
                              select new DeviceEventAttendee
                              {
                                  Name = attendee.Name,
-                                 Email = attendee.Name
+                                 Email = attendee.Name,
+                                 Required = attendee.ParticipantRole == EKParticipantRole.Required
                              })
                             .OrderBy(e => e.Name)
                             .ToList();

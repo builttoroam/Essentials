@@ -36,9 +36,13 @@ namespace Samples.View
             if (!(calendarEvent is DeviceEvent))
                 return;
 
-            await Calendar.DeleteCalendarEventById(eventId, CalendarId.Text);
-            await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
-            await Navigation.PopAsync();
+            var answer = await DisplayAlert("Warning!", $"Are you sure you want to delete {calendarEvent.Title}? (this cannot be undone)", "Yes", "Cancel");
+            if (answer)
+            {
+                await Calendar.DeleteCalendarEventById(eventId, CalendarId.Text);
+                await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                await Navigation.PopAsync();
+            }
         }
 
         async void OnAddAttendeeButtonClicked(object sender, EventArgs e)

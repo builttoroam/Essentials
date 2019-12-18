@@ -121,6 +121,8 @@
                                             <ColumnDefinition/>
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
+                                        <BoxView Color="{Binding Required, Converter={StaticResource AttendeeRequiredColorConverter}}"
+                                                 Grid.ColumnSpan="3"/>
                                         <Label Text="{Binding Name}"
                                                TextColor="Black"/>
                                         <Label Grid.Column="1"
