@@ -110,6 +110,25 @@ namespace Xamarin.Essentials
             {
                 throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
             }
+            if (calendarEvent.HasRecurrenceRules)
+            {
+                var rule = new RecurrenceRule();
+                var iOSRule = calendarEvent.RecurrenceRules[0];
+
+                // This will need an extension function as these don't line up
+                rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
+                rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList();
+                rule.Interval = (uint)iOSRule.Interval;
+                rule.StartOfTheWeek = (DayOfTheWeek)iOSRule.FirstDayOfTheWeek;
+                rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList();
+                rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList();
+                rule.DaysOfTheYear = iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList();
+                rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear.Select(x => x.Int32Value).ToList();
+                rule.EndDate = iOSRule.RecurrenceEnd.EndDate.ToDateTimeOffset();
+
+                // Might have to calculate occuerences based on frequency/days of year and so forth for iOS.
+                // rule.TotalOccurences = (uint)iOSRule.??0
+            }
 
             return new Event
             {
