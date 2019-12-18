@@ -49,6 +49,14 @@ namespace Samples.ViewModel
             }
         }
 
+        bool required;
+
+        public bool Required
+        {
+            get => required;
+            set => SetProperty(ref required, value);
+        }
+
         bool IsValidEmail(string email)
         {
             try

@@ -195,7 +195,8 @@ namespace Xamarin.Essentials
             {
                 CalendarContract.Attendees.InterfaceConsts.EventId,
                 CalendarContract.Attendees.InterfaceConsts.AttendeeEmail,
-                CalendarContract.Attendees.InterfaceConsts.AttendeeName
+                CalendarContract.Attendees.InterfaceConsts.AttendeeName,
+                CalendarContract.Attendees.InterfaceConsts.AttendeeType
             };
             var attendeeSpecificAttendees = $"{CalendarContract.Attendees.InterfaceConsts.EventId}={eventId}";
             var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(attendeesUri, attendeesProjection.ToArray(), attendeeSpecificAttendees, null, null);
@@ -206,6 +207,7 @@ namespace Xamarin.Essentials
                 {
                     Name = cur.GetString(attendeesProjection.IndexOf(CalendarContract.Attendees.InterfaceConsts.AttendeeName)),
                     Email = cur.GetString(attendeesProjection.IndexOf(CalendarContract.Attendees.InterfaceConsts.AttendeeEmail)),
+                    Required = cur.GetInt(attendeesProjection.IndexOf(CalendarContract.Attendees.InterfaceConsts.AttendeeType)) == (int)CalendarAttendeesColumn.Required
                 });
             }
             cur.Dispose();
