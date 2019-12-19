@@ -11,14 +11,17 @@
                 Padding="20,20,20,20">
     <views:BasePage.Resources>
         <ResourceDictionary>
-            <x:String x:Key="DateDisplayFormatter">{0:dd/MM/yy hh:mm tt}</x:String>
-            <x:String x:Key="TimeSpanFormatter">{0:h\:mm}</x:String>
+          <x:String x:Key="DateDisplayFormatter">{0:dd/MM/yy hh:mm tt}</x:String>
+          <x:String x:Key="TimeSpanFormatter">{0:h\:mm}</x:String>
+          <converters:AttendeeRequiredColorConverter x:Key="AttendeeRequiredColorConverter" />
+          <converters:ReminderTextConverter x:Key="ReminderTextConverter" />
         </ResourceDictionary>
     </views:BasePage.Resources>
     <views:BasePage.Content>
         <StackLayout>
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -98,7 +101,34 @@
                            Text="{Binding Duration, StringFormat={StaticResource TimeSpanFormatter}}"
                            HorizontalTextAlignment="Center"/>
                 </Grid>
-                <ScrollView Grid.Row="3">
+              <Grid Grid.Row="3">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label Text="Reminders: "/>
+                <StackLayout Grid.Row="0"
+                             Grid.Column="1"
+                             BindableLayout.ItemsSource="{Binding Reminders}">
+                  <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="essentials:DeviceEventReminder">
+                      <Grid>
+                        <Grid.ColumnDefinitions>
+                          <ColumnDefinition/>
+                          <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Label Text="{Binding MinutesPriorToEventStart, Converter={StaticResource ReminderTextConverter}}"/>
+                        <Button Grid.Column="1"
+                                Margin="0,0,15,0"
+                                BackgroundColor="Red"
+                                Text=" - "
+                                Clicked="OnRemoveReminderFromEventButtonClicked"/>
+                      </Grid>
+                    </DataTemplate>
+                  </BindableLayout.ItemTemplate>
+                </StackLayout>
+              </Grid>
+                <ScrollView Grid.Row="4">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>

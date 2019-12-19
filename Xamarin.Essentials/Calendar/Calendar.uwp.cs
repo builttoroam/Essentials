@@ -110,12 +110,16 @@ namespace Xamarin.Essentials
                     throw new ArgumentOutOfRangeException($"[UWP]: No Event found for event Id {eventId}");
                 }
             }
-            var rules = new RecurrenceRule();
-            rules.Interval = e.Recurrence.Interval;
-            rules.TotalOccurences = e.Recurrence.Occurrences;
-            rules.EndDate = e.Recurrence.Until;
-            rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
-            rules.Frequency = (RecurrenceFrequency)e.Recurrence.Unit;
+            RecurrenceRule rules = null;
+            if (e.Recurrence != null)
+            {
+                rules = new RecurrenceRule();
+                rules.Interval = e.Recurrence.Interval;
+                rules.TotalOccurences = e.Recurrence.Occurrences;
+                rules.EndDate = e.Recurrence.Until;
+                rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                rules.Frequency = (RecurrenceFrequency)e.Recurrence.Unit;
+            }
             return new DeviceEvent()
             {
                 Id = e.LocalId,
@@ -126,7 +130,8 @@ namespace Xamarin.Essentials
                 StartDate = e.StartTime,
                 EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
                 Attendees = GetAttendeesForEvent(e.Invitees),
-                RecurrancePattern = rules
+                RecurrancePattern = rules,
+                Reminders = e.Reminder.HasValue ? new List<DeviceEventReminder>() { new DeviceEventReminder() { MinutesPriorToEventStart = e.Reminder.Value.Minutes } } : null
             };
         }
 

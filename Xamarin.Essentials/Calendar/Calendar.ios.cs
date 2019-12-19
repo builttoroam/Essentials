@@ -82,24 +82,35 @@ namespace Xamarin.Essentials
             {
                 throw new ArgumentOutOfRangeException($"[iOS]: No Event found for event Id {eventId}");
             }
+            RecurrenceRule rule = null;
             if (calendarEvent.HasRecurrenceRules)
             {
-                var rule = new RecurrenceRule();
+                rule = new RecurrenceRule();
                 var iOSRule = calendarEvent.RecurrenceRules[0];
 
                 // This will need an extension function as these don't line up
                 rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
-                rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList();
+                rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
                 rule.Interval = (uint)iOSRule.Interval;
                 rule.StartOfTheWeek = (DayOfTheWeek)iOSRule.FirstDayOfTheWeek;
-                rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList();
-                rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList();
-                rule.DaysOfTheYear = iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList();
-                rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear.Select(x => x.Int32Value).ToList();
-                rule.EndDate = iOSRule.RecurrenceEnd.EndDate.ToDateTimeOffset();
+                rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear != null ? iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList() : null;
+                rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth != null ? iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList() : null;
+                rule.DaysOfTheYear = iOSRule.DaysOfTheYear != null ? iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList() : null;
+                rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear != null ? iOSRule.MonthsOfTheYear.Select(x => x.Int32Value).ToList() : null;
+                rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffset();
+                rule.TotalOccurences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
 
                 // Might have to calculate occuerences based on frequency/days of year and so forth for iOS.
                 // rule.TotalOccurences = (uint)iOSRule.??0
+            }
+            List<DeviceEventReminder> alarms = null;
+            if (calendarEvent.HasAlarms)
+            {
+                alarms = new List<DeviceEventReminder>();
+                foreach (var a in calendarEvent.Alarms)
+                {
+                    alarms.Add(new DeviceEventReminder() { MinutesPriorToEventStart = (calendarEvent.StartDate.ToDateTimeOffset() - a.AbsoluteDate.ToDateTimeOffset()).Minutes });
+                }
             }
 
             return new DeviceEvent
@@ -111,7 +122,9 @@ namespace Xamarin.Essentials
                 Location = calendarEvent.Location,
                 StartDate = calendarEvent.StartDate.ToDateTimeOffset(),
                 EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffset() : null,
-                Attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<DeviceEventAttendee>()
+                Attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<DeviceEventAttendee>(),
+                RecurrancePattern = rule,
+                Reminders = alarms
             };
         }
 
@@ -231,7 +244,19 @@ namespace Xamarin.Essentials
         }
 
         // Not possible at this point in time from what I've found - https://stackoverflow.com/questions/28826222/add-invitees-to-calendar-event-programmatically-ios
-        static Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+        static async Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+
+            var iOSAttendee = new NSObject();
+            iOSAttendee.Init();
+            iOSAttendee.SetValueForKey(NSObject.FromObject(newAttendee.Email), NSString.FromData(NSData.FromString("emailAddress", NSStringEncoding.Unicode), NSStringEncoding.Unicode));
+
+            calendarEvent.Attendees.Append(iOSAttendee as EKParticipant);
+            return true;
+        }
 
         static async Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId)
         {

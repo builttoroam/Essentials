@@ -172,7 +172,7 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.Dtstart,
                 CalendarContract.Events.InterfaceConsts.Dtend,
                 CalendarContract.Events.InterfaceConsts.Rrule,
-                CalendarContract.Events.InterfaceConsts.Rdate
+                CalendarContract.Events.InterfaceConsts.Rdate,
             };
 
             // Android event ids are always integers
@@ -197,7 +197,8 @@ namespace Xamarin.Essentials
                         StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart))),
                         EndDate = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 0 ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend))) : null,
                         Attendees = GetAttendeesForEvent(eventId),
-                        RecurrancePattern = !string.IsNullOrEmpty(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) ? GetRecurranceRuleForEvent(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) : null
+                        RecurrancePattern = !string.IsNullOrEmpty(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) ? GetRecurranceRuleForEvent(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) : null,
+                        Reminders = GetRemindersForEvent(eventId)
                     };
                     return eventResult;
                 }
@@ -232,6 +233,29 @@ namespace Xamarin.Essentials
             }
             cur.Dispose();
             return attendees;
+        }
+
+        static IEnumerable<DeviceEventReminder> GetRemindersForEvent(string eventId)
+        {
+            var remindersUri = CalendarContract.Reminders.ContentUri;
+            var remindersProjection = new List<string>
+            {
+                CalendarContract.Reminders.InterfaceConsts.EventId,
+                CalendarContract.Reminders.InterfaceConsts.Minutes
+            };
+            var remindersSpecificAttendees = $"{CalendarContract.Reminders.InterfaceConsts.EventId}={eventId}";
+            var reminders = new List<DeviceEventReminder>();
+            using (var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(remindersUri, remindersProjection.ToArray(), remindersSpecificAttendees, null, null))
+            {
+                while (cur.MoveToNext())
+                {
+                    reminders.Add(new DeviceEventReminder()
+                    {
+                        MinutesPriorToEventStart = cur.GetInt(remindersProjection.IndexOf(CalendarContract.Reminders.InterfaceConsts.Minutes))
+                    });
+                }
+            }
+            return reminders;
         }
 
         static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)

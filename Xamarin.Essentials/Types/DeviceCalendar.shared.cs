@@ -64,7 +64,15 @@ namespace Xamarin.Essentials
 
         public IEnumerable<DeviceEventAttendee> Attendees { get; set; }
 
+        public IEnumerable<DeviceEventReminder> Reminders { get; set; }
+
         public RecurrenceRule RecurrancePattern { get; set; }
+    }
+
+    [Preserve(AllMembers = true)]
+    public class DeviceEventReminder
+    {
+        public int MinutesPriorToEventStart { get; set; }
     }
 
     [Preserve(AllMembers = true)]

@@ -92,6 +92,14 @@ namespace Samples.View
             }
         }
 
+        void OnRemoveReminderFromEventButtonClicked(object sender, EventArgs e)
+        {
+            if (!(sender is Button btn) || !(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId.ToString()))
+                return;
+
+            var attendee = btn?.BindingContext as DeviceEventReminder;
+        }
+
         async void OnEditEventButtonClicked(object sender, EventArgs e)
         {
             var modal = new CalendarEventAddPage();
