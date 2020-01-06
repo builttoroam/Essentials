@@ -120,6 +120,7 @@ namespace Xamarin.Essentials
                 rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
                 rules.Frequency = (RecurrenceFrequency)e.Recurrence.Unit;
                 rules.DaysOfTheMonth = new List<int>() { (int)e.Recurrence.Day };
+                rules.DayIterationOffSetPosition = new List<IterationOffset>() { (IterationOffset)e.Recurrence.WeekOfMonth };
             }
             return new DeviceEvent()
             {

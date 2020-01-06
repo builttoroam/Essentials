@@ -39,8 +39,16 @@ namespace Samples.ViewModel
                 SelectedRecurrenceType = existingEvent.RecurrancePattern.Frequency.ToString();
                 SelectedRecurrenceInterval = existingEvent.RecurrancePattern.Interval;
                 SelectedRecurrenceDays = existingEvent.RecurrancePattern.DaysOfTheWeek != null ? new ObservableCollection<string>(existingEvent.RecurrancePattern.DaysOfTheWeek.ConvertAll(delegate(DayOfTheWeek x) { return x.ToString(); }).ToList()) : null;
-                SelectedRecurrenceMonthDay = existingEvent.RecurrancePattern.DaysOfTheMonth != null ? existingEvent.RecurrancePattern.DaysOfTheMonth.First() : 0;
-                SelectedRecurrenceMonthWeek = existingEvent.RecurrancePattern.DayIterationOffSetPosition != null && existingEvent.RecurrancePattern.DayIterationOffSetPosition.Count > 0 ? existingEvent.RecurrancePattern.DayIterationOffSetPosition.First().ToString() : IterationOffset.NotSet.ToString();
+                if (existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.MonthlyOnDay || existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.YearlyOnDay)
+                {
+                    IsMonthDaySpecific = false;
+                    SelectedRecurrenceMonthWeek = existingEvent.RecurrancePattern.DayIterationOffSetPosition != null && existingEvent.RecurrancePattern.DayIterationOffSetPosition.Count > 0 ? existingEvent.RecurrancePattern.DayIterationOffSetPosition.First().ToString() : IterationOffset.NotSet.ToString();
+                    SelectedMonthWeekRecurrenceDay = existingEvent.RecurrancePattern.DaysOfTheWeek.First().ToString();
+                }
+                else if (existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.Monthly || existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.Yearly)
+                {
+                    SelectedRecurrenceMonthDay = existingEvent.RecurrancePattern.DaysOfTheMonth != null && existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.Monthly ? existingEvent.RecurrancePattern.DaysOfTheMonth.First() : 0;
+                }
                 SelectedRecurrenceYearlyMonth = existingEvent.RecurrancePattern.MonthsOfTheYear != null && existingEvent.RecurrancePattern.MonthsOfTheYear.Count > 0 ? existingEvent.RecurrancePattern.MonthsOfTheYear.First().ToString() : MonthOfTheYear.NotSet.ToString();
                 RecurrenceEndDate = existingEvent.RecurrancePattern.EndDate.HasValue ? existingEvent.RecurrancePattern.EndDate.Value.DateTime : DateTime.Now.AddMonths(6);
             }
