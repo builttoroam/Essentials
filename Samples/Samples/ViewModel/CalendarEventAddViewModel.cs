@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -10,6 +11,15 @@ namespace Samples.ViewModel
 {
     public class CalendarEventAddViewModel : BaseViewModel
     {
+        static ObservableCollection<string> recurrenceWeekdays = new ObservableCollection<string>()
+        {
+            DayOfTheWeek.Monday.ToString(),
+            DayOfTheWeek.Tuesday.ToString(),
+            DayOfTheWeek.Wednesday.ToString(),
+            DayOfTheWeek.Thursday.ToString(),
+            DayOfTheWeek.Friday.ToString()
+        };
+
         public CalendarEventAddViewModel(string calendarId, string calendarName, DeviceEvent existingEvent = null)
         {
             CalendarId = calendarId;
@@ -26,6 +36,13 @@ namespace Samples.ViewModel
                 EndDate = existingEvent.EndDate.HasValue ? existingEvent.EndDate.Value.Date : existingEvent.StartDate.Date;
                 StartTime = existingEvent.StartDate.TimeOfDay;
                 EndTime = existingEvent.EndDate.HasValue ? existingEvent.EndDate.Value.TimeOfDay : existingEvent.StartDate.TimeOfDay;
+                SelectedRecurrenceType = existingEvent.RecurrancePattern.Frequency.ToString();
+                SelectedRecurrenceInterval = existingEvent.RecurrancePattern.Interval;
+                SelectedRecurrenceDays = existingEvent.RecurrancePattern.DaysOfTheWeek != null ? new ObservableCollection<string>(existingEvent.RecurrancePattern.DaysOfTheWeek.ConvertAll(delegate(DayOfTheWeek x) { return x.ToString(); }).ToList()) : null;
+                SelectedRecurrenceMonthDay = existingEvent.RecurrancePattern.DaysOfTheMonth != null ? existingEvent.RecurrancePattern.DaysOfTheMonth.First() : 0;
+                SelectedRecurrenceMonthWeek = existingEvent.RecurrancePattern.DayIterationOffSetPosition != null && existingEvent.RecurrancePattern.DayIterationOffSetPosition.Count > 0 ? existingEvent.RecurrancePattern.DayIterationOffSetPosition.First().ToString() : IterationOffset.NotSet.ToString();
+                SelectedRecurrenceYearlyMonth = existingEvent.RecurrancePattern.MonthsOfTheYear != null && existingEvent.RecurrancePattern.MonthsOfTheYear.Count > 0 ? existingEvent.RecurrancePattern.MonthsOfTheYear.First().ToString() : MonthOfTheYear.NotSet.ToString();
+                RecurrenceEndDate = existingEvent.RecurrancePattern.EndDate.HasValue ? existingEvent.RecurrancePattern.EndDate.Value.DateTime : DateTime.Now.AddMonths(6);
             }
             CreateOrUpdateEvent = new Command(CreateOrUpdateCalendarEvent);
         }
@@ -52,7 +69,9 @@ namespace Samples.ViewModel
 
         public string EventActionText => string.IsNullOrEmpty(EventId) ? "Add Event" : "Update Event";
 
-        public bool CanCreateOrUpdateEvent => !string.IsNullOrWhiteSpace(EventTitle) && !string.IsNullOrWhiteSpace(Description) && !string.IsNullOrWhiteSpace(EventLocation) && ((EndDate.Date == StartDate.Date && (EndTime > StartTime || AllDay)) || EndDate.Date > StartDate.Date);
+        public bool CanCreateOrUpdateEvent => !string.IsNullOrWhiteSpace(EventTitle) && !string.IsNullOrWhiteSpace(Description) && !string.IsNullOrWhiteSpace(EventLocation)
+            && ((EndDate.Date == StartDate.Date && (EndTime > StartTime || AllDay)) || EndDate.Date > StartDate.Date)
+            && (!CanAlterRecurrence || StartDate < RecurrenceEndDate);
 
         string description;
 
@@ -152,6 +171,243 @@ namespace Samples.ViewModel
             }
         }
 
+        // Recurrence Setup
+        public bool CanAlterRecurrence => SelectedRecurrenceType != RecurrenceFrequency.None.ToString();
+
+        public bool IsDaily => SelectedRecurrenceType == RecurrenceFrequency.Daily.ToString();
+
+        public bool IsWeekly => SelectedRecurrenceType == RecurrenceFrequency.Weekly.ToString();
+
+        public bool IsMonthlyOrYearly => SelectedRecurrenceType == RecurrenceFrequency.MonthlyOnDay.ToString() || SelectedRecurrenceType == RecurrenceFrequency.Monthly.ToString() || SelectedRecurrenceType == RecurrenceFrequency.YearlyOnDay.ToString() || SelectedRecurrenceType == RecurrenceFrequency.Yearly.ToString();
+
+        public bool IsYearly => SelectedRecurrenceType == RecurrenceFrequency.Yearly.ToString() || SelectedRecurrenceType == RecurrenceFrequency.YearlyOnDay.ToString();
+
+        bool isEveryWeekday;
+
+        public bool IsEveryWeekday
+        {
+            get => isEveryWeekday;
+            set
+            {
+                if (SetProperty(ref isEveryWeekday, value))
+                {
+                    if (value)
+                    {
+                        SelectedRecurrenceInterval = 0;
+                        SelectedRecurrenceDays = recurrenceWeekdays;
+                    }
+                    else
+                    {
+                        SelectedRecurrenceInterval = 1;
+                        SelectedRecurrenceDays.Clear();
+                    }
+                }
+            }
+        }
+
+        bool isMonthDaySpecific = true;
+
+        public bool IsMonthDaySpecific
+        {
+            get => isMonthDaySpecific;
+            set
+            {
+                if (SetProperty(ref isMonthDaySpecific, value))
+                {
+                    if (value)
+                    {
+                        SelectedRecurrenceMonthDay = 1;
+                        SelectedRecurrenceMonthWeek = string.Empty;
+                        SelectedMonthWeekRecurrenceDay = string.Empty;
+                    }
+                    else
+                    {
+                        SelectedRecurrenceMonthDay = 0;
+                        SelectedRecurrenceMonthWeek = "First";
+                        SelectedMonthWeekRecurrenceDay = DayOfTheWeek.Monday.ToString();
+                    }
+                }
+            }
+        }
+
+        public ObservableCollection<string> RecurrenceDays => new ObservableCollection<string>()
+        {
+            DayOfTheWeek.Monday.ToString(),
+            DayOfTheWeek.Tuesday.ToString(),
+            DayOfTheWeek.Wednesday.ToString(),
+            DayOfTheWeek.Thursday.ToString(),
+            DayOfTheWeek.Friday.ToString(),
+            DayOfTheWeek.Saturday.ToString(),
+            DayOfTheWeek.Sunday.ToString()
+        };
+
+        ObservableCollection<string> selectedRecurrenceDays;
+
+        public ObservableCollection<string> SelectedRecurrenceDays
+        {
+            get => selectedRecurrenceDays;
+            set
+            {
+                SetProperty(ref selectedRecurrenceDays, value);
+            }
+        }
+
+        public ObservableCollection<string> RecurrenceTypes => new ObservableCollection<string>()
+        {
+            RecurrenceFrequency.None.ToString(),
+            RecurrenceFrequency.Daily.ToString(),
+            RecurrenceFrequency.Weekly.ToString(),
+            RecurrenceFrequency.Monthly.ToString(),
+            RecurrenceFrequency.Yearly.ToString()
+        };
+
+        string selectedRecurrenceType = RecurrenceFrequency.None.ToString();
+
+        public string SelectedRecurrenceType
+        {
+            get => selectedRecurrenceType;
+
+            set
+            {
+                if (SetProperty(ref selectedRecurrenceType, value) && selectedRecurrenceType != null)
+                {
+                    OnPropertyChanged(nameof(CanAlterRecurrence));
+                    OnPropertyChanged(nameof(IsDaily));
+                    OnPropertyChanged(nameof(IsWeekly));
+                    OnPropertyChanged(nameof(IsMonthlyOrYearly));
+                    OnPropertyChanged(nameof(IsYearly));
+                    OnPropertyChanged(nameof(SelectedRecurrenceTypeDisplay));
+                    if (SelectedRecurrenceDays != null)
+                    {
+                        SelectedRecurrenceDays.Clear();
+                    }
+                    SelectedRecurrenceInterval = 1;
+                    SelectedRecurrenceMonthDay = 0;
+                    SelectedRecurrenceMonthWeek = string.Empty;
+                    SelectedMonthWeekRecurrenceDay = string.Empty;
+                    SelectedRecurrenceYearlyMonth = string.Empty;
+                }
+            }
+        }
+
+        public string SelectedRecurrenceTypeDisplay => SelectedRecurrenceType.Replace("ily", "yly").Replace("ly", "(s)");
+
+        public ObservableCollection<uint> RecurrenceInterval => new ObservableCollection<uint>()
+        {
+            1, 2, 3, 4, 5
+        };
+
+        uint selectedRecurrenceInterval;
+
+        public uint SelectedRecurrenceInterval
+        {
+            get => selectedRecurrenceInterval;
+            set
+            {
+                if (SetProperty(ref selectedRecurrenceInterval, value))
+                {
+                    if (value != 0)
+                    {
+                        IsEveryWeekday = false;
+                    }
+                }
+            }
+        }
+
+        public ObservableCollection<int> RecurrenceMonthDay => new ObservableCollection<int>()
+        {
+            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
+        };
+
+        int selectedRecurrenceMonthDay = 1;
+
+        public int SelectedRecurrenceMonthDay
+        {
+            get => selectedRecurrenceMonthDay;
+            set
+            {
+                if (SetProperty(ref selectedRecurrenceMonthDay, value))
+                {
+                    if (value != 0)
+                    {
+                        IsMonthDaySpecific = true;
+                    }
+                }
+            }
+        }
+
+        public ObservableCollection<string> RecurrenceMonthWeek => new ObservableCollection<string>()
+        {
+            IterationOffset.First.ToString(),
+            IterationOffset.Second.ToString(),
+            IterationOffset.Third.ToString(),
+            IterationOffset.Fourth.ToString(),
+            IterationOffset.Last.ToString()
+        };
+
+        string selectedRecurrenceMonthWeek;
+
+        public string SelectedRecurrenceMonthWeek
+        {
+            get => selectedRecurrenceMonthWeek;
+            set
+            {
+                SetProperty(ref selectedRecurrenceMonthWeek, value);
+            }
+        }
+
+        string selectedMonthWeekRecurrenceDay;
+
+        public string SelectedMonthWeekRecurrenceDay
+        {
+            get => selectedMonthWeekRecurrenceDay;
+            set
+            {
+                SetProperty(ref selectedMonthWeekRecurrenceDay, value);
+            }
+        }
+
+        public ObservableCollection<string> RecurrenceYearlyMonth => new ObservableCollection<string>()
+        {
+            MonthOfTheYear.January.ToString(),
+            MonthOfTheYear.February.ToString(),
+            MonthOfTheYear.March.ToString(),
+            MonthOfTheYear.April.ToString(),
+            MonthOfTheYear.May.ToString(),
+            MonthOfTheYear.June.ToString(),
+            MonthOfTheYear.July.ToString(),
+            MonthOfTheYear.August.ToString(),
+            MonthOfTheYear.September.ToString(),
+            MonthOfTheYear.October.ToString(),
+            MonthOfTheYear.November.ToString(),
+            MonthOfTheYear.December.ToString()
+        };
+
+        string selectedRecurrenceYearlyMonth;
+
+        public string SelectedRecurrenceYearlyMonth
+        {
+            get => selectedRecurrenceYearlyMonth;
+            set
+            {
+                SetProperty(ref selectedRecurrenceYearlyMonth, value);
+            }
+        }
+
+        DateTime recurrenceEndDate = DateTime.Now.Date.AddMonths(6);
+
+        public DateTime RecurrenceEndDate
+        {
+            get => recurrenceEndDate;
+            set
+            {
+                if (SetProperty(ref recurrenceEndDate, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
+                }
+            }
+        }
+
         public ICommand CreateOrUpdateEvent { get; }
 
         async void CreateOrUpdateCalendarEvent()
@@ -169,6 +425,20 @@ namespace Samples.ViewModel
                 StartDate = startDto,
                 EndDate = !AllDay ? (DateTimeOffset?)endDto : null
             };
+
+            if (CanAlterRecurrence)
+            {
+                newEvent.RecurrancePattern = new RecurrenceRule()
+                {
+                    Frequency = (RecurrenceFrequency)Enum.Parse(typeof(RecurrenceFrequency), SelectedRecurrenceType),
+                    Interval = SelectedRecurrenceInterval,
+                    DaysOfTheWeek = SelectedRecurrenceDays != null && SelectedRecurrenceDays.Count > 0 ? SelectedRecurrenceDays.ToList().ConvertAll(delegate(string x) { return (DayOfTheWeek)Enum.Parse(typeof(DayOfTheWeek), x); }) : SelectedMonthWeekRecurrenceDay != string.Empty ? new List<DayOfTheWeek>() { (DayOfTheWeek)Enum.Parse(typeof(DayOfTheWeek), SelectedMonthWeekRecurrenceDay) } : null,
+                    DaysOfTheMonth = SelectedRecurrenceMonthDay != 0 ? new List<int>() { SelectedRecurrenceMonthDay } : null,
+                    DayIterationOffSetPosition = !string.IsNullOrEmpty(SelectedRecurrenceMonthWeek) ? new List<IterationOffset>() { (IterationOffset)Enum.Parse(typeof(IterationOffset), SelectedRecurrenceMonthWeek) } : null,
+                    MonthsOfTheYear = !string.IsNullOrEmpty(SelectedRecurrenceYearlyMonth) ? new List<MonthOfTheYear>() { (MonthOfTheYear)Enum.Parse(typeof(MonthOfTheYear), SelectedRecurrenceYearlyMonth) } : null,
+                    EndDate = RecurrenceEndDate
+                };
+            }
 
             if (string.IsNullOrEmpty(EventId))
             {

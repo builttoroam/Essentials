@@ -530,10 +530,10 @@ namespace Xamarin.Essentials
             {
                 var ruleOccurenceMonths = rule.Substring(rule.IndexOf("BYMONTH=", StringComparison.Ordinal) + 8);
                 ruleOccurenceMonths = ruleOccurenceMonths.Contains(";") ? ruleOccurenceMonths.Substring(0, ruleOccurenceMonths.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonths;
-                recurranceRule.MonthsOfTheYear = new List<int>();
+                recurranceRule.MonthsOfTheYear = new List<MonthOfTheYear>();
                 foreach (var m in ruleOccurenceMonths.Split(','))
                 {
-                    recurranceRule.MonthsOfTheYear.Add(int.Parse(m));
+                    recurranceRule.MonthsOfTheYear.Add((MonthOfTheYear)int.Parse(m));
                 }
             }
 
@@ -541,10 +541,10 @@ namespace Xamarin.Essentials
             {
                 var ruleDayIterationOffset = rule.Substring(rule.IndexOf("BYSETPOS=", StringComparison.Ordinal) + 9);
                 ruleDayIterationOffset = ruleDayIterationOffset.Contains(";") ? ruleDayIterationOffset.Substring(0, ruleDayIterationOffset.IndexOf(";", StringComparison.Ordinal)) : ruleDayIterationOffset;
-                recurranceRule.DayIterationOffSetPosition = new List<int>();
+                recurranceRule.DayIterationOffSetPosition = new List<IterationOffset>();
                 foreach (var dayIteration in ruleDayIterationOffset.Split(','))
                 {
-                    recurranceRule.DayIterationOffSetPosition.Add(int.Parse(dayIteration));
+                    recurranceRule.DayIterationOffSetPosition.Add((IterationOffset)int.Parse(dayIteration));
                 }
             }
 

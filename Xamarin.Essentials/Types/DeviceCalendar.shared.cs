@@ -103,11 +103,11 @@ namespace Xamarin.Essentials
 
         public List<int> WeeksOfTheYear { get; set; }
 
-        public List<int> MonthsOfTheYear { get; set; }
+        public List<MonthOfTheYear> MonthsOfTheYear { get; set; }
 
         public List<int> DaysOfTheYear { get; set; }
 
-        public List<int> DayIterationOffSetPosition { get; set; }
+        public List<IterationOffset> DayIterationOffSetPosition { get; set; }
 
         public DayOfTheWeek StartOfTheWeek { get; set; }
 
@@ -187,7 +187,7 @@ namespace Xamarin.Essentials
                 toReturn += $"Occuring on the: [";
                 foreach (var d in DayIterationOffSetPosition)
                 {
-                    toReturn += $"{(d < 0 ? "-" : string.Empty)}{Math.Abs(d).ToOrdinal()}";
+                    toReturn += $"{(d < 0 ? "-" : string.Empty)}{Math.Abs((int)d).ToOrdinal()}";
                 }
                 toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] of each month ";
             }
@@ -208,10 +208,13 @@ namespace Xamarin.Essentials
 
     public enum RecurrenceFrequency
     {
+        None = -1,
         Daily = 0,
         Weekly = 1,
         Monthly = 2,
-        Yearly = 3
+        MonthlyOnDay = 3,
+        Yearly = 4,
+        YearlyOnDay = 5
     }
 
     public enum DayOfTheWeek
@@ -224,5 +227,32 @@ namespace Xamarin.Essentials
         Thursday = 5,
         Friday = 6,
         Saturday = 7
+    }
+
+    public enum MonthOfTheYear
+    {
+        NotSet = 0,
+        January = 1,
+        February = 2,
+        March = 3,
+        April = 4,
+        May = 5,
+        June = 6,
+        July = 7,
+        August = 8,
+        September = 9,
+        October = 10,
+        November = 11,
+        December = 12
+    }
+
+    public enum IterationOffset
+    {
+        NotSet = -1,
+        First = 0,
+        Second = 1,
+        Third = 2,
+        Fourth = 3,
+        Last = 4
     }
 }

@@ -119,6 +119,7 @@ namespace Xamarin.Essentials
                 rules.EndDate = e.Recurrence.Until;
                 rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
                 rules.Frequency = (RecurrenceFrequency)e.Recurrence.Unit;
+                rules.DaysOfTheMonth = new List<int>() { (int)e.Recurrence.Day };
             }
             return new DeviceEvent()
             {
@@ -148,6 +149,22 @@ namespace Xamarin.Essentials
                 }
             }
             return toReturn;
+        }
+
+        static int ConvertIntListToBitFlag(List<int> listOfNumbers)
+        {
+            var toReturn = 0;
+            foreach (var i in listOfNumbers)
+            {
+                toReturn += (int)GetEnumByIndex(i);
+            }
+            return toReturn;
+        }
+
+        public static AppointmentDaysOfWeek GetEnumByIndex(int index)
+        {
+            var enums = Enum.GetValues(typeof(AppointmentDaysOfWeek));
+            return (AppointmentDaysOfWeek)enums.GetValue(index);
         }
 
         static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<AppointmentInvitee> inviteList)
@@ -213,6 +230,49 @@ namespace Xamarin.Essentials
             else
             {
                 thisEvent = await instance.GetAppointmentAsync(eventToUpdate.Id);
+            }
+
+            if (eventToUpdate.RecurrancePattern != null)
+            {
+                var eventRecurrence = new AppointmentRecurrence();
+                eventRecurrence.Unit = (AppointmentRecurrenceUnit)eventToUpdate.RecurrancePattern.Frequency;
+                eventRecurrence.Interval = eventToUpdate.RecurrancePattern.Interval;
+                eventRecurrence.Until = eventToUpdate.RecurrancePattern.EndDate;
+                switch (eventToUpdate.RecurrancePattern.Frequency)
+                {
+                    case RecurrenceFrequency.None:
+                        break;
+                    case RecurrenceFrequency.Daily:
+                    case RecurrenceFrequency.Weekly:
+                        eventRecurrence.DaysOfWeek = eventToUpdate.RecurrancePattern.DaysOfTheWeek != null && eventToUpdate.RecurrancePattern.DaysOfTheWeek.Count > 0 ? (AppointmentDaysOfWeek)ConvertIntListToBitFlag(eventToUpdate.RecurrancePattern.DaysOfTheWeek.ConvertAll(delegate(DayOfTheWeek x) { return (int)x; })) : 0;
+                        break;
+                    case RecurrenceFrequency.Monthly:
+                        if (eventToUpdate.RecurrancePattern.DaysOfTheWeek != null && eventToUpdate.RecurrancePattern.DaysOfTheWeek.Count > 0)
+                        {
+                            eventRecurrence.DaysOfWeek = (AppointmentDaysOfWeek)ConvertIntListToBitFlag(eventToUpdate.RecurrancePattern.DaysOfTheWeek.ConvertAll(delegate(DayOfTheWeek x) { return (int)x; }));
+                            eventRecurrence.WeekOfMonth = (AppointmentWeekOfMonth)eventToUpdate.RecurrancePattern.DayIterationOffSetPosition.First();
+                            eventRecurrence.Unit = AppointmentRecurrenceUnit.MonthlyOnDay;
+                        }
+                        else
+                        {
+                            eventRecurrence.Day = (uint)eventToUpdate.RecurrancePattern.DaysOfTheMonth.First();
+                        }
+                        break;
+                    case RecurrenceFrequency.Yearly:
+                        if (eventToUpdate.RecurrancePattern.DaysOfTheWeek.Count > 0)
+                        {
+                            eventRecurrence.WeekOfMonth = (AppointmentWeekOfMonth)eventToUpdate.RecurrancePattern.DayIterationOffSetPosition.First();
+                            eventRecurrence.DaysOfWeek = (AppointmentDaysOfWeek)ConvertIntListToBitFlag(eventToUpdate.RecurrancePattern.DaysOfTheWeek.ConvertAll(delegate(DayOfTheWeek x) { return (int)x; }));
+                            eventRecurrence.Unit = AppointmentRecurrenceUnit.YearlyOnDay;
+                        }
+                        else
+                        {
+                            eventRecurrence.Day = (uint)eventToUpdate.RecurrancePattern.DaysOfTheMonth.First();
+                        }
+                        eventRecurrence.Month = (uint)eventToUpdate.RecurrancePattern.MonthsOfTheYear.First();
+                        break;
+                }
+                thisEvent.Recurrence = eventRecurrence;
             }
 
             thisEvent.Subject = eventToUpdate.Title;

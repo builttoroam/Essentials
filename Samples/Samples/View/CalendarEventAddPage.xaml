@@ -15,98 +15,173 @@
         </ResourceDictionary>
     </views:BasePage.Resources>
     <views:BasePage.Content>
-    <StackLayout>
-      <Grid>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto"/>
-          <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-          <RowDefinition/>
-          <RowDefinition/>
-          <RowDefinition/>
-          <RowDefinition/>
-          <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Label Text="Calendar:"
-               HorizontalTextAlignment="Center"/>
-        <Label Text="{Binding CalendarName}"
-               Grid.Row="0"
-               Grid.Column="1"/>
+        <StackLayout>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Label Text="Calendar:"
+                       HorizontalTextAlignment="Center"/>
+                <Label Text="{Binding CalendarName}"
+                       Grid.Row="0"
+                       Grid.Column="1"/>
 
-        <Label Text="Title"
-               HorizontalTextAlignment="Center"
-               Grid.Row="1"
-               Grid.Column="0"/>
-        <Entry Placeholder="Title..."
-               Text="{Binding EventTitle}"
-               Grid.Row="1"
-               Grid.Column="1"/>
+                <Label Text="Title"
+                       HorizontalTextAlignment="Center"
+                       Grid.Row="1"
+                       Grid.Column="0"/>
+                <Entry Placeholder="Title..."
+                       Text="{Binding EventTitle}"
+                       Grid.Row="1"
+                       Grid.Column="1"/>
 
-        <Label Text="Description"
-               HorizontalTextAlignment="Center"
-               Grid.Row="2"
-               Grid.Column="0"/>
-        <Entry Placeholder="Description..."
-               Text="{Binding Description}"
-               Grid.Row="2"
-               Grid.Column="1"/>
+                <Label Text="Description"
+                       HorizontalTextAlignment="Center"
+                       Grid.Row="2"
+                       Grid.Column="0"/>
+                <Entry Placeholder="Description..."
+                       Text="{Binding Description}"
+                       Grid.Row="2"
+                       Grid.Column="1"/>
 
-        <Label Text="Event Location"
-               HorizontalTextAlignment="Center"
-               Grid.Row="3"
-               Grid.Column="0"/>
-        <Entry Placeholder="Location..."
-               Text="{Binding EventLocation}"
-               Grid.Row="3"
-               Grid.Column="1"/>
+                <Label Text="Event Location"
+                       HorizontalTextAlignment="Center"
+                       Grid.Row="3"
+                       Grid.Column="0"/>
+                <Entry Placeholder="Location..."
+                       Text="{Binding EventLocation}"
+                       Grid.Row="3"
+                       Grid.Column="1"/>
 
-        <Label Text="All Day"
-               HorizontalTextAlignment="Center"
-               Grid.Row="4"
-               Grid.Column="0"/>
-        <Switch Grid.Row="4"
-                HorizontalOptions="Start"
-                IsToggled="{Binding AllDay}"
-                Grid.Column="1"/>
-      </Grid>
-      <Grid>
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="Auto"/>
-          <ColumnDefinition/>
-          <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-          <RowDefinition/>
-          <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Label Text="Start Date"
-               HorizontalTextAlignment="Center"/>
-        <DatePicker Date="{Binding StartDate}"
-                    MinimumDate="1970-01-01"
-                    Grid.Row="0"
-                    Grid.Column="1"/>
-        <TimePicker Time="{Binding StartTime}"
-                    IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
-                    Grid.Row="0"
-                    Grid.Column="2"/>
-        <Label Text="End Date"
-               HorizontalTextAlignment="Center"
-               Grid.Row="1"
-               Grid.Column="0"/>
-        <DatePicker Date="{Binding EndDate}"
-                    MinimumDate="1970-01-01"
-                    IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
-                    Grid.Row="1"
-                    Grid.Column="1"/>
-        <TimePicker Time="{Binding EndTime}"
-                    IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
-                    Grid.Row="1"
-                    Grid.Column="2"/>
-      </Grid>
-      <Button Text="{Binding EventActionText}"
-              Command="{Binding CreateOrUpdateEvent}"
-              IsEnabled="{Binding CanCreateOrUpdateEvent}"/>
-    </StackLayout>
-  </views:BasePage.Content>
+                <Label Text="All Day"
+                       HorizontalTextAlignment="Center"
+                       Grid.Row="4"
+                       Grid.Column="0"/>
+                <Switch Grid.Row="4"
+                        HorizontalOptions="Start"
+                        IsToggled="{Binding AllDay}"
+                        Grid.Column="1"/>
+            </Grid>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Label Text="Start Date"
+                       HorizontalTextAlignment="Center"/>
+                <DatePicker Date="{Binding StartDate}"
+                            MinimumDate="1970-01-01"
+                            Grid.Row="0"
+                            Grid.Column="1"/>
+                <TimePicker Time="{Binding StartTime}"
+                            IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
+                            Grid.Row="0"
+                            Grid.Column="2"/>
+                <Label Text="End Date"
+                       HorizontalTextAlignment="Center"
+                       Grid.Row="1"
+                       Grid.Column="0"/>
+                <DatePicker Date="{Binding EndDate}"
+                            MinimumDate="1970-01-01"
+                            IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
+                            Grid.Row="1"
+                            Grid.Column="1"/>
+                <TimePicker Time="{Binding EndTime}"
+                            IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
+                            Grid.Row="1"
+                            Grid.Column="2"/>
+            </Grid>
+            <Label Text="Recurrence"/>
+            <StackLayout>
+                <Picker x:Name="SelectedRecurrenceType"
+                        Title="Select a RecurrenceType"
+                        ItemsSource="{Binding RecurrenceTypes}"
+                        SelectedItem="{Binding SelectedRecurrenceType, Mode=TwoWay}"/>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal"
+                         IsVisible="{Binding CanAlterRecurrence}">
+                <Label Text="Every "
+                       VerticalTextAlignment="End"/>
+                <Picker x:Name="SelectedRecurrenceInterval"
+                        Title=""
+                        ItemsSource="{Binding RecurrenceInterval}"
+                        SelectedItem="{Binding SelectedRecurrenceInterval, Mode=TwoWay}"/>
+                <Label Text="{Binding SelectedRecurrenceTypeDisplay, Mode=TwoWay}"
+                       VerticalTextAlignment="End"/>
+                <Label Text=" on"
+                       IsVisible="{Binding IsWeekly}"
+                       VerticalTextAlignment="End"/>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal"
+                         IsVisible="{Binding IsDaily}">
+                <Label Text="Every Weekday: "/>
+                <Switch IsToggled="{Binding IsEveryWeekday}"/>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal"
+                         IsVisible="{Binding IsWeekly}">
+                <CollectionView ItemsSource="{Binding RecurrenceDays}"
+                                SelectionMode="Single"
+                                SelectedItems="{Binding SelectedRecurrenceDays, Mode=TwoWay}">
+                </CollectionView>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal"
+                         IsVisible="{Binding IsYearly}">
+                <Label Text="in "
+                       VerticalTextAlignment="End"/>
+                <Picker x:Name="SelectedRecurrenceYearlyMonth"
+                        Title=""
+                        ItemsSource="{Binding RecurrenceYearlyMonth}"
+                        SelectedItem="{Binding SelectedRecurrenceYearlyMonth, Mode=TwoWay}"/>
+            </StackLayout>
+            <StackLayout IsVisible="{Binding IsMonthlyOrYearly}">
+                <StackLayout Orientation="Horizontal" >
+                    <Label Text="By day of the month: "/>
+                    <Switch IsToggled="{Binding IsMonthDaySpecific}"/>
+                </StackLayout>
+                <StackLayout Orientation="Horizontal" >
+                    <Picker x:Name="SelectedRecurrenceMonthDay"
+                        Title="On day"
+                        ItemsSource="{Binding RecurrenceMonthDay}"
+                        SelectedItem="{Binding SelectedRecurrenceMonthDay, Mode=TwoWay}"
+                        IsEnabled="{Binding IsMonthDaySpecific}"/>
+                </StackLayout>
+                <StackLayout Orientation="Horizontal">
+                    <Picker x:Name="SelectedRecurrenceMonthWeek"
+                        Title="On the"
+                        ItemsSource="{Binding RecurrenceMonthWeek}"
+                        SelectedItem="{Binding SelectedRecurrenceMonthWeek, Mode=TwoWay}"
+                        IsEnabled="{Binding IsMonthDaySpecific, Converter={StaticResource InverseBoolConverter}}"/>
+                    <Picker x:Name="SelectedMonthWeekRecurrenceDay"
+                        Title=""
+                        ItemsSource="{Binding RecurrenceDays}"
+                        SelectedItem="{Binding SelectedMonthWeekRecurrenceDay, Mode=TwoWay}"
+                        IsEnabled="{Binding IsMonthDaySpecific, Converter={StaticResource InverseBoolConverter}}"/>
+                </StackLayout>
+            </StackLayout>
+            <StackLayout Orientation="Horizontal"
+                         IsVisible="{Binding CanAlterRecurrence}">
+                <Label Text="Until"
+                       HorizontalTextAlignment="Center"/>
+                <DatePicker Date="{Binding RecurrenceEndDate}"
+                            MinimumDate="1970-01-01"/>
+            </StackLayout>
+            
+            <Button Text="{Binding EventActionText}"
+                Command="{Binding CreateOrUpdateEvent}"
+                IsEnabled="{Binding CanCreateOrUpdateEvent}"/>
+        </StackLayout>
+    </views:BasePage.Content>
 </views:BasePage>

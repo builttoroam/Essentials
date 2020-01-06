@@ -96,7 +96,7 @@ namespace Xamarin.Essentials
                 rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear != null ? iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList() : null;
                 rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth != null ? iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList() : null;
                 rule.DaysOfTheYear = iOSRule.DaysOfTheYear != null ? iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList() : null;
-                rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear != null ? iOSRule.MonthsOfTheYear.Select(x => x.Int32Value).ToList() : null;
+                rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear != null ? iOSRule.MonthsOfTheYear.Select(x => (MonthOfTheYear)x.Int32Value).ToList() : null;
                 rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffset();
                 rule.TotalOccurences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
 
