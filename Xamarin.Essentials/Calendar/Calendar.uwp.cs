@@ -295,7 +295,7 @@ namespace Xamarin.Essentials
                 case RecurrenceFrequency.Weekly:
                     if (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0)
                     {
-                        eventRecurrence.DaysOfWeek = recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0 ? (AppointmentDaysOfWeek)ConvertIntListToBitFlag(recurrenceRule.DaysOfTheWeek.ConvertAll(delegate (DayOfTheWeek x) { return (int)x; })) : 0;
+                        eventRecurrence.DaysOfWeek = recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0 ? (AppointmentDaysOfWeek)ConvertIntListToBitFlag(recurrenceRule.DaysOfTheWeek.ConvertAll(delegate(DayOfTheWeek x) { return (int)x; })) : 0;
                         eventRecurrence.Unit = AppointmentRecurrenceUnit.Weekly;
                     }
                     break;

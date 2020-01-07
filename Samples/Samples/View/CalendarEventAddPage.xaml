@@ -176,7 +176,10 @@
                 <Label Text="Until"
                        HorizontalTextAlignment="Center"/>
                 <DatePicker Date="{Binding RecurrenceEndDate}"
-                            MinimumDate="1970-01-01"/>
+                            MinimumDate="1970-01-01"
+                            IsEnabled="{Binding RecursIndefinitely, Converter={StaticResource InverseBoolConverter}}"/>
+                <Label Text="Event Reoccurs Indefinitely:"/>
+                <Switch IsToggled="{Binding RecursIndefinitely}"/>
             </StackLayout>
             
             <Button Text="{Binding EventActionText}"
