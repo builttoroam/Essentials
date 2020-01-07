@@ -5,6 +5,7 @@
                  xmlns:viewmodels="clr-namespace:Samples.ViewModel"
                  xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
                  xmlns:converters="clr-namespace:Samples.Converters;assembly=Samples"
+                 xmlns:behaviors="clr-namespace:Samples.Behaviors;assembly=Samples"
                  x:Class="Samples.View.CalendarEventAddPage"
                  x:DataType="viewmodels:CalendarEventAddViewModel"
                  Title="Event"
@@ -12,6 +13,7 @@
     <views:BasePage.Resources>
         <ResourceDictionary>
             <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
+            <converters:ListSelectorArgsConverter x:Key="ListSelectorArgsConverter" />
         </ResourceDictionary>
     </views:BasePage.Resources>
     <views:BasePage.Content>
@@ -132,10 +134,15 @@
             </StackLayout>
             <StackLayout Orientation="Horizontal"
                          IsVisible="{Binding IsWeekly}">
-                <CollectionView ItemsSource="{Binding RecurrenceDays}"
-                                SelectionMode="Multiple"
-                                SelectedItems="{Binding SelectedRecurrenceDays, Mode=TwoWay}">
-                </CollectionView>
+              <CollectionView ItemsSource="{Binding RecurrenceDays}"
+                              SelectionMode="Multiple"
+                              SelectedItems="{Binding SelectedRecurrenceDays, Mode=TwoWay}">
+                <CollectionView.Behaviors>
+                  <behaviors:EventToCommandBehavior EventName="SelectionChanged"
+                                                    Command="{Binding SelectionChangedCommand}"
+                                                    Converter="{StaticResource ListSelectorArgsConverter}" />
+                </CollectionView.Behaviors>
+              </CollectionView>
             </StackLayout>
             <StackLayout Orientation="Horizontal"
                          IsVisible="{Binding IsYearly}">

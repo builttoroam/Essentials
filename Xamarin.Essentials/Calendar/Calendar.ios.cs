@@ -89,16 +89,16 @@ namespace Xamarin.Essentials
                 var iOSRule = calendarEvent.RecurrenceRules[0];
 
                 // This will need an extension function as these don't line up
-                rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
-                rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
-                rule.Interval = (uint)iOSRule.Interval;
-                rule.StartOfTheWeek = (DayOfTheWeek)iOSRule.FirstDayOfTheWeek;
-                rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear != null ? iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList() : null;
-                rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth != null ? iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList() : null;
-                rule.DaysOfTheYear = iOSRule.DaysOfTheYear != null ? iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList() : null;
-                rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear != null ? iOSRule.MonthsOfTheYear.Select(x => (MonthOfTheYear)x.Int32Value).ToList() : null;
-                rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffset();
-                rule.TotalOccurences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
+                // rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
+                // rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
+                // rule.Interval = (uint)iOSRule.Interval;
+                // rule.StartOfTheWeek = (DayOfTheWeek)iOSRule.FirstDayOfTheWeek;
+                // rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear != null ? iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList() : null;
+                // rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth != null ? iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList() : null;
+                // rule.DaysOfTheYear = iOSRule.DaysOfTheYear != null ? iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList() : null;
+                // rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear != null ? iOSRule.MonthsOfTheYear.Select(x => (MonthOfTheYear)x.Int32Value).ToList() : null;
+                // rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffset();
+                // rule.TotalOccurences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
 
                 // Might have to calculate occuerences based on frequency/days of year and so forth for iOS.
                 // rule.TotalOccurences = (uint)iOSRule.??0

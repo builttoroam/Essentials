@@ -51,14 +51,14 @@ namespace Samples.ViewModel
                     if (existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.MonthlyOnDay || existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.YearlyOnDay)
                     {
                         IsMonthDaySpecific = false;
-                        SelectedRecurrenceMonthWeek = existingEvent.RecurrancePattern.DayIterationOffSetPosition != null && existingEvent.RecurrancePattern.DayIterationOffSetPosition.Count > 0 ? existingEvent.RecurrancePattern.DayIterationOffSetPosition.First().ToString() : IterationOffset.NotSet.ToString();
-                        SelectedMonthWeekRecurrenceDay = existingEvent.RecurrancePattern.DaysOfTheWeek.First().ToString();
+                        SelectedRecurrenceMonthWeek = existingEvent.RecurrancePattern.DayIterationOffSetPosition.ToString();
+                        SelectedMonthWeekRecurrenceDay = existingEvent.RecurrancePattern.DaysOfTheWeek?.First().ToString();
                     }
                     else if (existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.Monthly || existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.Yearly)
                     {
-                        SelectedRecurrenceMonthDay = existingEvent.RecurrancePattern.DaysOfTheMonth?.First() ?? 0;
+                        SelectedRecurrenceMonthDay = existingEvent.RecurrancePattern.DayOfTheMonth;
                     }
-                    SelectedRecurrenceYearlyMonth = existingEvent.RecurrancePattern.MonthsOfTheYear != null && existingEvent.RecurrancePattern.MonthsOfTheYear.Count > 0 ? existingEvent.RecurrancePattern.MonthsOfTheYear.First().ToString() : MonthOfTheYear.January.ToString();
+                    SelectedRecurrenceYearlyMonth = existingEvent.RecurrancePattern.MonthOfTheYear.ToString();
                     if (existingEvent.RecurrancePattern.EndDate.HasValue)
                     {
                         RecurrenceEndDate = existingEvent.RecurrancePattern.EndDate.Value.DateTime;
@@ -71,6 +71,7 @@ namespace Samples.ViewModel
                 }
             }
             CreateOrUpdateEvent = new Command(CreateOrUpdateCalendarEvent);
+            SelectionChangedCommand = new Command(OnSelectionChanged);
         }
 
         public string EventId { get; set; }
@@ -80,6 +81,23 @@ namespace Samples.ViewModel
         public string CalendarName { get; set; }
 
         string eventTitle;
+
+        public ICommand SelectionChangedCommand { get; }
+
+        void OnSelectionChanged(object parameter)
+        {
+            if (parameter is SelectionChangedEventArgs selectionArgs)
+            {
+                SelectedRecurrenceDays.Clear();
+                foreach (var s in selectionArgs.CurrentSelection)
+                {
+                    if (s is TestDumbReference dayToAdd)
+                    {
+                        SelectedRecurrenceDays.Add(dayToAdd);
+                    }
+                }
+            }
+        }
 
         public string EventTitle
         {
@@ -293,8 +311,8 @@ namespace Samples.ViewModel
         public ObservableCollection<TestDumbReference> SelectedRecurrenceDays
         {
             get => selectedRecurrenceDays;
-            set
-            {
+            set =>
+
                 // var listCheck = new ObservableCollection<TestDumbReference>();
                 // foreach (var v in value)
                 // {
@@ -303,9 +321,7 @@ namespace Samples.ViewModel
                 //        listCheck.Add(RecurrenceDays.Single(x => x == v));
                 //    }
                 // }
-
                 SetProperty(ref selectedRecurrenceDays, value);
-            }
         }
 
         public ObservableCollection<string> RecurrenceTypes { get; } = new ObservableCollection<string>()
@@ -363,14 +379,14 @@ namespace Samples.ViewModel
             }
         }
 
-        public ObservableCollection<int> RecurrenceMonthDay { get; } = new ObservableCollection<int>()
+        public ObservableCollection<uint> RecurrenceMonthDay { get; } = new ObservableCollection<uint>()
         {
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
         };
 
-        int selectedRecurrenceMonthDay = 1;
+        uint selectedRecurrenceMonthDay = 1;
 
-        public int SelectedRecurrenceMonthDay
+        public uint SelectedRecurrenceMonthDay
         {
             get => selectedRecurrenceMonthDay;
             set
@@ -394,7 +410,7 @@ namespace Samples.ViewModel
             IterationOffset.Last.ToString()
         };
 
-        string selectedRecurrenceMonthWeek;
+        string selectedRecurrenceMonthWeek = IterationOffset.NotSet.ToString();
 
         public string SelectedRecurrenceMonthWeek
         {
@@ -473,9 +489,9 @@ namespace Samples.ViewModel
                     Frequency = (RecurrenceFrequency)Enum.Parse(typeof(RecurrenceFrequency), SelectedRecurrenceType),
                     Interval = SelectedRecurrenceInterval,
                     DaysOfTheWeek = SelectedRecurrenceDays != null && SelectedRecurrenceDays.Count > 0 ? SelectedRecurrenceDays.ToList().ConvertAll(x => x.Day) : !string.IsNullOrWhiteSpace(SelectedMonthWeekRecurrenceDay) ? new List<DayOfTheWeek>() { (DayOfTheWeek)Enum.Parse(typeof(DayOfTheWeek), SelectedMonthWeekRecurrenceDay) } : null,
-                    DaysOfTheMonth = SelectedRecurrenceMonthDay != 0 ? new List<int>() { SelectedRecurrenceMonthDay } : null,
-                    DayIterationOffSetPosition = !string.IsNullOrEmpty(SelectedRecurrenceMonthWeek) ? new List<IterationOffset>() { (IterationOffset)Enum.Parse(typeof(IterationOffset), SelectedRecurrenceMonthWeek) } : null,
-                    MonthsOfTheYear = !string.IsNullOrEmpty(SelectedRecurrenceYearlyMonth) ? new List<MonthOfTheYear>() { (MonthOfTheYear)Enum.Parse(typeof(MonthOfTheYear), SelectedRecurrenceYearlyMonth) } : null,
+                    DayOfTheMonth = SelectedRecurrenceMonthDay,
+                    DayIterationOffSetPosition = (IterationOffset)Enum.Parse(typeof(IterationOffset), SelectedRecurrenceMonthWeek),
+                    MonthOfTheYear = (MonthOfTheYear)Enum.Parse(typeof(MonthOfTheYear), SelectedRecurrenceYearlyMonth),
                     EndDate = RecurrenceEndDate
                 };
             }
