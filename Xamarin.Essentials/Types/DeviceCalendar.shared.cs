@@ -182,12 +182,12 @@ namespace Xamarin.Essentials
                 toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] week of the year ";
             }
 
-            if (DayIterationOffSetPosition?.Count > 0)
+            if (DayIterationOffSetPosition?.Count > 0 && (Frequency == RecurrenceFrequency.MonthlyOnDay || Frequency == RecurrenceFrequency.YearlyOnDay))
             {
                 toReturn += $"Occuring on the: [";
                 foreach (var d in DayIterationOffSetPosition)
                 {
-                    toReturn += $"{(d < 0 ? "-" : string.Empty)}{Math.Abs((int)d).ToOrdinal()}";
+                    toReturn += $"{d}, ";
                 }
                 toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] of each month ";
             }

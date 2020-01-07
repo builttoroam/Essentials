@@ -60,22 +60,12 @@
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <Label Grid.Row="0"
-                     Grid.Column="0"
-                     Text="Location:"/>
-                    <Label Grid.Row="0"
-                     Grid.Column="1"
-                     HorizontalTextAlignment="Center"
-                     Text="{Binding Location}"/>
-                    <Label Grid.Row="1"
-                     Grid.Column="0"
-                     Text="Recurrence:"/>
-                    <Label Grid.Row="1"
-                     Grid.Column="1"
-                     HorizontalTextAlignment="Center"
-                     Text="{Binding RecurrancePattern}"/>
+                    <Label Grid.Column="0"
+                           Text="Recurrence:"/>
+                    <Label Grid.Column="1"
+                           HorizontalTextAlignment="Center"
+                           Text="{Binding RecurrancePattern}"/>
                 </Grid>
                 <Grid Grid.Row="2">
                     <Grid.ColumnDefinitions>

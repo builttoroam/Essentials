@@ -133,7 +133,7 @@
             <StackLayout Orientation="Horizontal"
                          IsVisible="{Binding IsWeekly}">
                 <CollectionView ItemsSource="{Binding RecurrenceDays}"
-                                SelectionMode="Single"
+                                SelectionMode="Multiple"
                                 SelectedItems="{Binding SelectedRecurrenceDays, Mode=TwoWay}">
                 </CollectionView>
             </StackLayout>
