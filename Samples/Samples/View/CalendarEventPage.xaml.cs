@@ -17,7 +17,7 @@ namespace Samples.View
             InitializeComponent();
         }
 
-        protected async override void OnAppearing()
+        protected override async void OnAppearing()
         {
             base.OnAppearing();
 
@@ -70,7 +70,7 @@ namespace Samples.View
                 if (success)
                 {
                     var lst = ViewModel.Attendees.ToList();
-                    var attendeeToRemove = lst.Where(x => x.Email == attendee.Email && x.Name == attendee.Name).FirstOrDefault();
+                    var attendeeToRemove = lst.FirstOrDefault(x => x.Email == attendee.Email && x.Name == attendee.Name);
                     if (attendeeToRemove != null)
                     {
                         lst.Remove(attendeeToRemove);
@@ -104,7 +104,7 @@ namespace Samples.View
         {
             var modal = new CalendarEventAddPage();
 
-            var calendarName = (await Calendar.GetCalendarsAsync()).Where(x => x.Id == ViewModel.CalendarId).First().Name;
+            var calendarName = (await Calendar.GetCalendarsAsync()).First(x => x.Id == ViewModel.CalendarId).Name;
 
             modal.BindingContext = new CalendarEventAddViewModel(ViewModel.CalendarId, calendarName, ViewModel);
             await Navigation.PushAsync(modal);

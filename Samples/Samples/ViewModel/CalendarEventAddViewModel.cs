@@ -72,15 +72,18 @@ namespace Samples.ViewModel
                     {
                         RecurrenceDays.First(x => x.Day == r.Day).IsChecked = true;
                     }
-                    if (existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.MonthlyOnDay || existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.YearlyOnDay)
+                    switch (existingEvent.RecurrancePattern.Frequency)
                     {
-                        IsMonthDaySpecific = false;
-                        SelectedRecurrenceMonthWeek = existingEvent.RecurrancePattern.DayIterationOffSetPosition.ToString();
-                        SelectedMonthWeekRecurrenceDay = existingEvent.RecurrancePattern.DaysOfTheWeek?.First().ToString();
-                    }
-                    else if (existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.Monthly || existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.Yearly)
-                    {
-                        SelectedRecurrenceMonthDay = existingEvent.RecurrancePattern.DayOfTheMonth;
+                        case RecurrenceFrequency.MonthlyOnDay:
+                        case RecurrenceFrequency.YearlyOnDay:
+                            IsMonthDaySpecific = false;
+                            SelectedRecurrenceMonthWeek = existingEvent.RecurrancePattern.DayIterationOffSetPosition.ToString();
+                            SelectedMonthWeekRecurrenceDay = existingEvent.RecurrancePattern.DaysOfTheWeek?.First().ToString();
+                            break;
+                        case RecurrenceFrequency.Monthly:
+                        case RecurrenceFrequency.Yearly:
+                            SelectedRecurrenceMonthDay = existingEvent.RecurrancePattern.DayOfTheMonth;
+                            break;
                     }
                     SelectedRecurrenceYearlyMonth = existingEvent.RecurrancePattern.MonthOfTheYear.ToString();
                     if (existingEvent.RecurrancePattern.EndDate.HasValue)
