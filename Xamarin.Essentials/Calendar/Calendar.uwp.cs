@@ -217,8 +217,8 @@ namespace Xamarin.Essentials
 
             var app = new Appointment();
             app.Subject = newEvent.Title;
-            app.Details = newEvent.Description;
-            app.Location = newEvent.Location;
+            app.Details = newEvent.Description ?? string.Empty;
+            app.Location = newEvent.Location ?? string.Empty;
             app.StartTime = newEvent.StartDate;
             app.Duration = newEvent.EndDate.HasValue ? newEvent.EndDate.Value - newEvent.StartDate : TimeSpan.FromDays(1);
             app.AllDay = newEvent.AllDay;

@@ -3,28 +3,47 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Samples.ViewModel
 {
-    public class TestDumbReference
+    public class DayOfTheWeekSwitch : INotifyPropertyChanged
     {
+        bool isChecked;
+
         public DayOfTheWeek Day { get; set; }
 
         public override string ToString() => Day.ToString();
+
+        public bool IsChecked
+        {
+            get => isChecked;
+            set
+            {
+                isChecked = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        protected void OnPropertyChanged([CallerMemberName]string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public class CalendarEventAddViewModel : BaseViewModel
     {
-        static readonly ObservableCollection<TestDumbReference> RecurrenceWeekdays = new ObservableCollection<TestDumbReference>()
+        static readonly ObservableCollection<DayOfTheWeekSwitch> RecurrenceWeekdays = new ObservableCollection<DayOfTheWeekSwitch>()
         {
-            new TestDumbReference() { Day = DayOfTheWeek.Monday },
-            new TestDumbReference() { Day = DayOfTheWeek.Tuesday },
-            new TestDumbReference() { Day = DayOfTheWeek.Wednesday },
-            new TestDumbReference() { Day = DayOfTheWeek.Thursday },
-            new TestDumbReference() { Day = DayOfTheWeek.Friday }
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Monday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Tuesday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Wednesday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Thursday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Friday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday, IsChecked = false }
         };
 
         public CalendarEventAddViewModel(string calendarId, string calendarName, DeviceEvent existingEvent = null)
@@ -47,7 +66,11 @@ namespace Samples.ViewModel
                 {
                     SelectedRecurrenceType = existingEvent.RecurrancePattern.Frequency.ToString();
                     SelectedRecurrenceInterval = existingEvent.RecurrancePattern.Interval;
-                    SelectedRecurrenceDays = existingEvent.RecurrancePattern.DaysOfTheWeek != null ? new ObservableCollection<TestDumbReference>(existingEvent.RecurrancePattern.DaysOfTheWeek.ConvertAll(x => new TestDumbReference() { Day = x }).ToList()) : null;
+                    var selectedDays = existingEvent.RecurrancePattern.DaysOfTheWeek != null && existingEvent.RecurrancePattern.DaysOfTheWeek.Any() ? new ObservableCollection<DayOfTheWeekSwitch>(existingEvent.RecurrancePattern.DaysOfTheWeek.ConvertAll(x => new DayOfTheWeekSwitch() { Day = x, IsChecked = true }).ToList()) : new ObservableCollection<DayOfTheWeekSwitch>();
+                    foreach (var r in selectedDays)
+                    {
+                        RecurrenceDays.First(x => x.Day == r.Day).IsChecked = true;
+                    }
                     if (existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.MonthlyOnDay || existingEvent.RecurrancePattern.Frequency == RecurrenceFrequency.YearlyOnDay)
                     {
                         IsMonthDaySpecific = false;
@@ -71,7 +94,6 @@ namespace Samples.ViewModel
                 }
             }
             CreateOrUpdateEvent = new Command(CreateOrUpdateCalendarEvent);
-            SelectionChangedCommand = new Command(OnSelectionChanged);
         }
 
         public string EventId { get; set; }
@@ -81,23 +103,6 @@ namespace Samples.ViewModel
         public string CalendarName { get; set; }
 
         string eventTitle;
-
-        public ICommand SelectionChangedCommand { get; }
-
-        void OnSelectionChanged(object parameter)
-        {
-            if (parameter is SelectionChangedEventArgs selectionArgs)
-            {
-                SelectedRecurrenceDays.Clear();
-                foreach (var s in selectionArgs.CurrentSelection)
-                {
-                    if (s is TestDumbReference dayToAdd)
-                    {
-                        SelectedRecurrenceDays.Add(dayToAdd);
-                    }
-                }
-            }
-        }
 
         public string EventTitle
         {
@@ -113,7 +118,7 @@ namespace Samples.ViewModel
 
         public string EventActionText => string.IsNullOrEmpty(EventId) ? "Add Event" : "Update Event";
 
-        public bool CanCreateOrUpdateEvent => !string.IsNullOrWhiteSpace(EventTitle) && !string.IsNullOrWhiteSpace(Description) && !string.IsNullOrWhiteSpace(EventLocation)
+        public bool CanCreateOrUpdateEvent => !string.IsNullOrWhiteSpace(EventTitle)
             && ((EndDate.Date == StartDate.Date && (EndTime > StartTime || AllDay)) || EndDate.Date > StartDate.Date)
             && (!CanAlterRecurrence || StartDate < RecurrenceEndDate || RecursIndefinitely);
 
@@ -122,13 +127,8 @@ namespace Samples.ViewModel
         public string Description
         {
             get => description;
-            set
-            {
-                if (SetProperty(ref description, value))
-                {
-                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
-                }
-            }
+            set => SetProperty(ref description, value);
+        }
         }
 
         string eventLocation;
@@ -136,13 +136,7 @@ namespace Samples.ViewModel
         public string EventLocation
         {
             get => eventLocation;
-            set
-            {
-                if (SetProperty(ref eventLocation, value))
-                {
-                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
-                }
-            }
+            set => SetProperty(ref eventLocation, value);
         }
 
         bool allDay;
@@ -238,12 +232,11 @@ namespace Samples.ViewModel
                     if (value)
                     {
                         SelectedRecurrenceInterval = 0;
-                        SelectedRecurrenceDays = RecurrenceWeekdays;
+                        RecurrenceDays = RecurrenceWeekdays;
                     }
                     else
                     {
                         SelectedRecurrenceInterval = 1;
-                        SelectedRecurrenceDays.Clear();
                     }
                 }
             }
@@ -295,34 +288,16 @@ namespace Samples.ViewModel
             }
         }
 
-        public ObservableCollection<TestDumbReference> RecurrenceDays { get; } = new ObservableCollection<TestDumbReference>()
+        public ObservableCollection<DayOfTheWeekSwitch> RecurrenceDays { get; set; } = new ObservableCollection<DayOfTheWeekSwitch>()
         {
-            new TestDumbReference() { Day = DayOfTheWeek.Monday },
-            new TestDumbReference() { Day = DayOfTheWeek.Tuesday },
-            new TestDumbReference() { Day = DayOfTheWeek.Wednesday },
-            new TestDumbReference() { Day = DayOfTheWeek.Thursday },
-            new TestDumbReference() { Day = DayOfTheWeek.Friday },
-            new TestDumbReference() { Day = DayOfTheWeek.Saturday },
-            new TestDumbReference() { Day = DayOfTheWeek.Sunday }
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Monday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Tuesday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Wednesday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Thursday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Friday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday }
         };
-
-        ObservableCollection<TestDumbReference> selectedRecurrenceDays;
-
-        public ObservableCollection<TestDumbReference> SelectedRecurrenceDays
-        {
-            get => selectedRecurrenceDays;
-            set =>
-
-                // var listCheck = new ObservableCollection<TestDumbReference>();
-                // foreach (var v in value)
-                // {
-                //    if (RecurrenceDays.Contains(v))
-                //    {
-                //        listCheck.Add(RecurrenceDays.Single(x => x == v));
-                //    }
-                // }
-                SetProperty(ref selectedRecurrenceDays, value);
-        }
 
         public ObservableCollection<string> RecurrenceTypes { get; } = new ObservableCollection<string>()
         {
@@ -350,7 +325,6 @@ namespace Samples.ViewModel
                     OnPropertyChanged(nameof(IsYearly));
                     OnPropertyChanged(nameof(SelectedRecurrenceTypeDisplay));
                     SelectedRecurrenceInterval = 1;
-                    SelectedRecurrenceDays?.Clear();
                 }
             }
         }
@@ -379,7 +353,7 @@ namespace Samples.ViewModel
             }
         }
 
-        public ObservableCollection<uint> RecurrenceMonthDay { get; } = new ObservableCollection<uint>()
+        public ObservableCollection<uint> RecurrenceMonthDay { get; set; } = new ObservableCollection<uint>()
         {
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
         };
@@ -447,7 +421,16 @@ namespace Samples.ViewModel
         public string SelectedRecurrenceYearlyMonth
         {
             get => selectedRecurrenceYearlyMonth;
-            set => SetProperty(ref selectedRecurrenceYearlyMonth, value);
+            set
+            {
+                if (SetProperty(ref selectedRecurrenceYearlyMonth, value) && value != MonthOfTheYear.NotSet.ToString())
+                {
+                    var days = Enumerable.Range(1, System.DateTime.DaysInMonth(StartDate.Year, (int)(MonthOfTheYear)Enum.Parse(typeof(MonthOfTheYear), value))).Select(x => (uint)x).ToList();
+                    RecurrenceMonthDay.Clear();
+                    days.ForEach(x => RecurrenceMonthDay.Add(x));
+                    SelectedRecurrenceMonthDay = 1;
+                }
+            }
         }
 
         DateTime? recurrenceEndDate = DateTime.Now.Date.AddMonths(6);
@@ -479,18 +462,43 @@ namespace Samples.ViewModel
                 Description = Description,
                 Location = EventLocation,
                 StartDate = startDto,
-                EndDate = !AllDay ? (DateTimeOffset?)endDto : null
+                EndDate = !AllDay ? !CanAlterRecurrence ? (DateTimeOffset?)endDto : new DateTimeOffset(StartDate + EndTime) : null
             };
 
             if (CanAlterRecurrence)
             {
+                List<DayOfTheWeek> daysOfTheWeek = null;
+                var selectedFrequency = (RecurrenceFrequency)Enum.Parse(typeof(RecurrenceFrequency), SelectedRecurrenceType);
+                var dayIterationOffset = IterationOffset.NotSet;
+                switch (selectedFrequency)
+                {
+                    case RecurrenceFrequency.Daily:
+                    case RecurrenceFrequency.Weekly:
+                        daysOfTheWeek = RecurrenceDays.Where(x => x.IsChecked).ToList().ConvertAll(x => x.Day);
+                        break;
+                    default:
+                        if (!string.IsNullOrWhiteSpace(SelectedMonthWeekRecurrenceDay))
+                        {
+                            daysOfTheWeek = new List<DayOfTheWeek>()
+                            {
+                                (DayOfTheWeek)Enum.Parse(typeof(DayOfTheWeek), SelectedMonthWeekRecurrenceDay)
+                            };
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(SelectedRecurrenceMonthWeek))
+                        {
+                            dayIterationOffset = (IterationOffset)Enum.Parse(typeof(IterationOffset), SelectedRecurrenceMonthWeek);
+                        }
+                        break;
+                }
+
                 newEvent.RecurrancePattern = new RecurrenceRule()
                 {
-                    Frequency = (RecurrenceFrequency)Enum.Parse(typeof(RecurrenceFrequency), SelectedRecurrenceType),
+                    Frequency = selectedFrequency,
                     Interval = SelectedRecurrenceInterval,
-                    DaysOfTheWeek = SelectedRecurrenceDays != null && SelectedRecurrenceDays.Count > 0 ? SelectedRecurrenceDays.ToList().ConvertAll(x => x.Day) : !string.IsNullOrWhiteSpace(SelectedMonthWeekRecurrenceDay) ? new List<DayOfTheWeek>() { (DayOfTheWeek)Enum.Parse(typeof(DayOfTheWeek), SelectedMonthWeekRecurrenceDay) } : null,
+                    DaysOfTheWeek = daysOfTheWeek,
                     DayOfTheMonth = SelectedRecurrenceMonthDay,
-                    DayIterationOffSetPosition = (IterationOffset)Enum.Parse(typeof(IterationOffset), SelectedRecurrenceMonthWeek),
+                    DayIterationOffSetPosition = dayIterationOffset,
                     MonthOfTheYear = (MonthOfTheYear)Enum.Parse(typeof(MonthOfTheYear), SelectedRecurrenceYearlyMonth),
                     EndDate = RecurrenceEndDate
                 };
