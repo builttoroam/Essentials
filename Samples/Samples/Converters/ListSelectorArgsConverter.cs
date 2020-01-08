@@ -13,7 +13,7 @@ namespace Samples.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            var eventArgs = value as ObservableCollection<TestDumbReference>;
+            var eventArgs = value as ObservableCollection<DayOfTheWeekSwitch>;
 
             if (eventArgs == null)
                 return value;
