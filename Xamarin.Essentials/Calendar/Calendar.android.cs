@@ -168,6 +168,7 @@ namespace Xamarin.Essentials
                 CalendarContract.Events.InterfaceConsts.Title,
                 CalendarContract.Events.InterfaceConsts.Description,
                 CalendarContract.Events.InterfaceConsts.EventLocation,
+                CalendarContract.Events.InterfaceConsts.CustomAppUri,
                 CalendarContract.Events.InterfaceConsts.AllDay,
                 CalendarContract.Events.InterfaceConsts.Dtstart,
                 CalendarContract.Events.InterfaceConsts.Dtend,
@@ -194,6 +195,7 @@ namespace Xamarin.Essentials
                         Title = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Title)),
                         Description = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Description)),
                         Location = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventLocation)),
+                        Url = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CustomAppUri)),
                         StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart))),
                         EndDate = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 0 ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend))) : null,
                         Attendees = GetAttendeesForEvent(eventId),
@@ -297,6 +299,7 @@ namespace Xamarin.Essentials
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, newEvent.Title);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, newEvent.Description);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, newEvent.Location);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.CustomAppUri, newEvent.Url);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, newEvent.AllDay);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, newEvent.StartDate.ToUnixTimeMilliseconds().ToString());
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToUnixTimeMilliseconds().ToString() : newEvent.StartDate.AddDays(1).ToUnixTimeMilliseconds().ToString());
@@ -324,6 +327,7 @@ namespace Xamarin.Essentials
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, eventToUpdate.Title);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, eventToUpdate.Description);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, eventToUpdate.Location);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.CustomAppUri, eventToUpdate.Url);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, eventToUpdate.AllDay);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, eventToUpdate.StartDate.ToUnixTimeMilliseconds().ToString());
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, eventToUpdate.EndDate.HasValue ? eventToUpdate.EndDate.Value.ToUnixTimeMilliseconds().ToString() : eventToUpdate.StartDate.AddDays(1).ToUnixTimeMilliseconds().ToString());

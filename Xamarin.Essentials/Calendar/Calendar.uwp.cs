@@ -150,6 +150,7 @@ namespace Xamarin.Essentials
                 Title = e.Subject,
                 Description = e.Details,
                 Location = e.Location,
+                Url = e.Uri != null ? e.Uri.ToString() : string.Empty,
                 StartDate = e.StartTime,
                 EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
                 Attendees = GetAttendeesForEvent(e.Invitees),
@@ -222,6 +223,7 @@ namespace Xamarin.Essentials
             app.StartTime = newEvent.StartDate;
             app.Duration = newEvent.EndDate.HasValue ? newEvent.EndDate.Value - newEvent.StartDate : TimeSpan.FromDays(1);
             app.AllDay = newEvent.AllDay;
+            app.Uri = !string.IsNullOrEmpty(newEvent.Url) ? new Uri(newEvent.Url) : null;
 
             if (newEvent.RecurrancePattern != null)
             {
@@ -270,6 +272,7 @@ namespace Xamarin.Essentials
             thisEvent.StartTime = eventToUpdate.StartDate;
             thisEvent.Duration = eventToUpdate.EndDate.HasValue ? eventToUpdate.EndDate.Value - eventToUpdate.StartDate : TimeSpan.FromDays(1);
             thisEvent.AllDay = eventToUpdate.AllDay;
+            thisEvent.Uri = new Uri(eventToUpdate.Url);
 
             var cal = await instance.GetAppointmentCalendarAsync(eventToUpdate.CalendarId);
             await cal.SaveAppointmentAsync(thisEvent);

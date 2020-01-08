@@ -57,6 +57,7 @@ namespace Samples.ViewModel
                 EventTitle = existingEvent.Title;
                 Description = existingEvent.Description;
                 EventLocation = existingEvent.Location;
+                Url = existingEvent.Url;
                 AllDay = existingEvent.AllDay;
                 StartDate = existingEvent.StartDate.Date;
                 EndDate = existingEvent.EndDate?.Date ?? existingEvent.StartDate.Date;
@@ -129,6 +130,13 @@ namespace Samples.ViewModel
             get => description;
             set => SetProperty(ref description, value);
         }
+
+        string url;
+
+        public string Url
+        {
+            get => url;
+            set => SetProperty(ref url, value);
         }
 
         string eventLocation;
@@ -461,6 +469,7 @@ namespace Samples.ViewModel
                 AllDay = AllDay,
                 Description = Description,
                 Location = EventLocation,
+                Url = url,
                 StartDate = startDto,
                 EndDate = !AllDay ? !CanAlterRecurrence ? (DateTimeOffset?)endDto : new DateTimeOffset(StartDate + EndTime) : null
             };

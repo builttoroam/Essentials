@@ -64,6 +64,14 @@
                Grid.Row="3"
                Grid.Column="1"/>
 
+        <Label Text="Url"
+               HorizontalTextAlignment="Center"
+               Grid.Row="4"
+               Grid.Column="0"/>
+        <Entry Placeholder="https://..."
+               Text="{Binding Url}"
+               Grid.Row="4"
+               Grid.Column="1"/>
 
         <Label Text="All Day"
                HorizontalTextAlignment="Center"

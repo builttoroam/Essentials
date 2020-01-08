@@ -90,18 +90,26 @@
                            Text="{Binding Location}"/>
                     <Label Grid.Row="2"
                            Grid.Column="0"
+                           Text="Url:"/>
+                    <Label Grid.Row="2"
+                           Grid.Column="1"
+                           Grid.ColumnSpan="3"
+                           HorizontalTextAlignment="Center"
+                           Text="{Binding Url}"/>
+                    <Label Grid.Row="3"
+                           Grid.Column="0"
                            Text="When:"/>
                     <Label Grid.Column="1"
-                           Grid.Row="2"
+                           Grid.Row="3"
                            Text="{Binding StartDate, StringFormat={StaticResource DateDisplayFormatter}, Mode=OneWay}"
                            TextColor="Black"
                            HorizontalTextAlignment="Center"/>
                     <Label Grid.Column="2"
-                           Grid.Row="2"
+                           Grid.Row="3"
                            Text="-"
                            IsVisible="{Binding AllDay, Converter={StaticResource NegativeConverter}}"/>
                     <Label Grid.Column="3"
-                           Grid.Row="2"
+                           Grid.Row="3"
                            Text="{Binding EndDate, StringFormat={StaticResource DateDisplayFormatter}, Mode=OneWay}"
                            TextColor="Black"
                            HorizontalTextAlignment="Center"/>

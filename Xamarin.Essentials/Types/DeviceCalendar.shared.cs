@@ -27,6 +27,8 @@ namespace Xamarin.Essentials
 
         public string Location { get; set; }
 
+        public string Url { get; set; }
+
         public bool AllDay
         {
             get => !EndDate.HasValue;
