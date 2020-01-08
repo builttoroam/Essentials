@@ -120,13 +120,12 @@
       <ScrollView>
         <Grid>
           <Grid.RowDefinitions>
-              <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
-            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
           </Grid.RowDefinitions>
-            <StackLayout Grid.Row="0">
+          <StackLayout Grid.Row="0">
             <Picker x:Name="SelectedRecurrenceType"
                     Title="Select a RecurrenceType"
                     ItemsSource="{Binding RecurrenceTypes}"
@@ -153,27 +152,24 @@
             <Label Text="Every Weekday: "/>
             <Switch IsToggled="{Binding IsEveryWeekday}"/>
           </StackLayout>
-          <Grid IsVisible="{Binding IsWeekly}"
-                Grid.Row="2">
-              <ListView ItemsSource="{Binding RecurrenceDays}">
-                <ListView.ItemTemplate>
-                  <DataTemplate x:DataType="viewmodels:DayOfTheWeekSwitch">
-                    <ViewCell>
-                      <StackLayout Orientation="Horizontal">
-                        <Switch IsToggled="{Binding IsChecked}" />
-                        <Label Text="{Binding Day}"
-                               TextColor="Black" />
-                      </StackLayout>
-                    </ViewCell>
-                  </DataTemplate>
-                </ListView.ItemTemplate>
-              </ListView>
-          </Grid>
+          <StackLayout BindableLayout.ItemsSource="{Binding RecurrenceDays}"
+                       IsVisible="{Binding IsWeekly}"
+                       Grid.Row="2">
+            <BindableLayout.ItemTemplate>
+              <DataTemplate x:DataType="viewmodels:DayOfTheWeekSwitch">
+                <StackLayout Orientation="Horizontal">
+                  <Switch IsToggled="{Binding IsChecked}" />
+                  <Label Text="{Binding Day}"
+                         TextColor="Black" />
+                </StackLayout>
+              </DataTemplate>
+            </BindableLayout.ItemTemplate>
+          </StackLayout>
           <Grid Grid.Row="2">
-              <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto"/>
-                  <RowDefinition/>
-              </Grid.RowDefinitions>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition/>
+            </Grid.RowDefinitions>
             <StackLayout Orientation="Horizontal"
                          IsVisible="{Binding IsYearly}"
                        >
@@ -186,18 +182,29 @@
             </StackLayout>
             <StackLayout IsVisible="{Binding IsMonthlyOrYearly}"
                          Grid.Row="1">
-              <StackLayout Orientation="Horizontal" >
-                <Label Text="By day of the month: "/>
-                <Switch IsToggled="{Binding IsMonthDaySpecific}"/>
-              </StackLayout>
-              <StackLayout Orientation="Horizontal" >
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Label Text="By day of the month: "
+                       VerticalTextAlignment="Center"/>
+                <Switch IsToggled="{Binding IsMonthDaySpecific}"
+                        VerticalOptions="Center"
+                        Grid.Column="1"/>
                 <Picker x:Name="SelectedRecurrenceMonthDay"
                         Title="On day"
                         ItemsSource="{Binding RecurrenceMonthDay}"
                         SelectedItem="{Binding SelectedRecurrenceMonthDay, Mode=TwoWay}"
-                        IsEnabled="{Binding IsMonthDaySpecific}"/>
-              </StackLayout>
-              <StackLayout Orientation="Horizontal">
+                        IsEnabled="{Binding IsMonthDaySpecific}"
+                        Grid.Column="2"/>
+              </Grid>
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition />
+                  <ColumnDefinition />
+                </Grid.ColumnDefinitions>
                 <Picker x:Name="SelectedRecurrenceMonthWeek"
                         Title="On the"
                         ItemsSource="{Binding RecurrenceMonthWeek}"
@@ -207,29 +214,39 @@
                         Title=""
                         ItemsSource="{Binding RecurrenceDays}"
                         SelectedItem="{Binding SelectedMonthWeekRecurrenceDay, Mode=TwoWay}"
-                        IsEnabled="{Binding IsMonthDaySpecific, Converter={StaticResource InverseBoolConverter}}"/>
-              </StackLayout>
+                        IsEnabled="{Binding IsMonthDaySpecific, Converter={StaticResource InverseBoolConverter}}"
+                        Grid.Column="1"/>
+              </Grid>
             </StackLayout>
           </Grid>
-          <StackLayout Orientation="Horizontal"
-                       IsVisible="{Binding CanAlterRecurrence}"
-                       Grid.Row="3">
-            <Label Text="Until"
-                   HorizontalTextAlignment="Center"/>
+          <Grid IsVisible="{Binding CanAlterRecurrence}"
+                Grid.Row="3">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition Width="Auto"/>
+              <ColumnDefinition />
+              <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Label Text="Until: "
+                   HorizontalTextAlignment="Center"
+                   VerticalTextAlignment="End"/>
             <DatePicker Date="{Binding RecurrenceEndDate}"
                         MinimumDate="1970-01-01"
-                        IsEnabled="{Binding RecursIndefinitely, Converter={StaticResource InverseBoolConverter}}"/>
-            <Label Text="Event Reoccurs Indefinitely:"/>
-            <Switch IsToggled="{Binding RecursIndefinitely}"/>
-          </StackLayout>
-
-
-          <Button Text="{Binding EventActionText}"
-                  Command="{Binding CreateOrUpdateEvent}"
-                  IsEnabled="{Binding CanCreateOrUpdateEvent}"
-                  Grid.Row="4"/>
+                        IsEnabled="{Binding RecursIndefinitely, Converter={StaticResource InverseBoolConverter}}"
+                        Grid.Column="1"/>
+            <Label Text="Event Reoccurs Indefinitely:"
+                   Grid.Column="2"
+                   VerticalTextAlignment="Center"
+                   HorizontalOptions="End"/>
+            <Switch IsToggled="{Binding RecursIndefinitely}"
+                    VerticalOptions="Center"
+                    Grid.Column="3"/>
+          </Grid>
         </Grid>
       </ScrollView>
+      <Button Text="{Binding EventActionText}"
+              Command="{Binding CreateOrUpdateEvent}"
+              IsEnabled="{Binding CanCreateOrUpdateEvent}"/>
     </StackLayout>
   </views:BasePage.Content>
 </views:BasePage>
