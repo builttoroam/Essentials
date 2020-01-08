@@ -181,7 +181,16 @@
                                         <Label Grid.Column="1"
                                                Text="{Binding Email}"
                                                TextColor="DarkGray"/>
+                                        <Label Grid.Column="2" 
+                                               Text="Organizer"
+                                               IsVisible="{Binding IsOrganizer}"
+                                               BackgroundColor="MediumPurple"
+                                               VerticalTextAlignment="Center"
+                                               Margin="0,0,15,0"
+                                               Padding="10,0,10,0"/>
                                         <Button Grid.Column="2"
+                                                IsVisible="{Binding IsOrganizer, Converter={StaticResource NegativeConverter}}"
+                                                Padding="10,0,10,0"
                                                 Margin="0,0,15,0"
                                                 BackgroundColor="Red"
                                                 Text=" - "

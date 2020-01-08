@@ -86,6 +86,8 @@ namespace Xamarin.Essentials
         public string Email { get; set; }
 
         public bool Required { get; set; }
+
+        public bool IsOrganizer { get; set; }
     }
 
     [Preserve(AllMembers = true)]

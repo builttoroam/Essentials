@@ -143,6 +143,7 @@ namespace Xamarin.Essentials
                         break;
                 }
             }
+
             return new DeviceEvent()
             {
                 Id = e.LocalId,
@@ -153,7 +154,7 @@ namespace Xamarin.Essentials
                 Url = e.Uri != null ? e.Uri.ToString() : string.Empty,
                 StartDate = e.StartTime,
                 EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
-                Attendees = GetAttendeesForEvent(e.Invitees),
+                Attendees = GetAttendeesForEvent(e.Invitees, e.Organizer),
                 RecurrancePattern = rules,
                 Reminders = e.Reminder.HasValue ? new List<DeviceEventReminder>() { new DeviceEventReminder() { MinutesPriorToEventStart = e.Reminder.Value.Minutes } } : null
             };
@@ -190,7 +191,7 @@ namespace Xamarin.Essentials
             return (AppointmentDaysOfWeek)enums.GetValue(index);
         }
 
-        static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<AppointmentInvitee> inviteList)
+        static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<AppointmentInvitee> inviteList, AppointmentOrganizer organizer)
         {
             var attendees = (from attendee in inviteList
                              select new DeviceEventAttendee
@@ -201,6 +202,10 @@ namespace Xamarin.Essentials
                              })
                             .OrderBy(e => e.Name)
                             .ToList();
+            if (organizer != null)
+            {
+                attendees.Insert(0, new DeviceEventAttendee() { Name = organizer.DisplayName, Email = organizer.Address, IsOrganizer = true });
+            }
 
             return attendees;
         }
