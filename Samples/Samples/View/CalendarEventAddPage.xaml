@@ -136,10 +136,9 @@
                        Grid.Row="1">
             <Label Text="Every "
                    VerticalTextAlignment="End"/>
-            <Picker x:Name="SelectedRecurrenceInterval"
-                    Title=""
-                    ItemsSource="{Binding RecurrenceInterval}"
-                    SelectedItem="{Binding SelectedRecurrenceInterval, Mode=TwoWay}"/>
+            <Entry Keyboard="Numeric"
+                   Text="{Binding RecurrenceInterval}" 
+                   TextChanged="Entry_OnTextChanged"/>
             <Label Text="{Binding SelectedRecurrenceTypeDisplay, Mode=TwoWay}"
                    VerticalTextAlignment="End"/>
             <Label Text=" on"
@@ -220,28 +219,84 @@
             </StackLayout>
           </Grid>
           <Grid IsVisible="{Binding CanAlterRecurrence}"
-                Grid.Row="3">
-            <Grid.ColumnDefinitions>
-              <ColumnDefinition Width="Auto"/>
-              <ColumnDefinition Width="Auto"/>
-              <ColumnDefinition />
-              <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <Label Text="Until: "
-                   HorizontalTextAlignment="Center"
-                   VerticalTextAlignment="End"/>
-            <DatePicker Date="{Binding RecurrenceEndDate}"
-                        MinimumDate="1970-01-01"
-                        IsEnabled="{Binding RecursIndefinitely, Converter={StaticResource InverseBoolConverter}}"
-                        Grid.Column="1"/>
-            <Label Text="Event Reoccurs Indefinitely:"
-                   Grid.Column="2"
-                   VerticalTextAlignment="Center"
-                   HorizontalOptions="End"/>
-            <Switch IsToggled="{Binding RecursIndefinitely}"
-                    VerticalOptions="Center"
-                    Grid.Column="3"/>
-          </Grid>
+                       Grid.Row="3">
+              <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition />
+              </Grid.ColumnDefinitions>
+              <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition/>
+              </Grid.RowDefinitions>
+              <Label Text="Event Reoccurs Indefinitely:"
+                     VerticalTextAlignment="Center"
+                     HorizontalOptions="End"/>
+              <Switch IsToggled="{Binding RecursIndefinitely}"
+                      Grid.Column="1"
+                      Grid.Row="0"
+                      VerticalOptions="Center"/>
+
+              <Grid Grid.Row="1"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    IsVisible="{Binding RecursIndefinitely, Converter={StaticResource InverseBoolConverter}}">
+                  <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition />
+                  </Grid.ColumnDefinitions>
+                  <Label Text="By Date:"
+                         VerticalTextAlignment="Center"
+                         HorizontalOptions="End"/>
+                  <Switch IsToggled="{Binding EndRecurenceByDate}"
+                          VerticalOptions="Center"
+                          Grid.Column="1"/>
+                  <Label Text="Until: "
+                         HorizontalTextAlignment="Center"
+                         Grid.Column="2"
+                         IsVisible="{Binding EndRecurenceByDate}"
+                         VerticalTextAlignment="End"/>
+                  <DatePicker Date="{Binding RecurrenceEndDate}"
+                              MinimumDate="1970-01-01"
+                              IsVisible="{Binding EndRecurenceByDate}"
+                              Grid.Column="3"/>
+              </Grid>
+              <Grid Grid.Row="2"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    IsVisible="{Binding RecursIndefinitely, Converter={StaticResource InverseBoolConverter}}">
+                  <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition />
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <Label Text="By Interval:"
+                         Grid.Column="0"
+                         VerticalTextAlignment="Center"
+                         HorizontalOptions="End"/>
+                  <Switch IsToggled="{Binding EndRecurenceByDate, Converter={StaticResource InverseBoolConverter}}"
+                          VerticalOptions="Center"
+                          Grid.Column="1"/>
+                  <Label Text="For the next "
+                         VerticalTextAlignment="End"
+                         HorizontalTextAlignment="End"
+                         IsVisible="{Binding EndRecurenceByDate, Converter={StaticResource InverseBoolConverter}}"
+                         Grid.Column="2"/>
+                  <Entry Keyboard="Numeric"
+                         Text="{Binding RecurrenceEndInterval}"
+                         TextChanged="RecurrenceEndIntervalEntry_OnTextChanged"
+                         IsVisible="{Binding EndRecurenceByDate, Converter={StaticResource InverseBoolConverter}}"
+                         Grid.Column="3"/>
+                  <Label Text="occurences"
+                         VerticalTextAlignment="End"
+                         IsVisible="{Binding EndRecurenceByDate, Converter={StaticResource InverseBoolConverter}}"
+                         Grid.Column="4"/>
+              </Grid>
+            </Grid>
         </Grid>
       </ScrollView>
       <Button Text="{Binding EventActionText}"

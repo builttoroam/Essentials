@@ -66,7 +66,7 @@ namespace Samples.ViewModel
                 if (existingEvent.RecurrancePattern != null)
                 {
                     SelectedRecurrenceType = existingEvent.RecurrancePattern.Frequency.ToString();
-                    SelectedRecurrenceInterval = existingEvent.RecurrancePattern.Interval;
+                    RecurrenceInterval = existingEvent.RecurrancePattern.Interval;
                     var selectedDays = existingEvent.RecurrancePattern.DaysOfTheWeek != null && existingEvent.RecurrancePattern.DaysOfTheWeek.Any() ? new ObservableCollection<DayOfTheWeekSwitch>(existingEvent.RecurrancePattern.DaysOfTheWeek.ConvertAll(x => new DayOfTheWeekSwitch() { Day = x, IsChecked = true }).ToList()) : new ObservableCollection<DayOfTheWeekSwitch>();
                     foreach (var r in selectedDays)
                     {
@@ -124,7 +124,7 @@ namespace Samples.ViewModel
 
         public bool CanCreateOrUpdateEvent => !string.IsNullOrWhiteSpace(EventTitle)
             && ((EndDate.Date == StartDate.Date && (EndTime > StartTime || AllDay)) || EndDate.Date > StartDate.Date)
-            && (!CanAlterRecurrence || StartDate < RecurrenceEndDate || RecursIndefinitely);
+            && (!CanAlterRecurrence || StartDate < RecurrenceEndDate || RecursIndefinitely || (RecurrenceEndInterval.HasValue && RecurrenceEndInterval.Value > 0));
 
         string description;
 
@@ -242,12 +242,12 @@ namespace Samples.ViewModel
                 {
                     if (value)
                     {
-                        SelectedRecurrenceInterval = 0;
+                        RecurrenceInterval = 0;
                         RecurrenceDays = RecurrenceWeekdays;
                     }
                     else
                     {
-                        SelectedRecurrenceInterval = 1;
+                        RecurrenceInterval = 1;
                     }
                 }
             }
@@ -278,7 +278,7 @@ namespace Samples.ViewModel
             }
         }
 
-        bool recursIndefinitely = false;
+        bool recursIndefinitely = true;
 
         public bool RecursIndefinitely
         {
@@ -290,11 +290,44 @@ namespace Samples.ViewModel
                     if (value)
                     {
                         RecurrenceEndDate = null;
+                        RecurrenceEndInterval = null;
                     }
                     else
                     {
-                        RecurrenceEndDate = DateTime.Now.AddMonths(6);
+                        if (EndRecurenceByDate)
+                        {
+                            RecurrenceEndDate = DateTime.Now.AddMonths(6);
+                        }
+                        else
+                        {
+                            RecurrenceEndInterval = 1;
+                        }
                     }
+                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
+                }
+            }
+        }
+
+        bool endRecurenceByDate = true;
+
+        public bool EndRecurenceByDate
+        {
+            get => endRecurenceByDate;
+            set
+            {
+                if (SetProperty(ref endRecurenceByDate, value))
+                {
+                    if (value)
+                    {
+                        RecurrenceEndDate = DateTime.Now.AddMonths(6);
+                        RecurrenceEndInterval = null;
+                    }
+                    else
+                    {
+                        RecurrenceEndDate = null;
+                        RecurrenceEndInterval = 1;
+                    }
+                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
                 }
             }
         }
@@ -335,33 +368,19 @@ namespace Samples.ViewModel
                     OnPropertyChanged(nameof(IsMonthlyOrYearly));
                     OnPropertyChanged(nameof(IsYearly));
                     OnPropertyChanged(nameof(SelectedRecurrenceTypeDisplay));
-                    SelectedRecurrenceInterval = 1;
+                    RecurrenceInterval = 1;
                 }
             }
         }
 
         public string SelectedRecurrenceTypeDisplay => SelectedRecurrenceType.Replace("ily", "yly").Replace("ly", "(s)");
 
-        public ObservableCollection<uint> RecurrenceInterval { get; } = new ObservableCollection<uint>()
-        {
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10
-        };
+        private uint recurrenceInterval = 1;
 
-        uint selectedRecurrenceInterval;
-
-        public uint SelectedRecurrenceInterval
+        public uint RecurrenceInterval
         {
-            get => selectedRecurrenceInterval;
-            set
-            {
-                if (SetProperty(ref selectedRecurrenceInterval, value))
-                {
-                    if (value != 0)
-                    {
-                        IsEveryWeekday = false;
-                    }
-                }
-            }
+            get => recurrenceInterval;
+            set => SetProperty(ref recurrenceInterval, value);
         }
 
         public ObservableCollection<uint> RecurrenceMonthDay { get; set; } = new ObservableCollection<uint>()
@@ -444,7 +463,7 @@ namespace Samples.ViewModel
             }
         }
 
-        DateTime? recurrenceEndDate = DateTime.Now.Date.AddMonths(6);
+        DateTime? recurrenceEndDate;
 
         public DateTime? RecurrenceEndDate
         {
@@ -452,6 +471,20 @@ namespace Samples.ViewModel
             set
             {
                 if (SetProperty(ref recurrenceEndDate, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
+                }
+            }
+        }
+
+        private uint? recurrenceEndInterval;
+
+        public uint? RecurrenceEndInterval
+        {
+            get => recurrenceEndInterval;
+            set
+            {
+                if (SetProperty(ref recurrenceEndInterval, value))
                 {
                     OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
                 }
@@ -507,12 +540,13 @@ namespace Samples.ViewModel
                 newEvent.RecurrancePattern = new RecurrenceRule()
                 {
                     Frequency = selectedFrequency,
-                    Interval = SelectedRecurrenceInterval,
+                    Interval = RecurrenceInterval,
                     DaysOfTheWeek = daysOfTheWeek,
                     DayOfTheMonth = SelectedRecurrenceMonthDay,
                     DayIterationOffSetPosition = dayIterationOffset,
                     MonthOfTheYear = (MonthOfTheYear)Enum.Parse(typeof(MonthOfTheYear), SelectedRecurrenceYearlyMonth),
-                    EndDate = RecurrenceEndDate
+                    EndDate = RecurrenceEndDate,
+                    TotalOccurrences = RecurrenceEndInterval
                 };
             }
 

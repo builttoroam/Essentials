@@ -277,7 +277,7 @@ namespace Xamarin.Essentials
             thisEvent.StartTime = eventToUpdate.StartDate;
             thisEvent.Duration = eventToUpdate.EndDate.HasValue ? eventToUpdate.EndDate.Value - eventToUpdate.StartDate : TimeSpan.FromDays(1);
             thisEvent.AllDay = eventToUpdate.AllDay;
-            thisEvent.Uri = new Uri(eventToUpdate.Url);
+            thisEvent.Uri = !string.IsNullOrWhiteSpace(eventToUpdate.Url) ? new Uri(eventToUpdate.Url) : null;
 
             var cal = await instance.GetAppointmentCalendarAsync(eventToUpdate.CalendarId);
             await cal.SaveAppointmentAsync(thisEvent);
@@ -295,6 +295,8 @@ namespace Xamarin.Essentials
             eventRecurrence.Unit = (AppointmentRecurrenceUnit)recurrenceRule.Frequency;
             eventRecurrence.Interval = recurrenceRule.Interval;
             eventRecurrence.Until = recurrenceRule.EndDate;
+            eventRecurrence.Occurrences = recurrenceRule.TotalOccurrences;
+
             switch (recurrenceRule.Frequency)
             {
                 case RecurrenceFrequency.None:
