@@ -88,6 +88,22 @@ namespace Xamarin.Essentials
                 rule = new RecurrenceRule();
                 var iOSRule = calendarEvent.RecurrenceRules[0];
 
+                rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
+                rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
+                rule.Interval = (uint)iOSRule.Interval;
+
+                if (iOSRule.DaysOfTheMonth != null && iOSRule.DaysOfTheMonth.Length > 0)
+                    rule.DayOfTheMonth = (uint)iOSRule.DaysOfTheMonth?.First();
+
+                if (iOSRule.MonthsOfTheYear != null && iOSRule.MonthsOfTheYear.Length > 0)
+                    rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.First();
+
+                if (iOSRule.RecurrenceEnd?.EndDate != null)
+                    rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffset();
+
+                if (iOSRule.RecurrenceEnd?.OccurrenceCount != null)
+                    rule.TotalOccurrences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
+
                 // This will need an extension function as these don't line up
                 // rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
                 // rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
@@ -120,6 +136,7 @@ namespace Xamarin.Essentials
                 Title = calendarEvent.Title,
                 Description = calendarEvent.Notes,
                 Location = calendarEvent.Location,
+                Url = calendarEvent.Url != null ? calendarEvent.Url.ToString() : string.Empty,
                 StartDate = calendarEvent.StartDate.ToDateTimeOffset(),
                 EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffset() : null,
                 Attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<DeviceEventAttendee>(),
@@ -153,13 +170,7 @@ namespace Xamarin.Essentials
             }
 
             var evnt = EKEvent.FromStore(CalendarRequest.Instance);
-            evnt.Title = newEvent.Title;
-            evnt.Calendar = CalendarRequest.Instance.GetCalendar(newEvent.CalendarId);
-            evnt.Notes = newEvent.Description;
-            evnt.Location = newEvent.Location;
-            evnt.AllDay = newEvent.AllDay;
-            evnt.StartDate = newEvent.StartDate.ToNSDate();
-            evnt.EndDate = newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToNSDate() : newEvent.StartDate.AddDays(1).ToNSDate();
+            evnt = SetUpEvent(evnt, newEvent);
 
             if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
             {
@@ -173,8 +184,7 @@ namespace Xamarin.Essentials
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
             var existingEvent = await GetEventByIdAsync(eventToUpdate.Id);
-            EKEvent thisEvent = null;
-
+            EKEvent thisEvent;
             if (string.IsNullOrEmpty(eventToUpdate.CalendarId) || existingEvent == null)
             {
                 return false;
@@ -189,13 +199,7 @@ namespace Xamarin.Essentials
                 thisEvent = CalendarRequest.Instance.GetCalendarItem(eventToUpdate.Id) as EKEvent;
             }
 
-            thisEvent.Title = eventToUpdate.Title;
-            thisEvent.Calendar = CalendarRequest.Instance.GetCalendar(eventToUpdate.CalendarId);
-            thisEvent.Notes = eventToUpdate.Description;
-            thisEvent.Location = eventToUpdate.Location;
-            thisEvent.AllDay = eventToUpdate.AllDay;
-            thisEvent.StartDate = eventToUpdate.StartDate.ToNSDate();
-            thisEvent.EndDate = eventToUpdate.EndDate.HasValue ? eventToUpdate.EndDate.Value.ToNSDate() : eventToUpdate.StartDate.AddDays(1).ToNSDate();
+            thisEvent = SetUpEvent(thisEvent, eventToUpdate);
 
             if (CalendarRequest.Instance.SaveEvent(thisEvent, EKSpan.ThisEvent, true, out var error))
             {
@@ -203,6 +207,70 @@ namespace Xamarin.Essentials
             }
             throw new ArgumentException("[iOS]: Could not update appointment with supplied parameters");
         }
+
+        static EKEvent SetUpEvent(EKEvent eventToUpdate, DeviceEvent eventToUpdateFrom)
+        {
+            eventToUpdate.Title = eventToUpdateFrom.Title;
+            eventToUpdate.Calendar = CalendarRequest.Instance.GetCalendar(eventToUpdateFrom.CalendarId);
+            eventToUpdate.Notes = eventToUpdateFrom.Description;
+            eventToUpdate.Location = eventToUpdateFrom.Location;
+            eventToUpdate.AllDay = eventToUpdateFrom.AllDay;
+            eventToUpdate.StartDate = eventToUpdateFrom.StartDate.ToNSDate();
+            eventToUpdate.Url = !string.IsNullOrWhiteSpace(eventToUpdateFrom.Url) ? new NSUrl(eventToUpdateFrom.Url) : null;
+            eventToUpdate.EndDate = eventToUpdateFrom.EndDate.HasValue ? eventToUpdateFrom.EndDate.Value.ToNSDate() : eventToUpdateFrom.StartDate.AddDays(1).ToNSDate();
+            if (eventToUpdateFrom.RecurrancePattern.Frequency != RecurrenceFrequency.None)
+            {
+                eventToUpdate.RecurrenceRules = new EKRecurrenceRule[1] { eventToUpdateFrom.RecurrancePattern.ConvertRule() };
+            }
+            return eventToUpdate;
+        }
+
+        static EKRecurrenceFrequency ConvertToiOS(this RecurrenceFrequency recurrenceFrequency)
+        {
+            switch (recurrenceFrequency)
+            {
+                case RecurrenceFrequency.Daily:
+                    return EKRecurrenceFrequency.Daily;
+                case RecurrenceFrequency.Weekly:
+                    return EKRecurrenceFrequency.Weekly;
+                case RecurrenceFrequency.Monthly:
+                case RecurrenceFrequency.MonthlyOnDay:
+                    return EKRecurrenceFrequency.Monthly;
+                case RecurrenceFrequency.Yearly:
+                case RecurrenceFrequency.YearlyOnDay:
+                    return EKRecurrenceFrequency.Yearly;
+                default:
+                    return EKRecurrenceFrequency.Daily;
+            }
+        }
+
+        static EKRecurrenceDayOfWeek[] ConvertToiOS(this List<DayOfTheWeek> daysOfTheWeek)
+        {
+            if (daysOfTheWeek == null || daysOfTheWeek.Count == 0)
+                return null;
+
+            var toReturn = new List<EKRecurrenceDayOfWeek>();
+            foreach (var d in daysOfTheWeek)
+            {
+                toReturn.Add(EKRecurrenceDayOfWeek.FromDay(d.ConvertToiOS()));
+            }
+            return toReturn.ToArray();
+        }
+
+        static NSNumber[] ConvertToiOS(this uint dayOfTheMonth) => new NSNumber[1] { dayOfTheMonth };
+
+        static EKDay ConvertToiOS(this DayOfTheWeek day) => (EKDay)day;
+
+        static EKRecurrenceRule ConvertRule(this RecurrenceRule recurrenceRule) => new EKRecurrenceRule(
+                type: recurrenceRule.Frequency.ConvertToiOS(),
+                interval: (nint)recurrenceRule.Interval,
+                days: recurrenceRule.Frequency != RecurrenceFrequency.Daily ? recurrenceRule.DaysOfTheWeek.ConvertToiOS() : null,
+                monthDays: (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0) ? null : recurrenceRule.DayOfTheMonth.ConvertToiOS(),
+                months: recurrenceRule.Frequency == RecurrenceFrequency.Yearly ? ((uint)recurrenceRule.MonthOfTheYear).ConvertToiOS() : null,
+                weeksOfTheYear: null,
+                daysOfTheYear: null,
+                setPositions: recurrenceRule.Frequency == RecurrenceFrequency.Yearly || recurrenceRule.Frequency == RecurrenceFrequency.Monthly ? ((uint)recurrenceRule.DayIterationOffSetPosition).ConvertToiOS() : null,
+                end: recurrenceRule.EndDate.HasValue ? EKRecurrenceEnd.FromEndDate(recurrenceRule.EndDate.Value.ToNSDate()) : recurrenceRule.TotalOccurrences.HasValue ? EKRecurrenceEnd.FromOccurrenceCount((nint)recurrenceRule.TotalOccurrences.Value) : null);
 
         static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)
         {
