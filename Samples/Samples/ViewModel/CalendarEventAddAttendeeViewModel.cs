@@ -49,12 +49,19 @@ namespace Samples.ViewModel
             }
         }
 
-        bool required;
-
-        public bool Required
+        public ObservableCollection<string> AttendeeTypes { get; } = new ObservableCollection<string>()
         {
-            get => required;
-            set => SetProperty(ref required, value);
+            AttendeeType.Optional.ToString(),
+            AttendeeType.Required.ToString(),
+            AttendeeType.Resource.ToString(),
+        };
+
+        string selectedAttendeeType = AttendeeType.Optional.ToString();
+
+        public string SelectedAttendeeType
+        {
+            get => selectedAttendeeType;
+            set => SetProperty(ref selectedAttendeeType, value);
         }
 
         bool IsValidEmail(string email)
@@ -79,7 +86,8 @@ namespace Samples.ViewModel
             var newAttendee = new DeviceEventAttendee()
             {
                 Name = Name,
-                Email = EmailAddress
+                Email = EmailAddress,
+                Type = (AttendeeType)Enum.Parse(typeof(AttendeeType), SelectedAttendeeType)
             };
 
             var result = await Calendar.AddAttendeeToEvent(newAttendee, EventId);

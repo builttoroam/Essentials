@@ -52,12 +52,14 @@
                Grid.Row="2"
                Grid.Column="1"/>
 
-        <Label Text="Attendee Attendance Required"
+        <Label Text="Attendee Attendance Type"
                HorizontalTextAlignment="Center"
+               VerticalTextAlignment="End"
                Grid.Row="3"
                Grid.Column="0"/>
-        <Switch HorizontalOptions="Start"
-                IsToggled="{Binding Required}"
+        <Picker x:Name="SelectedRecurrenceEndType"
+                ItemsSource="{Binding AttendeeTypes}"
+                SelectedItem="{Binding SelectedAttendeeType, Mode=TwoWay}"
                 Grid.Row="3"
                 Grid.Column="1"/>
       </Grid>
