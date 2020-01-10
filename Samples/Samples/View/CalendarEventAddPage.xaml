@@ -101,21 +101,22 @@
                     Grid.Row="0"
                     Grid.Column="1"/>
         <TimePicker Time="{Binding StartTime}"
-                    IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
+                    IsVisible="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
                     Grid.Row="0"
                     Grid.Column="2"/>
         <Label Text="End Date"
                HorizontalTextAlignment="Center"
+               IsVisible="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
                Grid.Row="1"
                Grid.Column="0"/>
         <DatePicker Date="{Binding EndDate}"
                     MinimumDate="1970-01-01"
                     IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
-                    IsVisible="{Binding CanAlterRecurrence, Converter={StaticResource InverseBoolConverter}}"
+                    IsVisible="{Binding DisplayTimeInformation}"
                     Grid.Row="1"
                     Grid.Column="1"/>
         <TimePicker Time="{Binding EndTime}"
-                    IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
+                    IsVisible="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
                     Grid.Row="1"
                     Grid.Column="2"/>
       </Grid>
@@ -133,20 +134,29 @@
                     ItemsSource="{Binding RecurrenceTypes}"
                     SelectedItem="{Binding SelectedRecurrenceType, Mode=TwoWay}"/>
           </StackLayout>
-          <StackLayout Orientation="Horizontal"
-                       IsVisible="{Binding CanAlterRecurrence}"
-                       Grid.Row="1">
+          <Grid Grid.Row="1"
+                IsVisible="{Binding CanAlterRecurrence}">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition />
+            </Grid.ColumnDefinitions>
             <Label Text="Every "
                    VerticalTextAlignment="End"/>
             <Entry Keyboard="Numeric"
-                   Text="{Binding RecurrenceInterval}" 
-                   TextChanged="Entry_OnTextChanged"/>
+                   MaxLength="2"
+                   Text="{Binding RecurrenceInterval}"
+                   TextChanged="Entry_OnTextChanged"
+                   Grid.Column="1"/>
             <Label Text="{Binding SelectedRecurrenceTypeDisplay, Mode=TwoWay}"
-                   VerticalTextAlignment="End"/>
+                   VerticalTextAlignment="End"
+                   Grid.Column="2"/>
             <Label Text=" on"
                    IsVisible="{Binding IsWeekly}"
-                   VerticalTextAlignment="End"/>
-          </StackLayout>
+                   VerticalTextAlignment="End"
+                   Grid.Column="3"/>
+          </Grid>
           <StackLayout Orientation="Horizontal"
                        IsVisible="{Binding IsDaily}"
                        Grid.Row="2">
@@ -158,11 +168,19 @@
                        Grid.Row="2">
             <BindableLayout.ItemTemplate>
               <DataTemplate x:DataType="viewmodels:DayOfTheWeekSwitch">
-                <StackLayout Orientation="Horizontal">
-                  <CheckBox IsChecked="{Binding IsChecked}" />
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                  </Grid.ColumnDefinitions>
+                  <StackLayout HorizontalOptions="Center">
+                    <CheckBox IsChecked="{Binding IsChecked}" />
+                  </StackLayout>
                   <Label Text="{Binding Day}"
-                         TextColor="Black" />
-                </StackLayout>
+                         TextColor="Black" 
+                         HorizontalTextAlignment="Center"  
+                         Grid.Column="1"/>
+                </Grid>
               </DataTemplate>
             </BindableLayout.ItemTemplate>
           </StackLayout>
@@ -185,7 +203,6 @@
               <Grid>
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="Auto" />
-                  <ColumnDefinition Width="Auto" />
                   <ColumnDefinition />
                 </Grid.ColumnDefinitions>
                 <Label Text="By day of the month: "
@@ -193,12 +210,6 @@
                 <Switch IsToggled="{Binding IsMonthDaySpecific}"
                         VerticalOptions="Center"
                         Grid.Column="1"/>
-                <Picker x:Name="SelectedRecurrenceMonthDay"
-                        Title="On day"
-                        ItemsSource="{Binding RecurrenceMonthDay}"
-                        SelectedItem="{Binding SelectedRecurrenceMonthDay, Mode=TwoWay}"
-                        IsEnabled="{Binding IsMonthDaySpecific}"
-                        Grid.Column="2"/>
               </Grid>
               <Grid>
                 <Grid.ColumnDefinitions>
@@ -209,60 +220,68 @@
                         Title="On the"
                         ItemsSource="{Binding RecurrenceMonthWeek}"
                         SelectedItem="{Binding SelectedRecurrenceMonthWeek, Mode=TwoWay}"
-                        IsEnabled="{Binding IsMonthDaySpecific, Converter={StaticResource InverseBoolConverter}}"/>
+                        IsVisible="{Binding IsMonthDaySpecific, Converter={StaticResource InverseBoolConverter}}"/>
                 <Picker x:Name="SelectedMonthWeekRecurrenceDay"
                         Title=""
                         ItemsSource="{Binding RecurrenceDays}"
                         SelectedItem="{Binding SelectedMonthWeekRecurrenceDay, Mode=TwoWay}"
-                        IsEnabled="{Binding IsMonthDaySpecific, Converter={StaticResource InverseBoolConverter}}"
+                        IsVisible="{Binding IsMonthDaySpecific, Converter={StaticResource InverseBoolConverter}}"
                         Grid.Column="1"/>
+                <Picker x:Name="SelectedRecurrenceMonthDay"
+                        Title="On day"
+                        ItemsSource="{Binding RecurrenceMonthDay}"
+                        SelectedItem="{Binding SelectedRecurrenceMonthDay, Mode=TwoWay}"
+                        IsVisible="{Binding IsMonthDaySpecific}"
+                        Grid.ColumnSpan="2"
+                        Grid.Column="0"/>
               </Grid>
             </StackLayout>
           </Grid>
           <Grid IsVisible="{Binding CanAlterRecurrence}"
-                       Grid.Row="3">
-              <Grid.RowDefinitions>
-                  <RowDefinition Height="Auto"/>
-                  <RowDefinition/>
-              </Grid.RowDefinitions>
+                Grid.Row="3">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition/>
+            </Grid.RowDefinitions>
             <Picker x:Name="SelectedRecurrenceEndType"
-                        Title=""
-                        ItemsSource="{Binding RecurrenceEndTypes}"
-                        SelectedItem="{Binding SelectedRecurrenceEndType, Mode=TwoWay}"/>
+                    Title=""
+                    ItemsSource="{Binding RecurrenceEndTypes}"
+                    SelectedItem="{Binding SelectedRecurrenceEndType, Mode=TwoWay}"/>
 
-              <Grid Grid.Row="1"
-                    IsVisible="{Binding SelectedRecurrenceEndType, Converter={StaticResource UntilTypeToBoolConverter}}">
-                  <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition />
-                  </Grid.ColumnDefinitions>
-                  <Label Text="Until: "
-                         HorizontalTextAlignment="Center"
-                         Grid.Column="0"
-                         VerticalTextAlignment="End"/>
-                  <DatePicker Date="{Binding RecurrenceEndDate}"
-                              MinimumDate="1970-01-01"
-                              Grid.Column="1"/>
-              </Grid>
-              <Grid Grid.Row="1"
-                    IsVisible="{Binding SelectedRecurrenceEndType, Converter={StaticResource EndTypeToBoolConverter}}">
-                  <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition Width="Auto"/>
-                      <ColumnDefinition/>
-                  </Grid.ColumnDefinitions>
-                  <Label Text="For the next "
-                         VerticalTextAlignment="End"
-                         Grid.Column="0"/>
-                  <Entry Keyboard="Numeric"
-                         Text="{Binding RecurrenceEndInterval}"
-                         TextChanged="RecurrenceEndIntervalEntry_OnTextChanged"
-                         Grid.Column="1"/>
-                  <Label Text="occurences"
-                         VerticalTextAlignment="End"
-                         Grid.Column="2"/>
-              </Grid>
+            <Grid Grid.Row="1"
+                  IsVisible="{Binding SelectedRecurrenceEndType, Converter={StaticResource UntilTypeToBoolConverter}}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition />
+              </Grid.ColumnDefinitions>
+              <Label Text="Until: "
+                     HorizontalTextAlignment="Center"
+                     Grid.Column="0"
+                     VerticalTextAlignment="End"/>
+              <DatePicker Date="{Binding RecurrenceEndDate}"
+                          MinimumDate="1970-01-01"
+                          Grid.Column="1"/>
             </Grid>
+            <Grid Grid.Row="1"
+                  IsVisible="{Binding SelectedRecurrenceEndType, Converter={StaticResource EndTypeToBoolConverter}}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+              </Grid.ColumnDefinitions>
+              <Label Text="For the next "
+                     VerticalTextAlignment="End"
+                     Grid.Column="0"/>
+              <Entry Keyboard="Numeric"
+                     Text="{Binding RecurrenceEndInterval}"
+                     TextChanged="RecurrenceEndIntervalEntry_OnTextChanged"
+                     MaxLength="2"
+                     Grid.Column="1"/>
+              <Label Text="occurences"
+                     VerticalTextAlignment="End"
+                     Grid.Column="2"/>
+            </Grid>
+          </Grid>
         </Grid>
       </ScrollView>
       <Button Text="{Binding EventActionText}"

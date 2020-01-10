@@ -175,6 +175,7 @@ namespace Samples.ViewModel
                 if (SetProperty(ref allDay, value))
                 {
                     OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
+                    OnPropertyChanged(nameof(DisplayTimeInformation));
                 }
             }
         }
@@ -234,6 +235,8 @@ namespace Samples.ViewModel
                 }
             }
         }
+
+        public bool DisplayTimeInformation => !AllDay && !CanAlterRecurrence;
 
         // Recurrence Setup
         public bool CanAlterRecurrence => SelectedRecurrenceType != RecurrenceFrequency.None.ToString();
@@ -324,6 +327,7 @@ namespace Samples.ViewModel
                 if (SetProperty(ref selectedRecurrenceType, value) && selectedRecurrenceType != null)
                 {
                     OnPropertyChanged(nameof(CanAlterRecurrence));
+                    OnPropertyChanged(nameof(DisplayTimeInformation));
                     OnPropertyChanged(nameof(IsDaily));
                     OnPropertyChanged(nameof(IsWeekly));
                     OnPropertyChanged(nameof(IsMonthlyOrYearly));

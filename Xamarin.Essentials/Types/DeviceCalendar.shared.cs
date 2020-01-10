@@ -85,7 +85,7 @@ namespace Xamarin.Essentials
 
         public string Email { get; set; }
 
-        public bool Required { get; set; }
+        public AttendeeType Type { get; set; }
 
         public bool IsOrganizer { get; set; }
     }
@@ -333,5 +333,13 @@ namespace Xamarin.Essentials
         Third = 2,
         Fourth = 3,
         Last = 4
+    }
+
+    public enum AttendeeType
+    {
+        None = 0,
+        Required = 1,
+        Optional = 2,
+        Resource = 3
     }
 }

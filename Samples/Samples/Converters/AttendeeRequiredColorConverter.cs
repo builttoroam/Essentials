@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Samples.Converters
@@ -10,14 +11,18 @@ namespace Samples.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is bool required))
+            if (!(value is AttendeeType attendeeType))
             {
                 return Color.PaleVioletRed;
             }
 
-            if (required)
+            if (attendeeType == AttendeeType.Required)
             {
                 return Color.LightGoldenrodYellow;
+            }
+            else if (attendeeType == AttendeeType.Resource)
+            {
+                return Color.PaleGreen;
             }
             return Color.LightGray;
         }

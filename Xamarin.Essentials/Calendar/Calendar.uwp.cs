@@ -198,7 +198,7 @@ namespace Xamarin.Essentials
                              {
                                  Name = attendee.DisplayName,
                                  Email = attendee.Address,
-                                 Required = attendee.Role == AppointmentParticipantRole.RequiredAttendee
+                                 Type = (AttendeeType)attendee.Role + 1
                              })
                             .OrderBy(e => e.Name)
                             .ToList();
@@ -393,7 +393,7 @@ namespace Xamarin.Essentials
             if (calendarEvent == null)
                 throw new ArgumentException("[UWP]: You must supply a valid event id to add an attendee to.");
 
-            calendarEvent.Invitees.Add(new AppointmentInvitee() { DisplayName = newAttendee.Name, Address = newAttendee.Email, Role = newAttendee.Required ? AppointmentParticipantRole.RequiredAttendee : AppointmentParticipantRole.OptionalAttendee });
+            calendarEvent.Invitees.Add(new AppointmentInvitee() { DisplayName = newAttendee.Name, Address = newAttendee.Email, Role = (AppointmentParticipantRole)(newAttendee.Type - 1) });
             await cal.SaveAppointmentAsync(calendarEvent);
 
             return calendarEvent.Invitees.Count == cntInvitiees + 1;

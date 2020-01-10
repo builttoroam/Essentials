@@ -128,6 +128,17 @@ namespace Xamarin.Essentials
                     alarms.Add(new DeviceEventReminder() { MinutesPriorToEventStart = (calendarEvent.StartDate.ToDateTimeOffset() - a.AbsoluteDate.ToDateTimeOffset()).Minutes });
                 }
             }
+            var attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<DeviceEventAttendee>();
+            if (calendarEvent.Organizer != null)
+            {
+                attendees.ToList().Insert(0, new DeviceEventAttendee
+                {
+                    Name = calendarEvent.Organizer.Name,
+                    Email = calendarEvent.Organizer.Name,
+                    Type = calendarEvent.Organizer.ParticipantRole.ToAttendeeType(),
+                    IsOrganizer = true
+                });
+            }
 
             return new DeviceEvent
             {
@@ -139,7 +150,7 @@ namespace Xamarin.Essentials
                 Url = calendarEvent.Url != null ? calendarEvent.Url.ToString() : string.Empty,
                 StartDate = calendarEvent.StartDate.ToDateTimeOffset(),
                 EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffset() : null,
-                Attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<DeviceEventAttendee>(),
+                Attendees = attendees,
                 RecurrancePattern = rule,
                 Reminders = alarms
             };
@@ -152,12 +163,29 @@ namespace Xamarin.Essentials
                              {
                                  Name = attendee.Name,
                                  Email = attendee.Name,
-                                 Required = attendee.ParticipantRole == EKParticipantRole.Required
+                                 Type = attendee.ParticipantRole.ToAttendeeType()
                              })
                             .OrderBy(e => e.Name)
                             .ToList();
 
             return attendees;
+        }
+
+        static AttendeeType ToAttendeeType(this EKParticipantRole role)
+        {
+            switch (role)
+            {
+                case EKParticipantRole.Required:
+                    return AttendeeType.Required;
+                case EKParticipantRole.Optional:
+                    return AttendeeType.Optional;
+                case EKParticipantRole.NonParticipant:
+                case EKParticipantRole.Chair:
+                    return AttendeeType.Resource;
+                case EKParticipantRole.Unknown:
+                default:
+                    return AttendeeType.None;
+            }
         }
 
         static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
