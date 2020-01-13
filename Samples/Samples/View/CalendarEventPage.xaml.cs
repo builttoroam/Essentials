@@ -17,21 +17,22 @@ namespace Samples.View
             InitializeComponent();
         }
 
-        protected override async void OnAppearing()
-        {
-            base.OnAppearing();
-
-            var vm = BindingContext as DeviceEvent;
-            var evnt = await Calendar.GetEventByIdAsync(vm.Id);
-            BindingContext = evnt;
-        }
+        // protected override async void OnAppearing()
+        // {
+        //     base.OnAppearing();
+        //     var vm = BindingContext as DeviceEvent;
+        //     var evnt = await Calendar.GetEventInstanceByIdAsync(vm.Id, vm.StartDate);
+        //     BindingContext = evnt;
+        // }
 
         async void OnDeleteEventButtonClicked(object sender, EventArgs e)
         {
             if (!(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId.ToString()))
                 return;
 
-            var calendarEvent = await Calendar.GetEventByIdAsync(eventId.ToString());
+            var vm = BindingContext as DeviceEvent;
+
+            var calendarEvent = await Calendar.GetEventInstanceByIdAsync(eventId.ToString(), vm.StartDate);
 
             if (!(calendarEvent is DeviceEvent))
                 return;
@@ -39,9 +40,27 @@ namespace Samples.View
             var answer = await DisplayAlert("Warning!", $"Are you sure you want to delete {calendarEvent.Title}? (this cannot be undone)", "Yes", "Cancel");
             if (answer)
             {
-                await Calendar.DeleteCalendarEventById(eventId, CalendarId.Text);
-                await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
-                await Navigation.PopAsync();
+                if (calendarEvent.RecurrancePattern != null)
+                {
+                    if (await DisplayAlert("Warning!", $"Do you want to delete all instances of this event?", "Yes All", "Just this one"))
+                    {
+                        if (await Calendar.DeleteCalendarEventById(eventId, CalendarId.Text))
+                        {
+                            await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                            await Navigation.PopAsync();
+                        }
+                    }
+                    else if (await Calendar.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate))
+                    {
+                        await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                        await Navigation.PopAsync();
+                    }
+                }
+                else if (await Calendar.DeleteCalendarEventById(eventId, CalendarId.Text))
+                {
+                    await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                    await Navigation.PopAsync();
+                }
             }
         }
 

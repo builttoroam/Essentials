@@ -109,66 +109,6 @@ namespace Xamarin.Essentials
         public MonthOfTheYear MonthOfTheYear { get; set; }
 
         public IterationOffset DayIterationOffSetPosition { get; set; }
-
-        public override string ToString()
-        {
-            var toReturn = $"Occurs ";
-
-            if (Interval > 0)
-            {
-                if (Interval == 1)
-                {
-                    toReturn += $"Every ";
-                }
-                else
-                {
-                    toReturn += $"Every {((int)Interval).ToOrdinal()} ";
-                }
-                switch (Frequency)
-                {
-                    case RecurrenceFrequency.Daily:
-                        toReturn += "Day ";
-                        break;
-                    case RecurrenceFrequency.Weekly:
-                        toReturn += "Week ";
-                        break;
-                    case RecurrenceFrequency.Monthly:
-                    case RecurrenceFrequency.MonthlyOnDay:
-                        toReturn += "Month ";
-                        break;
-                    case RecurrenceFrequency.Yearly:
-                    case RecurrenceFrequency.YearlyOnDay:
-                        toReturn += "Year ";
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-
-            if (DaysOfTheWeek?.Count > 0)
-            {
-                toReturn += $"On: [";
-                toReturn = DaysOfTheWeek.Aggregate(toReturn, (current, d) => current + $"{d}, ");
-                toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] ";
-            }
-
-            if (DayIterationOffSetPosition != IterationOffset.NotSet && (Frequency == RecurrenceFrequency.MonthlyOnDay || Frequency == RecurrenceFrequency.YearlyOnDay))
-            {
-                toReturn += $"Occuring on the {DayIterationOffSetPosition} of each month ";
-            }
-
-            if (TotalOccurrences > 0)
-            {
-                toReturn += $"For the next {TotalOccurrences} occurrences ";
-            }
-
-            if (EndDate.HasValue)
-            {
-                toReturn += $"Until {EndDate.Value.DateTime.ToShortDateString()} ";
-            }
-
-            return toReturn;
-        }
     }
 
     [Preserve(AllMembers = true)]

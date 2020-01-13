@@ -15,6 +15,8 @@
       <x:String x:Key="TimeSpanFormatter">{0:h\:mm}</x:String>
       <converters:AttendeeRequiredColorConverter x:Key="AttendeeRequiredColorConverter" />
       <converters:ReminderTextConverter x:Key="ReminderTextConverter" />
+      <converters:RecurrenceRuleTextConverter x:Key="RecurrenceRuleTextConverter" />
+      <converters:StartWidthDisplayConverter x:Key="StartWidthDisplayConverter" />
     </ResourceDictionary>
   </views:BasePage.Resources>
   <views:BasePage.Content>
@@ -66,7 +68,7 @@
                  Text="Recurrence:"/>
           <Label Grid.Column="1"
                  HorizontalTextAlignment="Center"
-                 Text="{Binding RecurrancePattern}"/>
+                 Text="{Binding RecurrancePattern, Converter={StaticResource RecurrenceRuleTextConverter}}"/>
         </Grid>
         <Grid Grid.Row="3">
           <Grid.ColumnDefinitions>
@@ -104,6 +106,7 @@
                  Grid.Row="3"
                  Text="{Binding StartDate, StringFormat={StaticResource DateDisplayFormatter}, Mode=OneWay}"
                  TextColor="Black"
+                 Grid.ColumnSpan="{Binding AllDay, Converter={StaticResource StartWidthDisplayConverter}}"
                  HorizontalTextAlignment="Center"/>
           <Label Grid.Column="2"
                  Grid.Row="3"

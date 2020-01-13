@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.Mail;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -64,14 +65,17 @@ namespace Samples.ViewModel
             set => SetProperty(ref selectedAttendeeType, value);
         }
 
-        bool IsValidEmail(string email)
+        public bool IsValidEmail(string emailaddress)
         {
             try
             {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
+                if (string.IsNullOrEmpty(emailaddress))
+                {
+                    return false;
+                }
+                return true;
             }
-            catch
+            catch (FormatException)
             {
                 return false;
             }

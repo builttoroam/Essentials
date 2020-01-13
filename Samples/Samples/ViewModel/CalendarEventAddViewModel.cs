@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -139,7 +140,8 @@ namespace Samples.ViewModel
 
         public bool CanCreateOrUpdateEvent => !string.IsNullOrWhiteSpace(EventTitle)
             && ((EndDate.Date == StartDate.Date && (EndTime > StartTime || AllDay)) || EndDate.Date > StartDate.Date)
-            && (!CanAlterRecurrence || StartDate < RecurrenceEndDate || SelectedRecurrenceEndType == RecurrenceEndType.Indefinitely || (RecurrenceEndInterval.HasValue && RecurrenceEndInterval.Value > 0));
+            && (!CanAlterRecurrence || StartDate < RecurrenceEndDate || SelectedRecurrenceEndType == RecurrenceEndType.Indefinitely || (RecurrenceEndInterval.HasValue && RecurrenceEndInterval.Value > 0))
+            && IsValidUrl(Url);
 
         string description;
 
@@ -154,7 +156,33 @@ namespace Samples.ViewModel
         public string Url
         {
             get => url;
-            set => SetProperty(ref url, value);
+            set
+            {
+                if (SetProperty(ref url, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
+                }
+            }
+        }
+
+        public bool IsValidUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return true;
+            }
+            else if (!Regex.IsMatch(url, @"^https?:\/\/", RegexOptions.IgnoreCase))
+            {
+                url = "http://" + url;
+                Url = url;
+            }
+
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uriResult))
+            {
+                return uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps;
+            }
+
+            return false;
         }
 
         string eventLocation;

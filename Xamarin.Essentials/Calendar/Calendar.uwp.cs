@@ -160,6 +160,79 @@ namespace Xamarin.Essentials
             };
         }
 
+        static async Task<DeviceEvent> PlatformGetEventInstanceByIdAsync(string eventId, DateTimeOffset instanceDate)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
+
+            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
+
+            Appointment e;
+            try
+            {
+                e = await instance.GetAppointmentInstanceAsync(eventId, instanceDate);
+                e.DetailsKind = AppointmentDetailsKind.PlainText;
+            }
+            catch (ArgumentException)
+            {
+                if (string.IsNullOrWhiteSpace(eventId))
+                {
+                    throw new ArgumentException($"[UWP]: No Event found for event Id {eventId}");
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException($"[UWP]: No Event found for event Id {eventId}");
+                }
+            }
+            RecurrenceRule rules = null;
+            if (e.Recurrence != null)
+            {
+                rules = new RecurrenceRule();
+                rules.Frequency = (RecurrenceFrequency)e.Recurrence.Unit;
+                rules.Interval = e.Recurrence.Interval;
+                rules.EndDate = e.Recurrence.Until;
+                rules.TotalOccurrences = e.Recurrence.Occurrences;
+                switch (rules.Frequency)
+                {
+                    case RecurrenceFrequency.None:
+                        break;
+                    case RecurrenceFrequency.Daily:
+                    case RecurrenceFrequency.Weekly:
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        break;
+                    case RecurrenceFrequency.MonthlyOnDay:
+                        rules.DayIterationOffSetPosition = (IterationOffset)e.Recurrence.WeekOfMonth;
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        break;
+                    case RecurrenceFrequency.Monthly:
+                        rules.DayOfTheMonth = e.Recurrence.Day;
+                        break;
+                    case RecurrenceFrequency.YearlyOnDay:
+                        rules.DayIterationOffSetPosition = (IterationOffset)e.Recurrence.WeekOfMonth;
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        break;
+                    case RecurrenceFrequency.Yearly:
+                        rules.DayOfTheMonth = e.Recurrence.Day;
+                        rules.MonthOfTheYear = (MonthOfTheYear)e.Recurrence.Month;
+                        break;
+                }
+            }
+
+            return new DeviceEvent()
+            {
+                Id = e.LocalId,
+                CalendarId = e.CalendarId,
+                Title = e.Subject,
+                Description = e.Details,
+                Location = e.Location,
+                Url = e.Uri != null ? e.Uri.ToString() : string.Empty,
+                StartDate = e.StartTime,
+                EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
+                Attendees = GetAttendeesForEvent(e.Invitees, e.Organizer),
+                RecurrancePattern = rules,
+                Reminders = e.Reminder.HasValue ? new List<DeviceEventReminder>() { new DeviceEventReminder() { MinutesPriorToEventStart = e.Reminder.Value.Minutes } } : null
+            };
+        }
+
         static List<int> ConvertBitFlagToIntList(int wholeNumber, int maxValue)
         {
             var currentVal = wholeNumber;
@@ -352,31 +425,53 @@ namespace Xamarin.Essentials
             throw new ArgumentException("[UWP]: Could not create appointment with supplied parameters");
         }
 
-        static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)
+        static async Task<bool> PlatformDeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
-            var instance = await CalendarRequest.GetInstanceAsync();
 
             if (string.IsNullOrEmpty(eventId))
             {
-                throw new ArgumentException("[Android]: You must supply an event id to delete an event.");
+                throw new ArgumentException("[UWP]: You must supply an event id to delete an event.");
             }
             var calendarEvent = await GetEventByIdAsync(eventId);
 
             if (calendarEvent.CalendarId != calendarId)
             {
-                throw new ArgumentOutOfRangeException("[Android]: Supplied event does not belong to supplied calendar");
+                throw new ArgumentOutOfRangeException("[UWP]: Supplied event does not belong to supplied calendar");
             }
 
-            var cal = await instance.GetAppointmentCalendarAsync(calendarId);
-            var app = await instance.GetAppointmentAsync(eventId);
+            var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
+            var rect = new Windows.Foundation.Rect(0, 0, mainDisplayInfo.Width, mainDisplayInfo.Height);
 
-            app.IsCanceledMeeting = true;
-            await cal.SaveAppointmentAsync(app);
-
-            if (app.IsCanceledMeeting)
+            if (await AppointmentManager.ShowRemoveAppointmentAsync(eventId, rect, Windows.UI.Popups.Placement.Default, dateOfInstanceUtc))
+            {
                 return true;
+            }
+            return false;
+        }
 
+        static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            if (string.IsNullOrEmpty(eventId))
+            {
+                throw new ArgumentException("[UWP]: You must supply an event id to delete an event.");
+            }
+            var calendarEvent = await GetEventByIdAsync(eventId);
+
+            if (calendarEvent.CalendarId != calendarId)
+            {
+                throw new ArgumentOutOfRangeException("[UWP]: Supplied event does not belong to supplied calendar");
+            }
+
+            var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
+            var rect = new Windows.Foundation.Rect(0, 0, mainDisplayInfo.Width, mainDisplayInfo.Height);
+
+            if (await AppointmentManager.ShowRemoveAppointmentAsync(eventId, rect, Windows.UI.Popups.Placement.Default))
+            {
+                return true;
+            }
             return false;
         }
 

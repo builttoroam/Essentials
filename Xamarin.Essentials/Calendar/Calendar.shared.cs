@@ -16,11 +16,15 @@ namespace Xamarin.Essentials
 
         public static Task<DeviceEvent> GetEventByIdAsync(string eventId) => PlatformGetEventByIdAsync(eventId);
 
+        public static Task<DeviceEvent> GetEventInstanceByIdAsync(string eventId, DateTimeOffset instanceDate) => PlatformGetEventInstanceByIdAsync(eventId, instanceDate);
+
         public static Task<string> CreateCalendar(DeviceCalendar newCalendar) => PlatformCreateCalendar(newCalendar);
 
         public static Task<string> CreateCalendarEvent(DeviceEvent newEvent) => PlatformCreateCalendarEvent(newEvent);
 
         public static Task<bool> UpdateCalendarEvent(DeviceEvent newEvent) => PlatformUpdateCalendarEvent(newEvent);
+
+        public static Task<bool> DeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc) => PlatformDeleteCalendarEventInstanceByDate(eventId, calendarId, dateOfInstanceUtc);
 
         public static Task<bool> DeleteCalendarEventById(string eventId, string calendarId) => PlatformDeleteCalendarEventById(eventId, calendarId);
 
