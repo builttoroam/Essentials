@@ -14,7 +14,5 @@ namespace Xamarin.Essentials
         static long ToEpochTime(this NSDate date) => (long)Math.Floor((Math.Abs(NSDate.FromTimeIntervalSince1970(0).SecondsSinceReferenceDate) + date.SecondsSinceReferenceDate) * 1000);
 
         public static NSDate ToNSDate(this DateTimeOffset date) => NSDate.FromTimeIntervalSinceReferenceDate((date.UtcDateTime - iosNSDateTimeSystemZeroPoint).TotalSeconds).AddSeconds(date.Offset.TotalSeconds);
-
-        public static DateTimeOffset ToDateTimeOffset(this NSDate date) => DateTimeOffset.FromUnixTimeMilliseconds(date.ToEpochTime());
     }
 }
