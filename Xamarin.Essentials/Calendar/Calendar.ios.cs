@@ -59,8 +59,8 @@ namespace Xamarin.Essentials
                                 Id = e.CalendarItemIdentifier,
                                 CalendarId = e.Calendar.CalendarIdentifier,
                                 Title = e.Title,
-                                StartDate = e.StartDate.ToDateTimeOffset(),
-                                EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTimeOffset() : null
+                                StartDate = e.StartDate.ToDateTime().AddHours(DateTimeOffset.Now.Offset.TotalHours),
+                                EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTime().AddHours(DateTimeOffset.Now.Offset.TotalHours) : null
                             })
                             .OrderBy(e => e.StartDate)
                             .ToList();
@@ -99,7 +99,7 @@ namespace Xamarin.Essentials
                     rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.First();
 
                 if (iOSRule.RecurrenceEnd?.EndDate != null)
-                    rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffset();
+                    rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTime();
 
                 if (iOSRule.RecurrenceEnd?.OccurrenceCount != null)
                     rule.TotalOccurrences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
@@ -125,7 +125,7 @@ namespace Xamarin.Essentials
                 alarms = new List<DeviceEventReminder>();
                 foreach (var a in calendarEvent.Alarms)
                 {
-                    alarms.Add(new DeviceEventReminder() { MinutesPriorToEventStart = (calendarEvent.StartDate.ToDateTimeOffset() - a.AbsoluteDate.ToDateTimeOffset()).Minutes });
+                    alarms.Add(new DeviceEventReminder() { MinutesPriorToEventStart = (calendarEvent.StartDate.ToDateTime() - a.AbsoluteDate.ToDateTime()).Minutes });
                 }
             }
             var attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<DeviceEventAttendee>();
@@ -148,8 +148,8 @@ namespace Xamarin.Essentials
                 Description = calendarEvent.Notes,
                 Location = calendarEvent.Location,
                 Url = calendarEvent.Url != null ? calendarEvent.Url.ToString() : string.Empty,
-                StartDate = calendarEvent.StartDate.ToDateTimeOffset(),
-                EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffset() : null,
+                StartDate = calendarEvent.StartDate.ToDateTime(),
+                EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTime() : null,
                 Attendees = attendees,
                 RecurrancePattern = rule,
                 Reminders = alarms

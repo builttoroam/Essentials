@@ -64,18 +64,25 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            var eventsUri = CalendarContract.Events.ContentUri;
-            var eventsProjection = new List<string>
-            {
-                CalendarContract.Events.InterfaceConsts.Id,
-                CalendarContract.Events.InterfaceConsts.CalendarId,
-                CalendarContract.Events.InterfaceConsts.Title,
-                CalendarContract.Events.InterfaceConsts.Dtstart,
-                CalendarContract.Events.InterfaceConsts.Dtend
-            };
-            var calendarSpecificEvent = string.Empty;
             var sDate = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var eDate = endDate ?? sDate.Add(defaultEndTimeFromStartTime);
+
+            var eventsProjection = new List<string>
+            {
+                CalendarContract.Instances.EventId,
+                CalendarContract.Instances.Begin,
+                CalendarContract.Instances.End,
+                CalendarContract.Events.InterfaceConsts.EventTimezone,
+                CalendarContract.Events.InterfaceConsts.EventEndTimezone,
+                CalendarContract.Events.InterfaceConsts.CalendarId,
+                CalendarContract.Events.InterfaceConsts.Title,
+            };
+            var instanceUriBuilder = CalendarContract.Instances.ContentUri.BuildUpon();
+            ContentUris.AppendId(instanceUriBuilder, sDate.AddMilliseconds(sDate.Offset.TotalMilliseconds).ToUnixTimeMilliseconds());
+            ContentUris.AppendId(instanceUriBuilder, eDate.AddMilliseconds(sDate.Offset.TotalMilliseconds).ToUnixTimeMilliseconds());
+
+            var instancesUri = instanceUriBuilder.Build();
+            var calendarSpecificEvent = string.Empty;
             if (!string.IsNullOrEmpty(calendarId))
             {
                 // Android event ids are always integers
@@ -83,78 +90,24 @@ namespace Xamarin.Essentials
                 {
                     throw new ArgumentException($"[Android]: No Event found for event Id {calendarId}");
                 }
-                calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId}={resultId} ";
+                calendarSpecificEvent = $"{CalendarContract.Events.InterfaceConsts.CalendarId} = {resultId} {andCondition} ";
             }
-
-            var events = new List<DeviceEvent>();
-            using (var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(eventsUri, eventsProjection.ToArray(), calendarSpecificEvent, null, $"{CalendarContract.Events.InterfaceConsts.Dtstart} ASC"))
-            {
-                while (cur.MoveToNext())
-                {
-                    events.AddRange(GetInstancesForEvent(
-                        new InstanceRetrievalModel()
-                        {
-                            Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Id)),
-                            CalendarId = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CalendarId)),
-                            Title = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Title)),
-                        },
-                        sDate.AddMilliseconds(sDate.Offset.TotalMilliseconds).ToUnixTimeMilliseconds(),
-                        eDate.AddMilliseconds(sDate.Offset.TotalMilliseconds).ToUnixTimeMilliseconds()));
-                }
-            }
-            if (events.Count == 0 && !string.IsNullOrEmpty(calendarId))
-            {
-                // Make sure this calendar exists by testing retrieval
-                try
-                {
-                    GetCalendarById(calendarId);
-                }
-                catch (Exception)
-                {
-                    throw new ArgumentOutOfRangeException($"[Android]: No calendar exists with the Id {calendarId}");
-                }
-            }
-
-            return events;
-        }
-
-        internal class InstanceRetrievalModel
-        {
-            public string Id { get; set; }
-
-            public string CalendarId { get; set; }
-
-            public string Title { get; set; }
-        }
-
-        static List<DeviceEvent> GetInstancesForEvent(InstanceRetrievalModel calendarEvent, long startDate, long endDate)
-        {
-            var instanceProjection = new List<string>
-            {
-                CalendarContract.Instances.EventId,
-                CalendarContract.Instances.Begin,
-                CalendarContract.Instances.End
-            };
-            var instanceSpecificEvent = $"{CalendarContract.Instances.InterfaceConsts.CalendarId} {CalendarContract.Instances.EventId} = {calendarEvent.Id}";
-
-            var instanceUriBuilder = CalendarContract.Instances.ContentUri.BuildUpon();
-            ContentUris.AppendId(instanceUriBuilder, startDate);
-            ContentUris.AppendId(instanceUriBuilder, endDate);
-
-            var instancesUri = instanceUriBuilder.Build();
+            calendarSpecificEvent += $"{CalendarContract.Events.InterfaceConsts.Deleted} != 1";
 
             var instances = new List<DeviceEvent>();
-            using (var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(instancesUri, instanceProjection.ToArray(), instanceSpecificEvent, null, $"{CalendarContract.Instances.Begin} ASC"))
+            using (var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(instancesUri, eventsProjection.ToArray(), calendarSpecificEvent, null, $"{CalendarContract.Instances.Begin} ASC"))
             {
                 while (cur.MoveToNext())
                 {
+                    var instanceStartTZ = TimeZoneInfo.FindSystemTimeZoneById(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventTimezone)));
+                    var instanceEndTZ = TimeZoneInfo.FindSystemTimeZoneById(!string.IsNullOrEmpty(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventEndTimezone))) ? cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventEndTimezone)) : cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventTimezone)));
                     instances.Add(new DeviceEvent()
                     {
-                        Id = calendarEvent.Id,
-                        CalendarId = calendarEvent.CalendarId,
-                        Title = calendarEvent.Title,
-                        StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(instanceProjection.IndexOf(CalendarContract.Instances.Begin))),
-                        EndDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(instanceProjection.IndexOf(CalendarContract.Instances.End)))
+                        Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Instances.EventId)),
+                        CalendarId = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CalendarId)),
+                        Title = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Title)),
+                        StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Instances.Begin))).AddMilliseconds(instanceStartTZ.BaseUtcOffset.TotalMilliseconds),
+                        EndDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Instances.End))).AddMilliseconds(instanceEndTZ.BaseUtcOffset.TotalMilliseconds)
                     });
                 }
             }
@@ -229,6 +182,8 @@ namespace Xamarin.Essentials
                 if (cur.Count > 0)
                 {
                     cur.MoveToNext();
+                    var instanceStartTZ = TimeZoneInfo.FindSystemTimeZoneById(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventTimezone)));
+                    var instanceEndTZ = TimeZoneInfo.FindSystemTimeZoneById(!string.IsNullOrEmpty(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventEndTimezone))) ? cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventEndTimezone)) : cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventTimezone)));
                     var eventResult = new DeviceEvent
                     {
                         Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Id)),
@@ -237,8 +192,8 @@ namespace Xamarin.Essentials
                         Description = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Description)),
                         Location = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventLocation)),
                         Url = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CustomAppUri)),
-                        StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart))),
-                        EndDate = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 0 ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend))) : null,
+                        StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart))).AddMilliseconds(instanceStartTZ.BaseUtcOffset.TotalMilliseconds),
+                        EndDate = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 0 ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend))).AddMilliseconds(instanceStartTZ.BaseUtcOffset.TotalMilliseconds) : null,
                         Attendees = GetAttendeesForEvent(eventId, cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Organizer))),
                         RecurrancePattern = !string.IsNullOrEmpty(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) ? GetRecurranceRuleForEvent(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) : null,
                         Reminders = GetRemindersForEvent(eventId)
