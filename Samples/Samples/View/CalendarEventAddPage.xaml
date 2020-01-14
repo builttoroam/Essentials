@@ -215,7 +215,7 @@
                         IsVisible="{Binding IsMonthDaySpecific, Converter={StaticResource NegativeConverter}}"/>
                 <Picker x:Name="SelectedMonthWeekRecurrenceDay"
                         Title=""
-                        ItemsSource="{Binding RecurrenceDays}"
+                        ItemsSource="{Binding MonthWeekRecurrenceDay}"
                         SelectedItem="{Binding SelectedMonthWeekRecurrenceDay, Mode=TwoWay}"
                         IsVisible="{Binding IsMonthDaySpecific, Converter={StaticResource NegativeConverter}}"
                         Grid.Column="1"/>

@@ -414,7 +414,7 @@ namespace Samples.ViewModel
             set => SetProperty(ref selectedRecurrenceMonthWeek, value);
         }
 
-        public List<DayOfTheWeek> RecurrenceDayOfTheWeek { get; set; } = new List<DayOfTheWeek>()
+        public List<DayOfTheWeek> MonthWeekRecurrenceDay { get; set; } = new List<DayOfTheWeek>()
         {
             DayOfTheWeek.Monday,
             DayOfTheWeek.Tuesday,

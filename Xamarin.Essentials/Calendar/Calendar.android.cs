@@ -583,7 +583,7 @@ namespace Xamarin.Essentials
                         }
                         else
                         {
-                            recurranceRule.DayIterationOffSetPosition = (IterationOffset)Convert.ToInt32(iterationOffset.Value);
+                            recurranceRule.DayIterationOffSetPosition = (IterationOffset)(Convert.ToInt32(iterationOffset.Value) - 1);
                         }
                     }
                     switch (day)
@@ -632,13 +632,13 @@ namespace Xamarin.Essentials
                 var ruleDayIterationOffset = rule.Substring(rule.IndexOf("BYSETPOS=", StringComparison.Ordinal) + 9);
                 ruleDayIterationOffset = ruleDayIterationOffset.Contains(";") ? ruleDayIterationOffset.Substring(0, ruleDayIterationOffset.IndexOf(";", StringComparison.Ordinal)) : ruleDayIterationOffset;
                 var offset = Convert.ToInt32(ruleDayIterationOffset.Split(',').FirstOrDefault());
-                if (offset < 0)
+                if (offset < 1)
                 {
                     recurranceRule.DayIterationOffSetPosition = IterationOffset.Last;
                 }
                 else
                 {
-                    recurranceRule.DayIterationOffSetPosition = (IterationOffset)offset;
+                    recurranceRule.DayIterationOffSetPosition = (IterationOffset)offset - 1;
                 }
 
                 if (recurranceRule.Frequency == RecurrenceFrequency.Monthly)
