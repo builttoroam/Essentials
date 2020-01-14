@@ -16,15 +16,15 @@ namespace Samples.Converters
                 return Color.PaleVioletRed;
             }
 
-            if (attendeeType == AttendeeType.Required)
+            switch (attendeeType)
             {
-                return Color.LightGoldenrodYellow;
+                case AttendeeType.Required:
+                    return Color.LightGoldenrodYellow;
+                case AttendeeType.Resource:
+                    return Color.PaleGreen;
+                default:
+                    return Color.LightGray;
             }
-            else if (attendeeType == AttendeeType.Resource)
-            {
-                return Color.PaleGreen;
-            }
-            return Color.LightGray;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();

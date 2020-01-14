@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace Samples.ViewModel
             }
         }
 
-        public ObservableCollection<string> AttendeeTypes { get; } = new ObservableCollection<string>()
+        public List<string> AttendeeTypes { get; } = new List<string>()
         {
             AttendeeType.Optional.ToString(),
             AttendeeType.Required.ToString(),

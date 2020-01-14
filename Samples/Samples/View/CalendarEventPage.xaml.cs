@@ -123,7 +123,7 @@ namespace Samples.View
         {
             var modal = new CalendarEventAddPage();
 
-            var calendarName = (await Calendar.GetCalendarsAsync()).First(x => x.Id == ViewModel.CalendarId).Name;
+            var calendarName = (await Calendar.GetCalendarsAsync()).FirstOrDefault(x => x.Id == ViewModel.CalendarId)?.Name;
 
             modal.BindingContext = new CalendarEventAddViewModel(ViewModel.CalendarId, calendarName, ViewModel);
             await Navigation.PushAsync(modal);
