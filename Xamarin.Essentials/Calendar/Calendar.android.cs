@@ -617,21 +617,21 @@ namespace Xamarin.Essentials
             {
                 var ruleOccurenceMonthDays = rule.Substring(rule.IndexOf("BYMONTHDAY=", StringComparison.Ordinal) + 11);
                 ruleOccurenceMonthDays = ruleOccurenceMonthDays.Contains(";") ? ruleOccurenceMonthDays.Substring(0, ruleOccurenceMonthDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonthDays;
-                recurranceRule.DayOfTheMonth = Convert.ToUInt32(ruleOccurenceMonthDays.Split(',').First());
+                recurranceRule.DayOfTheMonth = Convert.ToUInt32(ruleOccurenceMonthDays.Split(',').FirstOrDefault());
             }
 
             if (rule.Contains("BYMONTH="))
             {
                 var ruleOccurenceMonths = rule.Substring(rule.IndexOf("BYMONTH=", StringComparison.Ordinal) + 8);
                 ruleOccurenceMonths = ruleOccurenceMonths.Contains(";") ? ruleOccurenceMonths.Substring(0, ruleOccurenceMonths.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonths;
-                recurranceRule.MonthOfTheYear = (MonthOfTheYear)Convert.ToUInt32(ruleOccurenceMonths.Split(',').First());
+                recurranceRule.MonthOfTheYear = (MonthOfTheYear)Convert.ToUInt32(ruleOccurenceMonths.Split(',').FirstOrDefault());
             }
 
             if (rule.Contains("BYSETPOS="))
             {
                 var ruleDayIterationOffset = rule.Substring(rule.IndexOf("BYSETPOS=", StringComparison.Ordinal) + 9);
                 ruleDayIterationOffset = ruleDayIterationOffset.Contains(";") ? ruleDayIterationOffset.Substring(0, ruleDayIterationOffset.IndexOf(";", StringComparison.Ordinal)) : ruleDayIterationOffset;
-                var offset = Convert.ToInt32(ruleDayIterationOffset.Split(',').First());
+                var offset = Convert.ToInt32(ruleDayIterationOffset.Split(',').FirstOrDefault());
                 if (offset < 0)
                 {
                     recurranceRule.DayIterationOffSetPosition = IterationOffset.Last;

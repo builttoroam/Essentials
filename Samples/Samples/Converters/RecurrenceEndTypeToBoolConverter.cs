@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Text;
 using Samples.ViewModel;
 using Xamarin.Forms;
 
 namespace Samples.Converters
 {
-    public class EndTypeToBoolConverter : IValueConverter
+    public class RecurrenceEndTypeToBoolConverter : IValueConverter
     {
-        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value == null || !(value is string type))
             {
@@ -17,12 +15,10 @@ namespace Samples.Converters
             }
             switch (type)
             {
-                case RecurrenceEndType.Indefinitely:
-                    return false;
                 case RecurrenceEndType.AfterOccurences:
                     return true;
                 case RecurrenceEndType.UntilEndDate:
-                    return false;
+                case RecurrenceEndType.Indefinitely:
                 default:
                     return false;
             }

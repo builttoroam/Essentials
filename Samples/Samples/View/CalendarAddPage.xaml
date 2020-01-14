@@ -9,11 +9,6 @@
                  x:DataType="viewmodels:CalendarAddViewModel"
                  Title="CalendarAddPage"
                  Padding="20,20,20,20">
-    <views:BasePage.Resources>
-        <ResourceDictionary>
-            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
-        </ResourceDictionary>
-    </views:BasePage.Resources>
     <views:BasePage.Content>
     <StackLayout>
       <Grid>

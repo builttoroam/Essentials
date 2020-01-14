@@ -99,10 +99,10 @@ namespace Xamarin.Essentials
                 rule.Interval = (uint)iOSRule.Interval;
 
                 if (iOSRule.DaysOfTheMonth != null && iOSRule.DaysOfTheMonth.Length > 0)
-                    rule.DayOfTheMonth = (uint)iOSRule.DaysOfTheMonth?.First();
+                    rule.DayOfTheMonth = (uint)iOSRule.DaysOfTheMonth?.FirstOrDefault();
 
                 if (iOSRule.MonthsOfTheYear != null && iOSRule.MonthsOfTheYear.Length > 0)
-                    rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.First();
+                    rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.FirstOrDefault();
 
                 if (iOSRule.RecurrenceEnd?.EndDate != null)
                     rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone);
@@ -172,7 +172,7 @@ namespace Xamarin.Essentials
             }
 
             var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
-            var instanceOfEvent = (await GetEventsAsync(calendarEvent.Calendar.CalendarIdentifier, instanceDate, instanceDate.AddDays(1))).First(x => x.Id == eventId);
+            var instanceOfEvent = (await GetEventsAsync(calendarEvent.Calendar.CalendarIdentifier, instanceDate, instanceDate.AddDays(1))).FirstOrDefault(x => x.Id == eventId);
 
             calendarEvent.StartDate = instanceOfEvent.StartDate.ToNSDate();
             calendarEvent.EndDate = instanceOfEvent.AllDay ? null : instanceOfEvent.EndDate.Value.ToNSDate();
@@ -206,10 +206,10 @@ namespace Xamarin.Essentials
                 }
 
                 if (iOSRule.DaysOfTheMonth != null && iOSRule.DaysOfTheMonth.Length > 0)
-                    rule.DayOfTheMonth = (uint)iOSRule.DaysOfTheMonth?.First();
+                    rule.DayOfTheMonth = (uint)iOSRule.DaysOfTheMonth?.FirstOrDefault();
 
                 if (iOSRule.MonthsOfTheYear != null && iOSRule.MonthsOfTheYear.Length > 0)
-                    rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.First();
+                    rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.FirstOrDefault();
 
                 if (iOSRule.RecurrenceEnd?.EndDate != null)
                     rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone);

@@ -12,10 +12,8 @@
                  Padding="20,20,20,20">
   <views:BasePage.Resources>
     <ResourceDictionary>
-      <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
-      <converters:EndTypeToBoolConverter x:Key="EndTypeToBoolConverter"/>
-      <converters:UntilTypeToBoolConverter x:Key="UntilTypeToBoolConverter"/>
-      <converters:ListSelectorArgsConverter x:Key="ListSelectorArgsConverter" />
+      <converters:RecurrenceEndTypeToBoolConverter x:Key="RecurrenceEndTypeToBoolConverter"/>
+      <converters:RecurrenceUntilTypeToBoolConverter x:Key="RecurrenceUntilTypeToBoolConverter"/>
     </ResourceDictionary>
   </views:BasePage.Resources>
   <views:BasePage.Content>
@@ -38,7 +36,6 @@
         <Label Text="{Binding CalendarName}"
                Grid.Row="0"
                Grid.Column="1"/>
-
         <Label Text="Title"
                HorizontalTextAlignment="Center"
                Grid.Row="1"
@@ -47,7 +44,6 @@
                Text="{Binding EventTitle}"
                Grid.Row="1"
                Grid.Column="1"/>
-
         <Label Text="Description"
                HorizontalTextAlignment="Center"
                Grid.Row="2"
@@ -56,7 +52,6 @@
                Text="{Binding Description}"
                Grid.Row="2"
                Grid.Column="1"/>
-
         <Label Text="Event Location"
                HorizontalTextAlignment="Center"
                Grid.Row="3"
@@ -65,7 +60,6 @@
                Text="{Binding EventLocation}"
                Grid.Row="3"
                Grid.Column="1"/>
-
         <Label Text="Url"
                HorizontalTextAlignment="Center"
                Grid.Row="4"
@@ -74,7 +68,6 @@
                Text="{Binding Url}"
                Grid.Row="4"
                Grid.Column="1"/>
-
         <Label Text="All Day"
                HorizontalTextAlignment="Center"
                Grid.Row="5"
@@ -101,22 +94,22 @@
                     Grid.Row="0"
                     Grid.Column="1"/>
         <TimePicker Time="{Binding StartTime}"
-                    IsVisible="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
+                    IsVisible="{Binding AllDay, Converter={StaticResource NegativeConverter}}"
                     Grid.Row="0"
                     Grid.Column="2"/>
         <Label Text="End Date"
                HorizontalTextAlignment="Center"
-               IsVisible="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
+               IsVisible="{Binding AllDay, Converter={StaticResource NegativeConverter}}"
                Grid.Row="1"
                Grid.Column="0"/>
         <DatePicker Date="{Binding EndDate}"
                     MinimumDate="1970-01-01"
-                    IsEnabled="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
+                    IsEnabled="{Binding AllDay, Converter={StaticResource NegativeConverter}}"
                     IsVisible="{Binding DisplayTimeInformation}"
                     Grid.Row="1"
                     Grid.Column="1"/>
         <TimePicker Time="{Binding EndTime}"
-                    IsVisible="{Binding AllDay, Converter={StaticResource InverseBoolConverter}}"
+                    IsVisible="{Binding AllDay, Converter={StaticResource NegativeConverter}}"
                     Grid.Row="1"
                     Grid.Column="2"/>
       </Grid>
@@ -147,7 +140,6 @@
             <Entry Keyboard="Numeric"
                    MaxLength="2"
                    Text="{Binding RecurrenceInterval}"
-                   TextChanged="Entry_OnTextChanged"
                    Grid.Column="1"/>
             <Label Text="{Binding SelectedRecurrenceTypeDisplay, Mode=TwoWay}"
                    VerticalTextAlignment="End"
@@ -220,12 +212,12 @@
                         Title="On the"
                         ItemsSource="{Binding RecurrenceMonthWeek}"
                         SelectedItem="{Binding SelectedRecurrenceMonthWeek, Mode=TwoWay}"
-                        IsVisible="{Binding IsMonthDaySpecific, Converter={StaticResource InverseBoolConverter}}"/>
+                        IsVisible="{Binding IsMonthDaySpecific, Converter={StaticResource NegativeConverter}}"/>
                 <Picker x:Name="SelectedMonthWeekRecurrenceDay"
                         Title=""
                         ItemsSource="{Binding RecurrenceDays}"
                         SelectedItem="{Binding SelectedMonthWeekRecurrenceDay, Mode=TwoWay}"
-                        IsVisible="{Binding IsMonthDaySpecific, Converter={StaticResource InverseBoolConverter}}"
+                        IsVisible="{Binding IsMonthDaySpecific, Converter={StaticResource NegativeConverter}}"
                         Grid.Column="1"/>
                 <Picker x:Name="SelectedRecurrenceMonthDay"
                         Title="On day"
@@ -249,7 +241,7 @@
                     SelectedItem="{Binding SelectedRecurrenceEndType, Mode=TwoWay}"/>
 
             <Grid Grid.Row="1"
-                  IsVisible="{Binding SelectedRecurrenceEndType, Converter={StaticResource UntilTypeToBoolConverter}}">
+                  IsVisible="{Binding SelectedRecurrenceEndType, Converter={StaticResource RecurrenceUntilTypeToBoolConverter}}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition />
@@ -263,7 +255,7 @@
                           Grid.Column="1"/>
             </Grid>
             <Grid Grid.Row="1"
-                  IsVisible="{Binding SelectedRecurrenceEndType, Converter={StaticResource EndTypeToBoolConverter}}">
+                  IsVisible="{Binding SelectedRecurrenceEndType, Converter={StaticResource RecurrenceEndTypeToBoolConverter}}">
               <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
@@ -274,7 +266,6 @@
                      Grid.Column="0"/>
               <Entry Keyboard="Numeric"
                      Text="{Binding RecurrenceEndInterval}"
-                     TextChanged="RecurrenceEndIntervalEntry_OnTextChanged"
                      MaxLength="2"
                      Grid.Column="1"/>
               <Label Text="occurences"
