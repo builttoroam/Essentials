@@ -14,7 +14,6 @@
             <converters:CheckBoxEventArgsConverter x:Key="CheckBoxEventArgsConverter" />
             <converters:DateSelectedEventArgsConverter x:Key="DateSelectedEventArgsConverter" />
             <converters:TimeSelectedEventArgsConverter x:Key="TimeSelectedEventArgsConverter" />
-            <converters:ToLocalTimeConverter x:Key="ToLocalTimeConverter" />
             <DataTemplate x:DataType="essentials:DeviceEvent"
                           x:Key="EventItemTemplate">
                 <ViewCell>
@@ -30,14 +29,14 @@
                                    TextColor="Black"
                                    HorizontalTextAlignment="Center" />
                             <Label Grid.Column="1"
-                                   Text="{Binding StartDate, StringFormat={StaticResource DateDisplayFormatter}, Converter={StaticResource ToLocalTimeConverter}}"
+                                   Text="{Binding StartDate, StringFormat={StaticResource DateDisplayFormatter}}"
                                    TextColor="Black"
                                    HorizontalTextAlignment="Center" />
                             <Label Grid.Column="2"
                                    Text="-"
                                    IsVisible="{Binding AllDay, Converter={StaticResource NegativeConverter}}"/>
                             <Label Grid.Column="3"
-                                   Text="{Binding EndDate, StringFormat={StaticResource DateDisplayFormatter}, Converter={StaticResource ToLocalTimeConverter}}"
+                                   Text="{Binding EndDate, StringFormat={StaticResource DateDisplayFormatter}}"
                                    TextColor="Black"
                                    HorizontalTextAlignment="Center" />
                         </Grid>

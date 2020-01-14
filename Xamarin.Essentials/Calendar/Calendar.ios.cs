@@ -59,13 +59,19 @@ namespace Xamarin.Essentials
                                 Id = e.CalendarItemIdentifier,
                                 CalendarId = e.Calendar.CalendarIdentifier,
                                 Title = e.Title,
-                                StartDate = e.StartDate.ToDateTime().AddHours(DateTimeOffset.Now.Offset.TotalHours),
-                                EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTime().AddHours(DateTimeOffset.Now.Offset.TotalHours) : null
+                                StartDate = e.StartDate.ToDateTimeOffsetWithTimeZone(e.TimeZone),
+                                EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTimeOffsetWithTimeZone(e.TimeZone) : null
                             })
                             .OrderBy(e => e.StartDate)
                             .ToList();
 
             return eventList;
+        }
+
+        static DateTimeOffset ToDateTimeOffsetWithTimeZone(this NSDate originalDate, NSTimeZone timeZone)
+        {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZone != null ? timeZone.Name : NSTimeZone.LocalTimeZone.Name);
+            return TimeZoneInfo.ConvertTime(originalDate.ToDateTime(), tz);
         }
 
         static async Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId)
@@ -99,7 +105,7 @@ namespace Xamarin.Essentials
                     rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.First();
 
                 if (iOSRule.RecurrenceEnd?.EndDate != null)
-                    rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTime();
+                    rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone);
 
                 if (iOSRule.RecurrenceEnd?.OccurrenceCount != null)
                     rule.TotalOccurrences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
@@ -148,8 +154,8 @@ namespace Xamarin.Essentials
                 Description = calendarEvent.Notes,
                 Location = calendarEvent.Location,
                 Url = calendarEvent.Url != null ? calendarEvent.Url.ToString() : string.Empty,
-                StartDate = calendarEvent.StartDate.ToDateTime(),
-                EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTime() : null,
+                StartDate = calendarEvent.StartDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone),
+                EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone) : null,
                 Attendees = attendees,
                 RecurrancePattern = rule,
                 Reminders = alarms
@@ -165,85 +171,101 @@ namespace Xamarin.Essentials
                 throw new ArgumentException($"[iOS]: No Event found for event Id {eventId}");
             }
 
-            var calendarEvents = CalendarRequest.Instance.GetCalendarItems(eventId) as EKEvent[];
-            if (calendarEvents == null)
+            var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+            var instanceOfEvent = (await GetEventsAsync(calendarEvent.Calendar.CalendarIdentifier, instanceDate, instanceDate.AddDays(1))).First(x => x.Id == eventId);
+
+            calendarEvent.StartDate = instanceOfEvent.StartDate.ToNSDate();
+            calendarEvent.EndDate = instanceOfEvent.AllDay ? null : instanceOfEvent.EndDate.Value.ToNSDate();
+            if (calendarEvent == null)
             {
                 throw new ArgumentOutOfRangeException($"[iOS]: No Event found for event Id {eventId}");
             }
 
-            return new DeviceEvent();
+            RecurrenceRule rule = null;
+            if (calendarEvent.HasRecurrenceRules)
+            {
+                rule = new RecurrenceRule();
+                var iOSRule = calendarEvent.RecurrenceRules[0];
 
-            // RecurrenceRule rule = null;
-            // if (calendarEvent.HasRecurrenceRules)
-            // {
-            //     rule = new RecurrenceRule();
-            //     var iOSRule = calendarEvent.RecurrenceRules[0];
-            //
-            //     rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
-            //     rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
-            //     rule.Interval = (uint)iOSRule.Interval;
-            //
-            //     if (iOSRule.DaysOfTheMonth != null && iOSRule.DaysOfTheMonth.Length > 0)
-            //         rule.DayOfTheMonth = (uint)iOSRule.DaysOfTheMonth?.First();
-            //
-            //     if (iOSRule.MonthsOfTheYear != null && iOSRule.MonthsOfTheYear.Length > 0)
-            //         rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.First();
-            //
-            //     if (iOSRule.RecurrenceEnd?.EndDate != null)
-            //         rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTime();
-            //
-            //     if (iOSRule.RecurrenceEnd?.OccurrenceCount != null)
-            //         rule.TotalOccurrences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
-            //
-            //     // This will need an extension function as these don't line up
-            //     // rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
-            //     // rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
-            //     // rule.Interval = (uint)iOSRule.Interval;
-            //     // rule.StartOfTheWeek = (DayOfTheWeek)iOSRule.FirstDayOfTheWeek;
-            //     // rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear != null ? iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList() : null;
-            //     // rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth != null ? iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList() : null;
-            //     // rule.DaysOfTheYear = iOSRule.DaysOfTheYear != null ? iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList() : null;
-            //     // rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear != null ? iOSRule.MonthsOfTheYear.Select(x => (MonthOfTheYear)x.Int32Value).ToList() : null;
-            //     // rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffset();
-            //     // rule.TotalOccurences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
-            //
-            //     // Might have to calculate occuerences based on frequency/days of year and so forth for iOS.
-            //     // rule.TotalOccurences = (uint)iOSRule.??0
-            // }
-            // List<DeviceEventReminder> alarms = null;
-            // if (calendarEvent.HasAlarms)
-            // {
-            //     alarms = new List<DeviceEventReminder>();
-            //     foreach (var a in calendarEvent.Alarms)
-            //     {
-            //         alarms.Add(new DeviceEventReminder() { MinutesPriorToEventStart = (calendarEvent.StartDate.ToDateTime() - a.AbsoluteDate.ToDateTime()).Minutes });
-            //     }
-            // }
-            // var attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<DeviceEventAttendee>();
-            // if (calendarEvent.Organizer != null)
-            // {
-            //     attendees.ToList().Insert(0, new DeviceEventAttendee
-            //     {
-            //         Name = calendarEvent.Organizer.Name,
-            //         Email = calendarEvent.Organizer.Name,
-            //         Type = calendarEvent.Organizer.ParticipantRole.ToAttendeeType(),
-            //         IsOrganizer = true
-            //     });
-            // }
-            // return new DeviceEvent
-            // {
-            //     Id = calendarEvent.CalendarItemIdentifier,
-            //     CalendarId = calendarEvent.Calendar.CalendarIdentifier,
-            //     Title = calendarEvent.Title,
-            //     Description = calendarEvent.Notes,
-            //     Location = calendarEvent.Location,
-            //     Url = calendarEvent.Url != null ? calendarEvent.Url.ToString() : string.Empty,
-            //     StartDate = calendarEvent.StartDate.ToDateTime(),
-            //     EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTime() : null,
-            //     Attendees = attendees,
-            //     RecurrancePattern = rule,
-            //     Reminders = alarms
-            // };
+                rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
+                rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
+                rule.Interval = (uint)iOSRule.Interval;
+
+                if (iOSRule.SetPositions != null && iOSRule.SetPositions.Length > 0)
+                {
+                    var day = iOSRule.SetPositions[0] as NSNumber;
+                    rule.DayIterationOffSetPosition = (IterationOffset)((uint)day);
+                    if (rule.Frequency == RecurrenceFrequency.Monthly)
+                    {
+                        rule.Frequency = RecurrenceFrequency.MonthlyOnDay;
+                    }
+                    else
+                    {
+                        rule.Frequency = RecurrenceFrequency.YearlyOnDay;
+                    }
+                }
+
+                if (iOSRule.DaysOfTheMonth != null && iOSRule.DaysOfTheMonth.Length > 0)
+                    rule.DayOfTheMonth = (uint)iOSRule.DaysOfTheMonth?.First();
+
+                if (iOSRule.MonthsOfTheYear != null && iOSRule.MonthsOfTheYear.Length > 0)
+                    rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.First();
+
+                if (iOSRule.RecurrenceEnd?.EndDate != null)
+                    rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone);
+
+                if (iOSRule.RecurrenceEnd?.OccurrenceCount != null)
+                    rule.TotalOccurrences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
+
+                // This will need an extension function as these don't line up
+                // rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
+                // rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
+                // rule.Interval = (uint)iOSRule.Interval;
+                // rule.StartOfTheWeek = (DayOfTheWeek)iOSRule.FirstDayOfTheWeek;
+                // rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear != null ? iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList() : null;
+                // rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth != null ? iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList() : null;
+                // rule.DaysOfTheYear = iOSRule.DaysOfTheYear != null ? iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList() : null;
+                // rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear != null ? iOSRule.MonthsOfTheYear.Select(x => (MonthOfTheYear)x.Int32Value).ToList() : null;
+                // rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffset();
+                // rule.TotalOccurences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
+
+                // Might have to calculate occuerences based on frequency/days of year and so forth for iOS.
+                // rule.TotalOccurences = (uint)iOSRule.??0
+            }
+            List<DeviceEventReminder> alarms = null;
+            if (calendarEvent.HasAlarms)
+            {
+                alarms = new List<DeviceEventReminder>();
+                foreach (var a in calendarEvent.Alarms)
+                {
+                    alarms.Add(new DeviceEventReminder() { MinutesPriorToEventStart = (calendarEvent.StartDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone) - a.AbsoluteDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone)).Minutes });
+                }
+            }
+            var attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<DeviceEventAttendee>();
+            if (calendarEvent.Organizer != null)
+            {
+                attendees.ToList().Insert(0, new DeviceEventAttendee
+                {
+                    Name = calendarEvent.Organizer.Name,
+                    Email = calendarEvent.Organizer.Name,
+                    Type = calendarEvent.Organizer.ParticipantRole.ToAttendeeType(),
+                    IsOrganizer = true
+                });
+            }
+            return new DeviceEvent
+            {
+                Id = calendarEvent.CalendarItemIdentifier,
+                CalendarId = calendarEvent.Calendar.CalendarIdentifier,
+                Title = calendarEvent.Title,
+                Description = calendarEvent.Notes,
+                Location = calendarEvent.Location,
+                Url = calendarEvent.Url != null ? calendarEvent.Url.ToString() : string.Empty,
+                StartDate = calendarEvent.StartDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone),
+                EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone) : null,
+                Attendees = attendees,
+                RecurrancePattern = rule,
+                Reminders = alarms
+            };
         }
 
         static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<EKParticipant> inviteList)
@@ -328,15 +350,17 @@ namespace Xamarin.Essentials
 
         static EKEvent SetUpEvent(EKEvent eventToUpdate, DeviceEvent eventToUpdateFrom)
         {
+            var tz = TimeZoneInfo.FindSystemTimeZoneById(NSTimeZone.LocalTimeZone.Name);
             eventToUpdate.Title = eventToUpdateFrom.Title;
             eventToUpdate.Calendar = CalendarRequest.Instance.GetCalendar(eventToUpdateFrom.CalendarId);
             eventToUpdate.Notes = eventToUpdateFrom.Description;
             eventToUpdate.Location = eventToUpdateFrom.Location;
             eventToUpdate.AllDay = eventToUpdateFrom.AllDay;
-            eventToUpdate.StartDate = eventToUpdateFrom.StartDate.ToNSDate();
+            eventToUpdate.StartDate = TimeZoneInfo.ConvertTime(eventToUpdateFrom.StartDate, tz).ToNSDate();
+            eventToUpdate.TimeZone = NSTimeZone.LocalTimeZone;
             eventToUpdate.Url = !string.IsNullOrWhiteSpace(eventToUpdateFrom.Url) ? new NSUrl(eventToUpdateFrom.Url) : null;
-            eventToUpdate.EndDate = eventToUpdateFrom.EndDate.HasValue ? eventToUpdateFrom.EndDate.Value.ToNSDate() : eventToUpdateFrom.StartDate.AddDays(1).ToNSDate();
-            if (eventToUpdateFrom.RecurrancePattern.Frequency != RecurrenceFrequency.None)
+            eventToUpdate.EndDate = eventToUpdateFrom.EndDate.HasValue ? TimeZoneInfo.ConvertTime(eventToUpdateFrom.EndDate.Value, tz).ToNSDate() : TimeZoneInfo.ConvertTime(eventToUpdateFrom.StartDate, tz).AddDays(1).ToNSDate();
+            if (eventToUpdateFrom.RecurrancePattern != null && eventToUpdateFrom.RecurrancePattern.Frequency != RecurrenceFrequency.None)
             {
                 eventToUpdate.RecurrenceRules = new EKRecurrenceRule[1] { eventToUpdateFrom.RecurrancePattern.ConvertRule() };
             }
@@ -388,7 +412,7 @@ namespace Xamarin.Essentials
                 weeksOfTheYear: null,
                 daysOfTheYear: null,
                 setPositions: recurrenceRule.Frequency == RecurrenceFrequency.Yearly || recurrenceRule.Frequency == RecurrenceFrequency.Monthly ? ((uint)recurrenceRule.DayIterationOffSetPosition).ConvertToiOS() : null,
-                end: recurrenceRule.EndDate.HasValue ? EKRecurrenceEnd.FromEndDate(recurrenceRule.EndDate.Value.ToNSDate()) : recurrenceRule.TotalOccurrences.HasValue ? EKRecurrenceEnd.FromOccurrenceCount((nint)recurrenceRule.TotalOccurrences.Value) : null);
+                end: recurrenceRule.EndDate.HasValue ? EKRecurrenceEnd.FromEndDate(TimeZoneInfo.ConvertTime(recurrenceRule.EndDate.Value, TimeZoneInfo.Local).ToNSDate()) : recurrenceRule.TotalOccurrences.HasValue ? EKRecurrenceEnd.FromOccurrenceCount((nint)recurrenceRule.TotalOccurrences.Value) : null);
 
         static async Task<bool> PlatformDeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc)
         {
@@ -429,7 +453,7 @@ namespace Xamarin.Essentials
                 throw new ArgumentOutOfRangeException("[iOS]: Supplied event does not belong to supplied calendar.");
             }
 
-            if (CalendarRequest.Instance.RemoveEvent(calendarEvent, EKSpan.ThisEvent, true, out var error))
+            if (CalendarRequest.Instance.RemoveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error))
             {
                 return true;
             }
@@ -457,22 +481,15 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
-            var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
-
             var attendee = ObjCRuntime.Class.GetHandle("EKAttendee");
 
-            if (attendee != null)
-            {
-                throw new ArgumentException("wefs");
-            }
+            var tst = ObjCRuntime.Runtime.GetNSObject(attendee);
+            var email = new NSString("emailAddress");
 
-            var obj = NSObject.FromObject(newAttendee.Email);
+            // tst.Init();
+            tst.SetValueForKey(new NSString(newAttendee.Email), email);
 
-            var iOSAttendee = new NSObject();
-            iOSAttendee.Init();
-            iOSAttendee.SetValueForKey(NSObject.FromObject(newAttendee.Email), NSString.FromData(NSData.FromString("emailAddress", NSStringEncoding.Unicode), NSStringEncoding.Unicode));
-
-            calendarEvent.Attendees.Append(iOSAttendee as EKParticipant);
+            var result = tst as EKParticipant;
             return true;
         }
 

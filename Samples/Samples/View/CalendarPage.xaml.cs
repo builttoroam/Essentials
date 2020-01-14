@@ -47,7 +47,7 @@ namespace Samples.View
             if (e.Item == null || !(e.Item is DeviceEvent evt))
                 return;
 
-            var calendarEvent = await Calendar.GetEventByIdAsync(evt.Id);
+            var calendarEvent = await Calendar.GetEventInstanceByIdAsync(evt.Id, evt.StartDate);
             var modal = new CalendarEventPage
             {
                 BindingContext = calendarEvent

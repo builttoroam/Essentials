@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Android.Content;
 using Android.Database;
@@ -109,8 +110,8 @@ namespace Xamarin.Essentials
                         Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Instances.EventId)),
                         CalendarId = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CalendarId)),
                         Title = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Title)),
-                        StartDate = eventStartDate, // .AddMilliseconds(instanceStartTZ.BaseUtcOffset.TotalMilliseconds),
-                        EndDate = eventEndDate // .AddMilliseconds(instanceEndTZ.BaseUtcOffset.TotalMilliseconds)
+                        StartDate = eventStartDate,
+                        EndDate = eventEndDate
                     });
                 }
             }
@@ -188,7 +189,10 @@ namespace Xamarin.Essentials
                 {
                     cur.MoveToNext();
                     var instanceStartTZ = TimeZoneInfo.FindSystemTimeZoneById(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventTimezone)));
+                    var eventStartDate = TimeZoneInfo.ConvertTime(DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart))), instanceStartTZ);
                     var instanceEndTZ = TimeZoneInfo.FindSystemTimeZoneById(!string.IsNullOrEmpty(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventEndTimezone))) ? cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventEndTimezone)) : cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventTimezone)));
+                    var eventEndDate = TimeZoneInfo.ConvertTime(DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend))), instanceEndTZ);
+
                     var eventResult = new DeviceEvent
                     {
                         Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Id)),
@@ -197,8 +201,8 @@ namespace Xamarin.Essentials
                         Description = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Description)),
                         Location = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventLocation)),
                         Url = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CustomAppUri)),
-                        StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtstart))).AddMilliseconds(instanceStartTZ.BaseUtcOffset.TotalMilliseconds),
-                        EndDate = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 0 ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Dtend))).AddMilliseconds(instanceStartTZ.BaseUtcOffset.TotalMilliseconds) : null,
+                        StartDate = eventStartDate,
+                        EndDate = eventEndDate,
                         Attendees = GetAttendeesForEvent(eventId, cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Organizer))),
                         RecurrancePattern = !string.IsNullOrEmpty(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) ? GetRecurranceRuleForEvent(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) : null,
                         Reminders = GetRemindersForEvent(eventId)
@@ -247,7 +251,9 @@ namespace Xamarin.Essentials
                 if (cur.MoveToFirst())
                 {
                     var instanceStartTZ = TimeZoneInfo.FindSystemTimeZoneById(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventTimezone)));
+                    var eventStartDate = TimeZoneInfo.ConvertTime(DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Instances.Begin))), instanceStartTZ);
                     var instanceEndTZ = TimeZoneInfo.FindSystemTimeZoneById(!string.IsNullOrEmpty(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventEndTimezone))) ? cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventEndTimezone)) : cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventTimezone)));
+                    var eventEndDate = TimeZoneInfo.ConvertTime(DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Instances.End))), instanceEndTZ);
                     return new DeviceEvent
                     {
                         Id = cur.GetString(eventsProjection.IndexOf(CalendarContract.Instances.EventId)),
@@ -256,8 +262,8 @@ namespace Xamarin.Essentials
                         Description = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Description)),
                         Location = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.EventLocation)),
                         Url = cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.CustomAppUri)),
-                        StartDate = DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Instances.Begin))),
-                        EndDate = cur.GetInt(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.AllDay)) == 0 ? (DateTimeOffset?)DateTimeOffset.FromUnixTimeMilliseconds(cur.GetLong(eventsProjection.IndexOf(CalendarContract.Instances.End))) : null,
+                        StartDate = eventStartDate,
+                        EndDate = eventEndDate,
                         Attendees = GetAttendeesForEvent(eventId, cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Organizer))),
                         RecurrancePattern = !string.IsNullOrEmpty(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) ? GetRecurranceRuleForEvent(cur.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) : null,
                         Reminders = GetRemindersForEvent(eventId)
@@ -353,20 +359,7 @@ namespace Xamarin.Essentials
                 return string.Empty;
             }
             var eventUri = CalendarContract.Events.ContentUri;
-            var eventValues = new ContentValues();
-
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.CalendarId, newEvent.CalendarId);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, newEvent.Title);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, newEvent.Description);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, newEvent.Location);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.CustomAppUri, newEvent.Url);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, newEvent.AllDay);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, newEvent.StartDate.ToUnixTimeMilliseconds().ToString());
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToUnixTimeMilliseconds().ToString() : newEvent.StartDate.AddDays(1).ToUnixTimeMilliseconds().ToString());
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventEndTimezone, TimeZoneInfo.Local.Id);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Deleted, 0);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Rrule, newEvent.RecurrancePattern.ConvertRule());
+            var eventValues = SetupContentValues(newEvent);
 
             var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
             if (int.TryParse(resultUri.LastPathSegment, out result))
@@ -383,19 +376,7 @@ namespace Xamarin.Essentials
             var thisEvent = await GetEventByIdAsync(eventToUpdate.Id);
 
             var eventUri = CalendarContract.Events.ContentUri;
-            var eventValues = new ContentValues();
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.CalendarId, eventToUpdate.CalendarId);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, eventToUpdate.Title);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, eventToUpdate.Description);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, eventToUpdate.Location);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.CustomAppUri, eventToUpdate.Url);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, eventToUpdate.AllDay);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, eventToUpdate.StartDate.ToUnixTimeMilliseconds().ToString());
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, eventToUpdate.EndDate.HasValue ? eventToUpdate.EndDate.Value.ToUnixTimeMilliseconds().ToString() : eventToUpdate.StartDate.AddDays(1).ToUnixTimeMilliseconds().ToString());
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventEndTimezone, TimeZoneInfo.Local.Id);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Deleted, 0);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Rrule, eventToUpdate.RecurrancePattern.ConvertRule());
+            var eventValues = SetupContentValues(eventToUpdate);
 
             if (string.IsNullOrEmpty(eventToUpdate.CalendarId) || thisEvent == null)
             {
@@ -415,6 +396,24 @@ namespace Xamarin.Essentials
                 return true;
             }
             throw new ArgumentException("[Android]: Could not update appointment with supplied parameters");
+        }
+
+        static ContentValues SetupContentValues(DeviceEvent newEvent)
+        {
+            var eventValues = new ContentValues();
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.CalendarId, newEvent.CalendarId);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Title, newEvent.Title);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Description, newEvent.Description);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventLocation, newEvent.Location);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.CustomAppUri, newEvent.Url);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.AllDay, newEvent.AllDay);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtstart, newEvent.StartDate.ToUnixTimeMilliseconds().ToString());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToUnixTimeMilliseconds().ToString() : newEvent.StartDate.AddDays(1).ToUnixTimeMilliseconds().ToString());
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.EventEndTimezone, TimeZoneInfo.Local.Id);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Deleted, 0);
+            eventValues.Put(CalendarContract.Events.InterfaceConsts.Rrule, newEvent.RecurrancePattern.ConvertRule());
+            return eventValues;
         }
 
         static async Task<bool> PlatformDeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc)
@@ -535,6 +534,10 @@ namespace Xamarin.Essentials
                 ruleInterval = ruleInterval.Contains(";") ? ruleInterval.Substring(0, ruleInterval.IndexOf(";", StringComparison.Ordinal)) : ruleInterval;
                 recurranceRule.Interval = uint.Parse(ruleInterval);
             }
+            else
+            {
+                recurranceRule.Interval = 1;
+            }
 
             if (rule.Contains("COUNT="))
             {
@@ -557,7 +560,33 @@ namespace Xamarin.Essentials
                 recurranceRule.DaysOfTheWeek = new List<DayOfTheWeek>();
                 foreach (var d in ruleOccurenceDays.Split(','))
                 {
-                    switch (d)
+                    var day = d;
+                    if (d.Any(char.IsDigit))
+                    {
+                        var regex = new Regex(@"[-]?\d+");
+                        var iterationOffset = regex.Match(d);
+
+                        day = d.Substring(iterationOffset.Index + iterationOffset.Length);
+
+                        if (recurranceRule.Frequency == RecurrenceFrequency.Monthly)
+                        {
+                            recurranceRule.Frequency = RecurrenceFrequency.MonthlyOnDay;
+                        }
+                        else
+                        {
+                            recurranceRule.Frequency = RecurrenceFrequency.YearlyOnDay;
+                        }
+
+                        if (iterationOffset.Value.Contains("-"))
+                        {
+                            recurranceRule.DayIterationOffSetPosition = IterationOffset.Last;
+                        }
+                        else
+                        {
+                            recurranceRule.DayIterationOffSetPosition = (IterationOffset)Convert.ToInt32(iterationOffset.Value);
+                        }
+                    }
+                    switch (day)
                     {
                         case "MO":
                             recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Monday);
@@ -602,7 +631,24 @@ namespace Xamarin.Essentials
             {
                 var ruleDayIterationOffset = rule.Substring(rule.IndexOf("BYSETPOS=", StringComparison.Ordinal) + 9);
                 ruleDayIterationOffset = ruleDayIterationOffset.Contains(";") ? ruleDayIterationOffset.Substring(0, ruleDayIterationOffset.IndexOf(";", StringComparison.Ordinal)) : ruleDayIterationOffset;
-                recurranceRule.DayIterationOffSetPosition = (IterationOffset)Convert.ToUInt32(ruleDayIterationOffset.Split(',').First());
+                var offset = Convert.ToInt32(ruleDayIterationOffset.Split(',').First());
+                if (offset < 0)
+                {
+                    recurranceRule.DayIterationOffSetPosition = IterationOffset.Last;
+                }
+                else
+                {
+                    recurranceRule.DayIterationOffSetPosition = (IterationOffset)offset;
+                }
+
+                if (recurranceRule.Frequency == RecurrenceFrequency.Monthly)
+                {
+                    recurranceRule.Frequency = RecurrenceFrequency.MonthlyOnDay;
+                }
+                else
+                {
+                    recurranceRule.Frequency = RecurrenceFrequency.YearlyOnDay;
+                }
             }
             return recurranceRule;
         }
@@ -798,7 +844,7 @@ namespace Xamarin.Essentials
                     eventRecurrence += $"FREQ={monthlyFrequency};";
                     if (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0)
                     {
-                        eventRecurrence += $"BYDAY={(int)recurrenceRule.DayIterationOffSetPosition}{recurrenceRule.DaysOfTheWeek.ToDayString()};";
+                        eventRecurrence += $"BYDAY={(recurrenceRule.DayIterationOffSetPosition != IterationOffset.Last ? (int)(recurrenceRule.DayIterationOffSetPosition + 1) : -1)}{recurrenceRule.DaysOfTheWeek.ToDayString()};";
                     }
                     else if (recurrenceRule.DayOfTheMonth != 0)
                     {
@@ -814,7 +860,7 @@ namespace Xamarin.Essentials
                     if (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0)
                     {
                         eventRecurrence += $"BYMONTH={(int)recurrenceRule.MonthOfTheYear};";
-                        eventRecurrence += $"BYDAY={(int)recurrenceRule.DayIterationOffSetPosition}{recurrenceRule.DaysOfTheWeek.ToDayString()};";
+                        eventRecurrence += $"BYDAY={(recurrenceRule.DayIterationOffSetPosition != IterationOffset.Last ? (int)(recurrenceRule.DayIterationOffSetPosition + 1) : -1)}{recurrenceRule.DaysOfTheWeek.ToDayString()};";
                     }
                     else if (recurrenceRule.DayOfTheMonth != 0)
                     {

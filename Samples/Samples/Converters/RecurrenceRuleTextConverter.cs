@@ -47,16 +47,25 @@ namespace Samples.Converters
                 }
             }
 
-            if (rule.DaysOfTheWeek?.Count > 0)
+            if (rule.DayIterationOffSetPosition != IterationOffset.NotSet && (rule.Frequency == RecurrenceFrequency.MonthlyOnDay || rule.Frequency == RecurrenceFrequency.YearlyOnDay))
+            {
+                toReturn += $"on the {rule.DayIterationOffSetPosition} ";
+                if (rule.DaysOfTheWeek?.Count > 0)
+                {
+                    toReturn += $"[";
+                    toReturn = rule.DaysOfTheWeek.Aggregate(toReturn, (current, d) => current + $"{d}, ");
+                    toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] ";
+                }
+                if (rule.Frequency == RecurrenceFrequency.YearlyOnDay)
+                {
+                    toReturn += $"in {rule.MonthOfTheYear.ToString()} ";
+                }
+            }
+            else if (rule.DaysOfTheWeek?.Count > 0)
             {
                 toReturn += $"On: [";
                 toReturn = rule.DaysOfTheWeek.Aggregate(toReturn, (current, d) => current + $"{d}, ");
                 toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] ";
-            }
-
-            if (rule.DayIterationOffSetPosition != IterationOffset.NotSet && (rule.Frequency == RecurrenceFrequency.MonthlyOnDay || rule.Frequency == RecurrenceFrequency.YearlyOnDay))
-            {
-                toReturn += $"Occuring on the {rule.DayIterationOffSetPosition} of each month ";
             }
 
             if (rule.TotalOccurrences > 0)

@@ -209,6 +209,7 @@ namespace Xamarin.Essentials
                     case RecurrenceFrequency.YearlyOnDay:
                         rules.DayIterationOffSetPosition = (IterationOffset)e.Recurrence.WeekOfMonth;
                         rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.MonthOfTheYear = (MonthOfTheYear)e.Recurrence.Month;
                         break;
                     case RecurrenceFrequency.Yearly:
                         rules.DayOfTheMonth = e.Recurrence.Day;
@@ -433,7 +434,7 @@ namespace Xamarin.Essentials
             {
                 throw new ArgumentException("[UWP]: You must supply an event id to delete an event.");
             }
-            var calendarEvent = await GetEventByIdAsync(eventId);
+            var calendarEvent = await GetEventInstanceByIdAsync(eventId, dateOfInstanceUtc);
 
             if (calendarEvent.CalendarId != calendarId)
             {
@@ -443,7 +444,7 @@ namespace Xamarin.Essentials
             var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
             var rect = new Windows.Foundation.Rect(0, 0, mainDisplayInfo.Width, mainDisplayInfo.Height);
 
-            if (await AppointmentManager.ShowRemoveAppointmentAsync(eventId, rect, Windows.UI.Popups.Placement.Default, dateOfInstanceUtc))
+            if (await AppointmentManager.ShowRemoveAppointmentAsync(calendarEvent.Id, rect, Windows.UI.Popups.Placement.Default, calendarEvent.StartDate))
             {
                 return true;
             }
