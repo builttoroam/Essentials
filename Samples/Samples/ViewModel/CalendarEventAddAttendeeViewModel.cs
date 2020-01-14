@@ -69,13 +69,9 @@ namespace Samples.ViewModel
         {
             try
             {
-                if (string.IsNullOrEmpty(emailaddress))
-                {
-                    return false;
-                }
-                return true;
+                return EmailAddress == new MailAddress(emailAddress).Address;
             }
-            catch (FormatException)
+            catch
             {
                 return false;
             }
