@@ -576,15 +576,7 @@ namespace Xamarin.Essentials
                         {
                             recurranceRule.Frequency = RecurrenceFrequency.YearlyOnDay;
                         }
-
-                        if (iterationOffset.Value.Contains("-"))
-                        {
-                            recurranceRule.DayIterationOffSetPosition = IterationOffset.Last;
-                        }
-                        else
-                        {
-                            recurranceRule.DayIterationOffSetPosition = (IterationOffset)(Convert.ToInt32(iterationOffset.Value) - 1);
-                        }
+                        recurranceRule.WeekOfMonth = (IterationOffset)Convert.ToInt32(iterationOffset.Value);
                     }
                     switch (day)
                     {
@@ -617,29 +609,21 @@ namespace Xamarin.Essentials
             {
                 var ruleOccurenceMonthDays = rule.Substring(rule.IndexOf("BYMONTHDAY=", StringComparison.Ordinal) + 11);
                 ruleOccurenceMonthDays = ruleOccurenceMonthDays.Contains(";") ? ruleOccurenceMonthDays.Substring(0, ruleOccurenceMonthDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonthDays;
-                recurranceRule.DayOfTheMonth = Convert.ToUInt32(ruleOccurenceMonthDays.Split(',').FirstOrDefault());
+                recurranceRule.DayOfTheMonth = (uint)Math.Abs(Convert.ToInt32(ruleOccurenceMonthDays.Split(',').FirstOrDefault()));
             }
 
             if (rule.Contains("BYMONTH="))
             {
                 var ruleOccurenceMonths = rule.Substring(rule.IndexOf("BYMONTH=", StringComparison.Ordinal) + 8);
                 ruleOccurenceMonths = ruleOccurenceMonths.Contains(";") ? ruleOccurenceMonths.Substring(0, ruleOccurenceMonths.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonths;
-                recurranceRule.MonthOfTheYear = (MonthOfTheYear)Convert.ToUInt32(ruleOccurenceMonths.Split(',').FirstOrDefault());
+                recurranceRule.MonthOfTheYear = (MonthOfYear)Convert.ToUInt32(ruleOccurenceMonths.Split(',').FirstOrDefault());
             }
 
             if (rule.Contains("BYSETPOS="))
             {
                 var ruleDayIterationOffset = rule.Substring(rule.IndexOf("BYSETPOS=", StringComparison.Ordinal) + 9);
                 ruleDayIterationOffset = ruleDayIterationOffset.Contains(";") ? ruleDayIterationOffset.Substring(0, ruleDayIterationOffset.IndexOf(";", StringComparison.Ordinal)) : ruleDayIterationOffset;
-                var offset = Convert.ToInt32(ruleDayIterationOffset.Split(',').FirstOrDefault());
-                if (offset < 1)
-                {
-                    recurranceRule.DayIterationOffSetPosition = IterationOffset.Last;
-                }
-                else
-                {
-                    recurranceRule.DayIterationOffSetPosition = (IterationOffset)offset - 1;
-                }
+                recurranceRule.WeekOfMonth = (IterationOffset)Convert.ToInt32(ruleDayIterationOffset.Split(',').FirstOrDefault());
 
                 if (recurranceRule.Frequency == RecurrenceFrequency.Monthly)
                 {
@@ -653,180 +637,12 @@ namespace Xamarin.Essentials
             return recurranceRule;
         }
 
-        // static RecurrenceRuleReadOnly GetRecurranceRuleForEvent(string rule)
-        // {
-        //     var recurranceRule = new RecurrenceRuleReadOnly();
-        //     if (rule.Contains("FREQ="))
-        //     {
-        //         var ruleFrequency = rule.Substring(rule.IndexOf("FREQ=", StringComparison.Ordinal) + 5);
-        //         ruleFrequency = ruleFrequency.Contains(";") ? ruleFrequency.Substring(0, ruleFrequency.IndexOf(";")) : ruleFrequency;
-        //         switch (ruleFrequency)
-        //         {
-        //             case dailyFrequency:
-        //                 recurranceRule.Frequency = RecurrenceFrequency.Daily;
-        //                 break;
-        //             case weeklyFrequency:
-        //                 recurranceRule.Frequency = RecurrenceFrequency.Weekly;
-        //                 break;
-        //             case monthlyFrequency:
-        //                 recurranceRule.Frequency = RecurrenceFrequency.Monthly;
-        //                 break;
-        //             case yearlyFrequency:
-        //                 recurranceRule.Frequency = RecurrenceFrequency.Yearly;
-        //                 break;
-        //         }
-        //     }
-        // if (rule.Contains("INTERVAL="))
-        //     {
-        //         var ruleInterval = rule.Substring(rule.IndexOf("INTERVAL=", StringComparison.Ordinal) + 9);
-        //         ruleInterval = ruleInterval.Contains(";") ? ruleInterval.Substring(0, ruleInterval.IndexOf(";", StringComparison.Ordinal)) : ruleInterval;
-        //         recurranceRule.Interval = uint.Parse(ruleInterval);
-        //     }
-        // if (rule.Contains("COUNT="))
-        //     {
-        //         var ruleOccurences = rule.Substring(rule.IndexOf("COUNT=", StringComparison.Ordinal) + 6);
-        //         ruleOccurences = ruleOccurences.Contains(";") ? ruleOccurences.Substring(0, ruleOccurences.IndexOf(";", StringComparison.Ordinal)) : ruleOccurences;
-        //         recurranceRule.TotalOccurrences = uint.Parse(ruleOccurences);
-        //     }
-        // if (rule.Contains("UNTIL="))
-        //     {
-        //         var ruleEndDate = rule.Substring(rule.IndexOf("UNTIL=", StringComparison.Ordinal) + 6);
-        //         ruleEndDate = ruleEndDate.Contains(";") ? ruleEndDate.Substring(0, ruleEndDate.IndexOf(";", StringComparison.Ordinal)) : ruleEndDate;
-        //         recurranceRule.EndDate = DateTimeOffset.ParseExact(ruleEndDate.Replace("T", string.Empty).Replace("Z", string.Empty), "yyyyMMddHHmmss", null);
-        //     }
-        // // Every other month on the first and last Sunday of the month for 10 occurrences:
-        //     // DTSTART; TZID = America / New_York:19970907T090000
-        //     // RRULE:FREQ = MONTHLY; INTERVAL = 2; COUNT = 10; BYDAY = 1SU,-1SU
-        // // Monthly on the second-to - last Monday of the month for 6 months:
-        //     // DTSTART; TZID = America / New_York:19970922T090000
-        //     // RRULE:FREQ = MONTHLY; COUNT = 6; BYDAY = -2MO
-        //     if (rule.Contains("BYDAY="))
-        //     {
-        //         var ruleOccurenceDays = rule.Substring(rule.IndexOf("BYDAY=", StringComparison.Ordinal) + 6);
-        //         ruleOccurenceDays = ruleOccurenceDays.Contains(";") ? ruleOccurenceDays.Substring(0, ruleOccurenceDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceDays;
-        //         recurranceRule.DaysOfTheWeek = new List<DayOfTheWeek>();
-        //         foreach (var d in ruleOccurenceDays.Split(','))
-        //         {
-        //             switch (d)
-        //             {
-        //                 case "MO":
-        //                     recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Monday);
-        //                     break;
-        //                 case "TU":
-        //                     recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Tuesday);
-        //                     break;
-        //                 case "WE":
-        //                     recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Wednesday);
-        //                     break;
-        //                 case "TH":
-        //                     recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Thursday);
-        //                     break;
-        //                 case "FR":
-        //                     recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Friday);
-        //                     break;
-        //                 case "SA":
-        //                     recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Saturday);
-        //                     break;
-        //                 case "SU":
-        //                     recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Sunday);
-        //                     break;
-        //             }
-        //         }
-        //     }
-        // if (rule.Contains("BYYEARDAY="))
-        //     {
-        //         var ruleOccurenceYearDays = rule.Substring(rule.IndexOf("BYYEARDAY=", StringComparison.Ordinal) + 11);
-        //         ruleOccurenceYearDays = ruleOccurenceYearDays.Contains(";") ? ruleOccurenceYearDays.Substring(0, ruleOccurenceYearDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceYearDays;
-        //         recurranceRule.DaysOfTheYear = new List<int>();
-        //         foreach (var d in ruleOccurenceYearDays.Split(','))
-        //         {
-        //             recurranceRule.DaysOfTheYear.Add(int.Parse(d));
-        //         }
-        //     }
-        // if (rule.Contains("BYMONTHDAY="))
-        //     {
-        //         var ruleOccurenceMonthDays = rule.Substring(rule.IndexOf("BYMONTHDAY=", StringComparison.Ordinal) + 11);
-        //         ruleOccurenceMonthDays = ruleOccurenceMonthDays.Contains(";") ? ruleOccurenceMonthDays.Substring(0, ruleOccurenceMonthDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonthDays;
-        //         recurranceRule.DaysOfTheMonth = new List<int>();
-        //         foreach (var d in ruleOccurenceMonthDays.Split(','))
-        //         {
-        //             recurranceRule.DaysOfTheMonth.Add(int.Parse(d));
-        //         }
-        //     }
-        // if (rule.Contains("BYMONTH="))
-        //     {
-        //         var ruleOccurenceMonths = rule.Substring(rule.IndexOf("BYMONTH=", StringComparison.Ordinal) + 8);
-        //         ruleOccurenceMonths = ruleOccurenceMonths.Contains(";") ? ruleOccurenceMonths.Substring(0, ruleOccurenceMonths.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonths;
-        //         recurranceRule.MonthsOfTheYear = new List<MonthOfTheYear>();
-        //         foreach (var m in ruleOccurenceMonths.Split(','))
-        //         {
-        //             recurranceRule.MonthsOfTheYear.Add((MonthOfTheYear)int.Parse(m));
-        //         }
-        //     }
-        // if (rule.Contains("BYSETPOS="))
-        //     {
-        //         var ruleDayIterationOffset = rule.Substring(rule.IndexOf("BYSETPOS=", StringComparison.Ordinal) + 9);
-        //         ruleDayIterationOffset = ruleDayIterationOffset.Contains(";") ? ruleDayIterationOffset.Substring(0, ruleDayIterationOffset.IndexOf(";", StringComparison.Ordinal)) : ruleDayIterationOffset;
-        //         recurranceRule.DayIterationOffSetPositions = new List<IterationOffset>();
-        //         foreach (var dayIteration in ruleDayIterationOffset.Split(','))
-        //         {
-        //             recurranceRule.DayIterationOffSetPositions.Add((IterationOffset)int.Parse(dayIteration));
-        //         }
-        //     }
-        // // An example where the days generated makes a difference because of WKST:
-        //     // DTSTART; TZID = America / New_York:19970805T090000
-        //     //      RRULE:FREQ = WEEKLY; INTERVAL = 2; COUNT = 4; BYDAY = TU,SU; WKST = MO
-        //     //                  ==> (1997 EDT) August 5,10,19,24
-        //     // changing only WKST from MO to SU, yields different results...
-        //     // DTSTART; TZID = America / New_York:19970805T090000
-        //     //      RRULE:FREQ = WEEKLY; INTERVAL = 2; COUNT = 4; BYDAY = TU,SU; WKST = SU
-        //     //                  ==> (1997 EDT) August 5,17,19,31
-        //     // An example where an invalid date(i.e., February 30) is ignored.
-        //     // DTSTART; TZID = America / New_York:20070115T090000
-        //     //     RRULE:FREQ = MONTHLY; BYMONTHDAY = 15,30; COUNT = 5
-        //     //           ==> (2007 EST) January 15,30
-        //     //               (2007 EST) February 15
-        //     //               (2007 EDT) March 15,30
-        //     if (rule.Contains("WKST="))
-        //     {
-        //         var ruleStartOfTheWeek = rule.Substring(rule.IndexOf("WKST=", StringComparison.Ordinal) + 9);
-        //         ruleStartOfTheWeek = ruleStartOfTheWeek.Contains(";") ? ruleStartOfTheWeek.Substring(0, ruleStartOfTheWeek.IndexOf(";", StringComparison.Ordinal)) : ruleStartOfTheWeek;
-        //         switch (ruleStartOfTheWeek)
-        //         {
-        //             case "MO":
-        //                 recurranceRule.StartOfTheWeek = DayOfTheWeek.Monday;
-        //                 break;
-        //             case "TU":
-        //                 recurranceRule.StartOfTheWeek = DayOfTheWeek.Tuesday;
-        //                 break;
-        //             case "WE":
-        //                 recurranceRule.StartOfTheWeek = DayOfTheWeek.Wednesday;
-        //                 break;
-        //             case "TH":
-        //                 recurranceRule.StartOfTheWeek = DayOfTheWeek.Thursday;
-        //                 break;
-        //             case "FR":
-        //                 recurranceRule.StartOfTheWeek = DayOfTheWeek.Friday;
-        //                 break;
-        //             case "SA":
-        //                 recurranceRule.StartOfTheWeek = DayOfTheWeek.Saturday;
-        //                 break;
-        //             case "SU":
-        //                 recurranceRule.StartOfTheWeek = DayOfTheWeek.Sunday;
-        //                 break;
-        //         }
-        //     }
-        //     return recurranceRule;
-        // }
-
         static string ConvertRule(this RecurrenceRule recurrenceRule)
         {
             var eventRecurrence = string.Empty;
 
             switch (recurrenceRule.Frequency)
             {
-                case RecurrenceFrequency.None:
-                    break;
                 case RecurrenceFrequency.Daily:
                 case RecurrenceFrequency.Weekly:
                     if (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0)
@@ -844,7 +660,7 @@ namespace Xamarin.Essentials
                     eventRecurrence += $"FREQ={monthlyFrequency};";
                     if (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0)
                     {
-                        eventRecurrence += $"BYDAY={(recurrenceRule.DayIterationOffSetPosition != IterationOffset.Last ? (int)(recurrenceRule.DayIterationOffSetPosition + 1) : -1)}{recurrenceRule.DaysOfTheWeek.ToDayString()};";
+                        eventRecurrence += $"BYDAY={recurrenceRule.WeekOfMonth}{recurrenceRule.DaysOfTheWeek.ToDayString()};";
                     }
                     else if (recurrenceRule.DayOfTheMonth != 0)
                     {
@@ -860,7 +676,7 @@ namespace Xamarin.Essentials
                     if (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0)
                     {
                         eventRecurrence += $"BYMONTH={(int)recurrenceRule.MonthOfTheYear};";
-                        eventRecurrence += $"BYDAY={(recurrenceRule.DayIterationOffSetPosition != IterationOffset.Last ? (int)(recurrenceRule.DayIterationOffSetPosition + 1) : -1)}{recurrenceRule.DaysOfTheWeek.ToDayString()};";
+                        eventRecurrence += $"BYDAY={recurrenceRule.WeekOfMonth}{recurrenceRule.DaysOfTheWeek.ToDayString()};";
                     }
                     else if (recurrenceRule.DayOfTheMonth != 0)
                     {

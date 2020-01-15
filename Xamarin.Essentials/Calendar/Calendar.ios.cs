@@ -91,39 +91,7 @@ namespace Xamarin.Essentials
             RecurrenceRule rule = null;
             if (calendarEvent.HasRecurrenceRules)
             {
-                rule = new RecurrenceRule();
-                var iOSRule = calendarEvent.RecurrenceRules[0];
-
-                rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
-                rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
-                rule.Interval = (uint)iOSRule.Interval;
-
-                if (iOSRule.DaysOfTheMonth != null && iOSRule.DaysOfTheMonth.Length > 0)
-                    rule.DayOfTheMonth = (uint)iOSRule.DaysOfTheMonth?.FirstOrDefault();
-
-                if (iOSRule.MonthsOfTheYear != null && iOSRule.MonthsOfTheYear.Length > 0)
-                    rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.FirstOrDefault();
-
-                if (iOSRule.RecurrenceEnd?.EndDate != null)
-                    rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone);
-
-                if (iOSRule.RecurrenceEnd?.OccurrenceCount != null)
-                    rule.TotalOccurrences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
-
-                // This will need an extension function as these don't line up
-                // rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
-                // rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
-                // rule.Interval = (uint)iOSRule.Interval;
-                // rule.StartOfTheWeek = (DayOfTheWeek)iOSRule.FirstDayOfTheWeek;
-                // rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear != null ? iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList() : null;
-                // rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth != null ? iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList() : null;
-                // rule.DaysOfTheYear = iOSRule.DaysOfTheYear != null ? iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList() : null;
-                // rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear != null ? iOSRule.MonthsOfTheYear.Select(x => (MonthOfTheYear)x.Int32Value).ToList() : null;
-                // rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffset();
-                // rule.TotalOccurences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
-
-                // Might have to calculate occuerences based on frequency/days of year and so forth for iOS.
-                // rule.TotalOccurences = (uint)iOSRule.??0
+                rule = GetRecurrenceRule(calendarEvent.RecurrenceRules[0], calendarEvent.TimeZone);
             }
             List<DeviceEventReminder> alarms = null;
             if (calendarEvent.HasAlarms)
@@ -184,53 +152,7 @@ namespace Xamarin.Essentials
             RecurrenceRule rule = null;
             if (calendarEvent.HasRecurrenceRules)
             {
-                rule = new RecurrenceRule();
-                var iOSRule = calendarEvent.RecurrenceRules[0];
-
-                rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
-                rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
-                rule.Interval = (uint)iOSRule.Interval;
-
-                if (iOSRule.SetPositions != null && iOSRule.SetPositions.Length > 0)
-                {
-                    var day = iOSRule.SetPositions[0] as NSNumber;
-                    rule.DayIterationOffSetPosition = (IterationOffset)((uint)day);
-                    if (rule.Frequency == RecurrenceFrequency.Monthly)
-                    {
-                        rule.Frequency = RecurrenceFrequency.MonthlyOnDay;
-                    }
-                    else
-                    {
-                        rule.Frequency = RecurrenceFrequency.YearlyOnDay;
-                    }
-                }
-
-                if (iOSRule.DaysOfTheMonth != null && iOSRule.DaysOfTheMonth.Length > 0)
-                    rule.DayOfTheMonth = (uint)iOSRule.DaysOfTheMonth?.FirstOrDefault();
-
-                if (iOSRule.MonthsOfTheYear != null && iOSRule.MonthsOfTheYear.Length > 0)
-                    rule.MonthOfTheYear = (MonthOfTheYear)(uint)iOSRule.MonthsOfTheYear?.FirstOrDefault();
-
-                if (iOSRule.RecurrenceEnd?.EndDate != null)
-                    rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone);
-
-                if (iOSRule.RecurrenceEnd?.OccurrenceCount != null)
-                    rule.TotalOccurrences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
-
-                // This will need an extension function as these don't line up
-                // rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
-                // rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek != null ? iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList() : null;
-                // rule.Interval = (uint)iOSRule.Interval;
-                // rule.StartOfTheWeek = (DayOfTheWeek)iOSRule.FirstDayOfTheWeek;
-                // rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear != null ? iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList() : null;
-                // rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth != null ? iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList() : null;
-                // rule.DaysOfTheYear = iOSRule.DaysOfTheYear != null ? iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList() : null;
-                // rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear != null ? iOSRule.MonthsOfTheYear.Select(x => (MonthOfTheYear)x.Int32Value).ToList() : null;
-                // rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffset();
-                // rule.TotalOccurences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
-
-                // Might have to calculate occuerences based on frequency/days of year and so forth for iOS.
-                // rule.TotalOccurences = (uint)iOSRule.??0
+                rule = GetRecurrenceRule(calendarEvent.RecurrenceRules[0], calendarEvent.TimeZone);
             }
             List<DeviceEventReminder> alarms = null;
             if (calendarEvent.HasAlarms)
@@ -266,6 +188,78 @@ namespace Xamarin.Essentials
                 RecurrancePattern = rule,
                 Reminders = alarms
             };
+        }
+
+        static RecurrenceRule GetRecurrenceRule(this EKRecurrenceRule iOSRule, NSTimeZone timeZone)
+        {
+            var rule = new RecurrenceRule();
+            rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
+            if (iOSRule.DaysOfTheWeek != null)
+            {
+                rule = iOSRule.DaysOfTheWeek.ConvertToDayOfTheWeekList(rule);
+            }
+            rule.Interval = (uint)iOSRule.Interval;
+
+            if (iOSRule.SetPositions != null)
+            {
+                if (iOSRule.SetPositions.Length > 0)
+                {
+                    var day = iOSRule.SetPositions[0] as NSNumber;
+                    rule.WeekOfMonth = (IterationOffset)((int)day);
+                    if (rule.Frequency == RecurrenceFrequency.Monthly)
+                    {
+                        rule.Frequency = RecurrenceFrequency.MonthlyOnDay;
+                    }
+                    else
+                    {
+                        rule.Frequency = RecurrenceFrequency.YearlyOnDay;
+                    }
+                }
+            }
+
+            if (iOSRule.DaysOfTheMonth != null)
+            {
+                if (iOSRule.DaysOfTheMonth.Count() > 0)
+                {
+                    rule.DayOfTheMonth = (uint)iOSRule.DaysOfTheMonth?.FirstOrDefault();
+                }
+            }
+
+            if (iOSRule.MonthsOfTheYear != null)
+            {
+                if (iOSRule.MonthsOfTheYear.Count() > 0)
+                {
+                    rule.MonthOfTheYear = (MonthOfYear)(uint)iOSRule.MonthsOfTheYear?.FirstOrDefault();
+                }
+            }
+
+            rule.EndDate = iOSRule.RecurrenceEnd?.EndDate?.ToDateTimeOffsetWithTimeZone(timeZone);
+
+            rule.TotalOccurrences = (uint?)iOSRule.RecurrenceEnd?.OccurrenceCount;
+
+            return rule;
+        }
+
+        static RecurrenceRule ConvertToDayOfTheWeekList(this EKRecurrenceDayOfWeek[] recurrenceDays, RecurrenceRule rule)
+        {
+            rule.DaysOfTheWeek = recurrenceDays.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList();
+
+            foreach (var d in recurrenceDays)
+            {
+                if (d.WeekNumber != 0)
+                {
+                    if (rule.Frequency == RecurrenceFrequency.Monthly)
+                    {
+                        rule.Frequency = RecurrenceFrequency.MonthlyOnDay;
+                    }
+                    else
+                    {
+                        rule.Frequency = RecurrenceFrequency.YearlyOnDay;
+                    }
+                    rule.WeekOfMonth = (IterationOffset)(int)(d.WeekNumber - 1);
+                }
+            }
+            return rule;
         }
 
         static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<EKParticipant> inviteList)
@@ -311,8 +305,9 @@ namespace Xamarin.Essentials
 
             var evnt = EKEvent.FromStore(CalendarRequest.Instance);
             evnt = SetUpEvent(evnt, newEvent);
+            var error = new NSError();
 
-            if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.ThisEvent, true, out var error))
+            if (CalendarRequest.Instance.SaveEvent(evnt, EKSpan.FutureEvents, true, out error))
             {
                 return evnt.EventIdentifier;
             }
@@ -341,7 +336,9 @@ namespace Xamarin.Essentials
 
             thisEvent = SetUpEvent(thisEvent, eventToUpdate);
 
-            if (CalendarRequest.Instance.SaveEvent(thisEvent, EKSpan.ThisEvent, true, out var error))
+            var error = new NSError();
+
+            if (CalendarRequest.Instance.SaveEvent(thisEvent, EKSpan.FutureEvents, true, out error))
             {
                 return true;
             }
@@ -360,14 +357,14 @@ namespace Xamarin.Essentials
             eventToUpdate.TimeZone = NSTimeZone.LocalTimeZone;
             eventToUpdate.Url = !string.IsNullOrWhiteSpace(eventToUpdateFrom.Url) ? new NSUrl(eventToUpdateFrom.Url) : null;
             eventToUpdate.EndDate = eventToUpdateFrom.EndDate.HasValue ? TimeZoneInfo.ConvertTime(eventToUpdateFrom.EndDate.Value, tz).ToNSDate() : TimeZoneInfo.ConvertTime(eventToUpdateFrom.StartDate, tz).AddDays(1).ToNSDate();
-            if (eventToUpdateFrom.RecurrancePattern != null && eventToUpdateFrom.RecurrancePattern.Frequency != RecurrenceFrequency.None)
+            if (eventToUpdateFrom.RecurrancePattern != null && eventToUpdateFrom.RecurrancePattern.Frequency != null)
             {
                 eventToUpdate.RecurrenceRules = new EKRecurrenceRule[1] { eventToUpdateFrom.RecurrancePattern.ConvertRule() };
             }
             return eventToUpdate;
         }
 
-        static EKRecurrenceFrequency ConvertToiOS(this RecurrenceFrequency recurrenceFrequency)
+        static EKRecurrenceFrequency ConvertToiOS(this RecurrenceFrequency? recurrenceFrequency)
         {
             switch (recurrenceFrequency)
             {
@@ -399,7 +396,7 @@ namespace Xamarin.Essentials
             return toReturn.ToArray();
         }
 
-        static NSNumber[] ConvertToiOS(this uint dayOfTheMonth) => new NSNumber[1] { dayOfTheMonth };
+        static NSNumber[] ConvertToiOS(this int dayOfTheMonth) => new NSNumber[1] { dayOfTheMonth };
 
         static EKDay ConvertToiOS(this DayOfTheWeek day) => (EKDay)day;
 
@@ -407,11 +404,11 @@ namespace Xamarin.Essentials
                 type: recurrenceRule.Frequency.ConvertToiOS(),
                 interval: (nint)recurrenceRule.Interval,
                 days: recurrenceRule.Frequency != RecurrenceFrequency.Daily ? recurrenceRule.DaysOfTheWeek.ConvertToiOS() : null,
-                monthDays: (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0) ? null : recurrenceRule.DayOfTheMonth.ConvertToiOS(),
-                months: recurrenceRule.Frequency == RecurrenceFrequency.Yearly ? ((uint)recurrenceRule.MonthOfTheYear).ConvertToiOS() : null,
+                monthDays: (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0) ? null : ((int)recurrenceRule.DayOfTheMonth).ConvertToiOS(),
+                months: recurrenceRule.Frequency == RecurrenceFrequency.Yearly ? ((int)recurrenceRule.MonthOfTheYear).ConvertToiOS() : null,
                 weeksOfTheYear: null,
                 daysOfTheYear: null,
-                setPositions: recurrenceRule.Frequency == RecurrenceFrequency.Yearly || recurrenceRule.Frequency == RecurrenceFrequency.Monthly ? ((uint)recurrenceRule.DayIterationOffSetPosition).ConvertToiOS() : null,
+                setPositions: recurrenceRule.Frequency == RecurrenceFrequency.Yearly || recurrenceRule.Frequency == RecurrenceFrequency.Monthly ? ((int)recurrenceRule.WeekOfMonth).ConvertToiOS() : null,
                 end: recurrenceRule.EndDate.HasValue ? EKRecurrenceEnd.FromEndDate(TimeZoneInfo.ConvertTime(recurrenceRule.EndDate.Value, TimeZoneInfo.Local).ToNSDate()) : recurrenceRule.TotalOccurrences.HasValue ? EKRecurrenceEnd.FromOccurrenceCount((nint)recurrenceRule.TotalOccurrences.Value) : null);
 
         static async Task<bool> PlatformDeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc)
@@ -504,7 +501,7 @@ namespace Xamarin.Essentials
 
             // calendarEvent.Attendees = calendarEventAttendees; - readonly cannot be done at this stage.
 
-            if (CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.ThisEvent, true, out var error))
+            if (CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error))
             {
                 return true;
             }

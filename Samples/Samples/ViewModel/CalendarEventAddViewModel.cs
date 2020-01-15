@@ -86,8 +86,9 @@ namespace Samples.ViewModel
                     {
                         case RecurrenceFrequency.MonthlyOnDay:
                         case RecurrenceFrequency.YearlyOnDay:
+                            SelectedRecurrenceType = SelectedRecurrenceType == RecurrenceFrequency.MonthlyOnDay ? RecurrenceFrequency.Monthly : RecurrenceFrequency.Yearly;
                             IsMonthDaySpecific = false;
-                            SelectedRecurrenceMonthWeek = existingEvent.RecurrancePattern.DayIterationOffSetPosition;
+                            SelectedRecurrenceMonthWeek = existingEvent.RecurrancePattern.WeekOfMonth;
                             SelectedMonthWeekRecurrenceDay = existingEvent.RecurrancePattern.DaysOfTheWeek.FirstOrDefault();
                             break;
                         case RecurrenceFrequency.Monthly:
@@ -95,7 +96,10 @@ namespace Samples.ViewModel
                             SelectedRecurrenceMonthDay = existingEvent.RecurrancePattern.DayOfTheMonth;
                             break;
                     }
-                    SelectedRecurrenceYearlyMonth = existingEvent.RecurrancePattern.MonthOfTheYear;
+                    if (existingEvent.RecurrancePattern.MonthOfTheYear.HasValue)
+                    {
+                        SelectedRecurrenceYearlyMonth = existingEvent.RecurrancePattern.MonthOfTheYear.Value;
+                    }
                     if (existingEvent.RecurrancePattern.EndDate.HasValue)
                     {
                         RecurrenceEndDate = existingEvent.RecurrancePattern.EndDate.Value.DateTime;
@@ -267,7 +271,7 @@ namespace Samples.ViewModel
         public bool DisplayTimeInformation => !AllDay && !CanAlterRecurrence;
 
         // Recurrence Setup
-        public bool CanAlterRecurrence => SelectedRecurrenceType != RecurrenceFrequency.None;
+        public bool CanAlterRecurrence => SelectedRecurrenceType != null;
 
         public bool IsDaily => SelectedRecurrenceType == RecurrenceFrequency.Daily;
 
@@ -311,8 +315,8 @@ namespace Samples.ViewModel
                     if (value)
                     {
                         SelectedRecurrenceMonthDay = 1;
-                        SelectedRecurrenceMonthWeek = IterationOffset.NotSet;
-                        SelectedMonthWeekRecurrenceDay = DayOfTheWeek.NotSet;
+                        SelectedRecurrenceMonthWeek = null;
+                        SelectedMonthWeekRecurrenceDay = null;
                     }
                     else
                     {
@@ -337,16 +341,15 @@ namespace Samples.ViewModel
 
         public List<RecurrenceFrequency> RecurrenceTypes { get; } = new List<RecurrenceFrequency>()
         {
-            RecurrenceFrequency.None,
             RecurrenceFrequency.Daily,
             RecurrenceFrequency.Weekly,
             RecurrenceFrequency.Monthly,
             RecurrenceFrequency.Yearly
         };
 
-        RecurrenceFrequency selectedRecurrenceType = RecurrenceFrequency.None;
+        RecurrenceFrequency? selectedRecurrenceType = null;
 
-        public RecurrenceFrequency SelectedRecurrenceType
+        public RecurrenceFrequency? SelectedRecurrenceType
         {
             get => selectedRecurrenceType;
 
@@ -406,9 +409,9 @@ namespace Samples.ViewModel
             IterationOffset.Last
         };
 
-        IterationOffset selectedRecurrenceMonthWeek = IterationOffset.NotSet;
+        IterationOffset? selectedRecurrenceMonthWeek = null;
 
-        public IterationOffset SelectedRecurrenceMonthWeek
+        public IterationOffset? SelectedRecurrenceMonthWeek
         {
             get => selectedRecurrenceMonthWeek;
             set => SetProperty(ref selectedRecurrenceMonthWeek, value);
@@ -425,43 +428,42 @@ namespace Samples.ViewModel
             DayOfTheWeek.Sunday
         };
 
-        DayOfTheWeek selectedMonthWeekRecurrenceDay = DayOfTheWeek.NotSet;
+        DayOfTheWeek? selectedMonthWeekRecurrenceDay = null;
 
-        public DayOfTheWeek SelectedMonthWeekRecurrenceDay
+        public DayOfTheWeek? SelectedMonthWeekRecurrenceDay
         {
             get => selectedMonthWeekRecurrenceDay;
             set => SetProperty(ref selectedMonthWeekRecurrenceDay, value);
         }
 
-        public List<MonthOfTheYear> RecurrenceYearlyMonth { get; } = new List<MonthOfTheYear>()
+        public List<MonthOfYear> RecurrenceYearlyMonth { get; } = new List<MonthOfYear>()
         {
-            MonthOfTheYear.January,
-            MonthOfTheYear.February,
-            MonthOfTheYear.March,
-            MonthOfTheYear.April,
-            MonthOfTheYear.May,
-            MonthOfTheYear.June,
-            MonthOfTheYear.July,
-            MonthOfTheYear.August,
-            MonthOfTheYear.September,
-            MonthOfTheYear.October,
-            MonthOfTheYear.November,
-            MonthOfTheYear.December
+            MonthOfYear.January,
+            MonthOfYear.February,
+            MonthOfYear.March,
+            MonthOfYear.April,
+            MonthOfYear.May,
+            MonthOfYear.June,
+            MonthOfYear.July,
+            MonthOfYear.August,
+            MonthOfYear.September,
+            MonthOfYear.October,
+            MonthOfYear.November,
+            MonthOfYear.December
         };
 
-        MonthOfTheYear selectedRecurrenceYearlyMonth = MonthOfTheYear.January;
+        MonthOfYear selectedRecurrenceYearlyMonth = MonthOfYear.January;
 
-        public MonthOfTheYear SelectedRecurrenceYearlyMonth
+        public MonthOfYear SelectedRecurrenceYearlyMonth
         {
             get => selectedRecurrenceYearlyMonth;
             set
             {
-                if (SetProperty(ref selectedRecurrenceYearlyMonth, value) && value != MonthOfTheYear.NotSet)
+                if (SetProperty(ref selectedRecurrenceYearlyMonth, value))
                 {
                     var days = Enumerable.Range(1, DateTime.DaysInMonth(StartDate.Year, (int)value)).Select(x => (uint)x).ToList();
                     RecurrenceMonthDay.Clear();
                     days.ForEach(x => RecurrenceMonthDay.Add(x));
-                    SelectedRecurrenceMonthDay = 1;
                 }
             }
         }
@@ -558,7 +560,7 @@ namespace Samples.ViewModel
             {
                 List<DayOfTheWeek> daysOfTheWeek = null;
                 var selectedFrequency = SelectedRecurrenceType;
-                var dayIterationOffset = IterationOffset.NotSet;
+                IterationOffset? dayIterationOffset = null;
                 switch (selectedFrequency)
                 {
                     case RecurrenceFrequency.Daily:
@@ -566,15 +568,15 @@ namespace Samples.ViewModel
                         daysOfTheWeek = RecurrenceDays.Where(x => x.IsChecked).ToList().ConvertAll(x => x.Day);
                         break;
                     default:
-                        if (SelectedMonthWeekRecurrenceDay != DayOfTheWeek.NotSet)
+                        if (SelectedMonthWeekRecurrenceDay.HasValue)
                         {
                             daysOfTheWeek = new List<DayOfTheWeek>()
                             {
-                                SelectedMonthWeekRecurrenceDay
+                                SelectedMonthWeekRecurrenceDay.Value
                             };
                         }
 
-                        if (SelectedRecurrenceMonthWeek != IterationOffset.NotSet)
+                        if (SelectedRecurrenceMonthWeek != null)
                         {
                             dayIterationOffset = SelectedRecurrenceMonthWeek;
                         }
@@ -587,7 +589,7 @@ namespace Samples.ViewModel
                     Interval = RecurrenceInterval,
                     DaysOfTheWeek = daysOfTheWeek,
                     DayOfTheMonth = SelectedRecurrenceMonthDay,
-                    DayIterationOffSetPosition = dayIterationOffset,
+                    WeekOfMonth = dayIterationOffset,
                     MonthOfTheYear = SelectedRecurrenceYearlyMonth,
                     EndDate = RecurrenceEndDate,
                     TotalOccurrences = RecurrenceEndInterval
