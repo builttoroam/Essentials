@@ -47,9 +47,9 @@ namespace Samples.Converters
                 }
             }
 
-            if (rule.DayIterationOffSetPosition != IterationOffset.NotSet && (rule.Frequency == RecurrenceFrequency.MonthlyOnDay || rule.Frequency == RecurrenceFrequency.YearlyOnDay))
+            if (rule.WeekOfMonth != null && (rule.Frequency == RecurrenceFrequency.MonthlyOnDay || rule.Frequency == RecurrenceFrequency.YearlyOnDay))
             {
-                toReturn += $"on the {rule.DayIterationOffSetPosition} ";
+                toReturn += $"on the {rule.WeekOfMonth} ";
                 if (rule.DaysOfTheWeek?.Count > 0)
                 {
                     toReturn += $"[";
