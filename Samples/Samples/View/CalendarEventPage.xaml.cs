@@ -17,21 +17,14 @@ namespace Samples.View
             InitializeComponent();
         }
 
-        protected async override void OnAppearing()
-        {
-            base.OnAppearing();
-
-            var vm = BindingContext as DeviceEvent;
-            var evnt = await Calendar.GetEventByIdAsync(vm.Id);
-            BindingContext = evnt;
-        }
-
         async void OnDeleteEventButtonClicked(object sender, EventArgs e)
         {
-            if (!(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId.ToString()))
+            if (!(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId))
                 return;
 
-            var calendarEvent = await Calendar.GetEventByIdAsync(eventId.ToString());
+            var vm = BindingContext as DeviceEvent;
+
+            var calendarEvent = await Calendar.GetEventInstanceByIdAsync(eventId, vm.StartDate);
 
             if (!(calendarEvent is DeviceEvent))
                 return;
@@ -39,9 +32,27 @@ namespace Samples.View
             var answer = await DisplayAlert("Warning!", $"Are you sure you want to delete {calendarEvent.Title}? (this cannot be undone)", "Yes", "Cancel");
             if (answer)
             {
-                await Calendar.DeleteCalendarEventById(eventId, CalendarId.Text);
-                await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
-                await Navigation.PopAsync();
+                if (calendarEvent.RecurrancePattern != null)
+                {
+                    if (await DisplayAlert("Warning!", $"Do you want to delete all instances of this event?", "Yes All", "Just this one"))
+                    {
+                        if (await Calendar.DeleteCalendarEventById(eventId, CalendarId.Text))
+                        {
+                            await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                            await Navigation.PopAsync();
+                        }
+                    }
+                    else if (await Calendar.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate))
+                    {
+                        await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                        await Navigation.PopAsync();
+                    }
+                }
+                else if (await Calendar.DeleteCalendarEventById(eventId, CalendarId.Text))
+                {
+                    await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                    await Navigation.PopAsync();
+                }
             }
         }
 
@@ -58,7 +69,7 @@ namespace Samples.View
 
         async void OnRemoveAttendeeFromEventButtonClicked(object sender, EventArgs e)
         {
-            if (!(sender is Button btn) || !(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId.ToString()))
+            if (!(sender is Button btn) || !(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId))
                 return;
 
             var attendee = btn?.BindingContext as DeviceEventAttendee;
@@ -70,7 +81,7 @@ namespace Samples.View
                 if (success)
                 {
                     var lst = ViewModel.Attendees.ToList();
-                    var attendeeToRemove = lst.Where(x => x.Email == attendee.Email && x.Name == attendee.Name).FirstOrDefault();
+                    var attendeeToRemove = lst.FirstOrDefault(x => x.Email == attendee.Email && x.Name == attendee.Name);
                     if (attendeeToRemove != null)
                     {
                         lst.Remove(attendeeToRemove);
@@ -94,7 +105,7 @@ namespace Samples.View
 
         void OnRemoveReminderFromEventButtonClicked(object sender, EventArgs e)
         {
-            if (!(sender is Button btn) || !(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId.ToString()))
+            if (!(sender is Button btn) || !(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId))
                 return;
 
             var attendee = btn?.BindingContext as DeviceEventReminder;
@@ -104,7 +115,7 @@ namespace Samples.View
         {
             var modal = new CalendarEventAddPage();
 
-            var calendarName = (await Calendar.GetCalendarsAsync()).Where(x => x.Id == ViewModel.CalendarId).First().Name;
+            var calendarName = (await Calendar.GetCalendarsAsync()).FirstOrDefault(x => x.Id == ViewModel.CalendarId)?.Name;
 
             modal.BindingContext = new CalendarEventAddViewModel(ViewModel.CalendarId, calendarName, ViewModel);
             await Navigation.PushAsync(modal);

@@ -12,6 +12,8 @@ namespace Xamarin.Essentials
 
         static Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
+        static Task<DeviceEvent> PlatformGetEventInstanceByIdAsync(string eventId, DateTimeOffset instanceDate) => throw ExceptionUtils.NotSupportedOrImplementedException;
+
         static Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
         static Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent) => throw ExceptionUtils.NotSupportedOrImplementedException;
@@ -19,6 +21,8 @@ namespace Xamarin.Essentials
         static Task<bool> PlatformUpdateCalendarEvent(DeviceEvent newEvent) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
         static Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+        static Task<bool> PlatformDeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
         static Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
 

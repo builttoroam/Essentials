@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Xamarin.Essentials
 {
@@ -25,6 +26,8 @@ namespace Xamarin.Essentials
         public string Description { get; set; }
 
         public string Location { get; set; }
+
+        public string Url { get; set; }
 
         public bool AllDay
         {
@@ -82,128 +85,30 @@ namespace Xamarin.Essentials
 
         public string Email { get; set; }
 
-        public bool Required { get; set; }
+        public AttendeeType Type { get; set; }
+
+        public bool IsOrganizer { get; set; }
     }
 
     [Preserve(AllMembers = true)]
     public class RecurrenceRule
     {
-        public uint? TotalOccurences { get; set; }
+        public uint? TotalOccurrences { get; set; }
 
         public uint Interval { get; set; }
 
         public DateTimeOffset? EndDate { get; set; }
 
-        public RecurrenceFrequency Frequency { get; set; }
+        public RecurrenceFrequency? Frequency { get; set; }
 
         // Only allow event to occur on these days [not available for daily]
         public List<DayOfTheWeek> DaysOfTheWeek { get; set; }
 
-        public List<int> DaysOfTheMonth { get; set; }
+        public uint DayOfTheMonth { get; set; }
 
-        public List<int> WeeksOfTheYear { get; set; }
+        public MonthOfYear? MonthOfTheYear { get; set; }
 
-        public List<int> MonthsOfTheYear { get; set; }
-
-        public List<int> DaysOfTheYear { get; set; }
-
-        public List<int> DayIterationOffSetPosition { get; set; }
-
-        public DayOfTheWeek StartOfTheWeek { get; set; }
-
-        public override string ToString()
-        {
-            var toReturn = $"Occurs ";
-
-            if (Interval > 0)
-            {
-                if (Interval == 1)
-                {
-                    toReturn += $"Every ";
-                }
-                else
-                {
-                    toReturn += $"Every {((int)Interval).ToOrdinal()} ";
-                }
-                switch (Frequency)
-                {
-                    case RecurrenceFrequency.Daily:
-                        toReturn += "Day ";
-                        break;
-                    case RecurrenceFrequency.Weekly:
-                        toReturn += "Week ";
-                        break;
-                    case RecurrenceFrequency.Monthly:
-                        toReturn += "Month ";
-                        break;
-                    case RecurrenceFrequency.Yearly:
-                        toReturn += "Year ";
-                        break;
-                }
-            }
-
-            if (DaysOfTheWeek?.Count > 0)
-            {
-                toReturn += $"On: [";
-                foreach (var d in DaysOfTheWeek)
-                {
-                    toReturn += $"{d}, ";
-                }
-                toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] ";
-            }
-
-            if (DaysOfTheMonth?.Count > 0)
-            {
-                toReturn += $"on the: [";
-                foreach (var d in DaysOfTheMonth)
-                {
-                    toReturn += $"{d.ToOrdinal()}, ";
-                }
-                toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] of the month ";
-            }
-
-            if (DaysOfTheYear?.Count > 0)
-            {
-                toReturn += $"On: [";
-                foreach (var d in DaysOfTheYear)
-                {
-                    toReturn += $"{d.ToOrdinal()}, ";
-                }
-                toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] of the year ";
-            }
-
-            if (WeeksOfTheYear?.Count > 0)
-            {
-                toReturn += $"Inclding every: [";
-                foreach (var d in WeeksOfTheYear)
-                {
-                    toReturn += $"{d.ToOrdinal()}, ";
-                }
-                toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] week of the year ";
-            }
-
-            if (DayIterationOffSetPosition?.Count > 0)
-            {
-                toReturn += $"Occuring on the: [";
-                foreach (var d in DayIterationOffSetPosition)
-                {
-                    toReturn += $"{(d < 0 ? "-" : string.Empty)}{Math.Abs(d).ToOrdinal()}";
-                }
-                toReturn = toReturn.Substring(0, toReturn.Length - 2) + "] of each month ";
-            }
-
-            if (TotalOccurences > 0)
-            {
-                toReturn += $"For the next {TotalOccurences} occurences ";
-            }
-
-            if (EndDate.HasValue)
-            {
-                toReturn += $"Until {EndDate.Value.DateTime.ToShortDateString()} ";
-            }
-
-            return toReturn;
-        }
+        public IterationOffset? WeekOfMonth { get; set; }
     }
 
     public enum RecurrenceFrequency
@@ -211,12 +116,13 @@ namespace Xamarin.Essentials
         Daily = 0,
         Weekly = 1,
         Monthly = 2,
-        Yearly = 3
+        MonthlyOnDay = 3,
+        Yearly = 4,
+        YearlyOnDay = 5
     }
 
     public enum DayOfTheWeek
     {
-        NotSet = 0,
         Sunday = 1,
         Monday = 2,
         Tuesday = 3,
@@ -224,5 +130,49 @@ namespace Xamarin.Essentials
         Thursday = 5,
         Friday = 6,
         Saturday = 7
+    }
+
+    public enum MonthOfYear
+    {
+        January = 1,
+        February = 2,
+        March = 3,
+        April = 4,
+        May = 5,
+        June = 6,
+        July = 7,
+        August = 8,
+        September = 9,
+        October = 10,
+        November = 11,
+        December = 12
+    }
+
+#if __ANDROID__ || __IOS__
+    public enum IterationOffset
+    {
+        Last = -1
+        First = 1,
+        Second = 2,
+        Third = 3,
+        Fourth = 4,
+    }
+#else
+    public enum IterationOffset
+    {
+        First = 0,
+        Second = 1,
+        Third = 2,
+        Fourth = 3,
+        Last = 4
+    }
+
+#endif
+    public enum AttendeeType
+    {
+        None = 0,
+        Required = 1,
+        Optional = 2,
+        Resource = 3
     }
 }

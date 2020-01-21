@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.Mail;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -49,20 +51,26 @@ namespace Samples.ViewModel
             }
         }
 
-        bool required;
-
-        public bool Required
+        public List<string> AttendeeTypes { get; } = new List<string>()
         {
-            get => required;
-            set => SetProperty(ref required, value);
+            AttendeeType.Optional.ToString(),
+            AttendeeType.Required.ToString(),
+            AttendeeType.Resource.ToString(),
+        };
+
+        string selectedAttendeeType = AttendeeType.Optional.ToString();
+
+        public string SelectedAttendeeType
+        {
+            get => selectedAttendeeType;
+            set => SetProperty(ref selectedAttendeeType, value);
         }
 
-        bool IsValidEmail(string email)
+        public bool IsValidEmail(string emailaddress)
         {
             try
             {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
+                return EmailAddress == new MailAddress(emailAddress).Address;
             }
             catch
             {
@@ -79,7 +87,8 @@ namespace Samples.ViewModel
             var newAttendee = new DeviceEventAttendee()
             {
                 Name = Name,
-                Email = EmailAddress
+                Email = EmailAddress,
+                Type = (AttendeeType)Enum.Parse(typeof(AttendeeType), SelectedAttendeeType)
             };
 
             var result = await Calendar.AddAttendeeToEvent(newAttendee, EventId);

@@ -9,11 +9,6 @@
                  x:DataType="viewmodels:CalendarEventAddAttendeeViewModel"
                  Title="CalendarEventAttendeeAdd"
                  Padding="20,20,20,20">
-    <views:BasePage.Resources>
-        <ResourceDictionary>
-            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
-        </ResourceDictionary>
-    </views:BasePage.Resources>
     <views:BasePage.Content>
     <StackLayout>
       <Grid>
@@ -52,12 +47,14 @@
                Grid.Row="2"
                Grid.Column="1"/>
 
-        <Label Text="Attendee Attendance Required"
+        <Label Text="Attendee Attendance Type"
                HorizontalTextAlignment="Center"
+               VerticalTextAlignment="End"
                Grid.Row="3"
                Grid.Column="0"/>
-        <Switch HorizontalOptions="Start"
-                IsToggled="{Binding Required}"
+        <Picker x:Name="SelectedRecurrenceEndType"
+                ItemsSource="{Binding AttendeeTypes}"
+                SelectedItem="{Binding SelectedAttendeeType, Mode=TwoWay}"
                 Grid.Row="3"
                 Grid.Column="1"/>
       </Grid>
