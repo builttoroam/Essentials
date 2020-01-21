@@ -17,22 +17,14 @@ namespace Samples.View
             InitializeComponent();
         }
 
-        // protected override async void OnAppearing()
-        // {
-        //     base.OnAppearing();
-        //     var vm = BindingContext as DeviceEvent;
-        //     var evnt = await Calendar.GetEventInstanceByIdAsync(vm.Id, vm.StartDate);
-        //     BindingContext = evnt;
-        // }
-
         async void OnDeleteEventButtonClicked(object sender, EventArgs e)
         {
-            if (!(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId.ToString()))
+            if (!(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId))
                 return;
 
             var vm = BindingContext as DeviceEvent;
 
-            var calendarEvent = await Calendar.GetEventInstanceByIdAsync(eventId.ToString(), vm.StartDate);
+            var calendarEvent = await Calendar.GetEventInstanceByIdAsync(eventId, vm.StartDate);
 
             if (!(calendarEvent is DeviceEvent))
                 return;
@@ -77,7 +69,7 @@ namespace Samples.View
 
         async void OnRemoveAttendeeFromEventButtonClicked(object sender, EventArgs e)
         {
-            if (!(sender is Button btn) || !(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId.ToString()))
+            if (!(sender is Button btn) || !(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId))
                 return;
 
             var attendee = btn?.BindingContext as DeviceEventAttendee;
@@ -113,7 +105,7 @@ namespace Samples.View
 
         void OnRemoveReminderFromEventButtonClicked(object sender, EventArgs e)
         {
-            if (!(sender is Button btn) || !(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId.ToString()))
+            if (!(sender is Button btn) || !(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId))
                 return;
 
             var attendee = btn?.BindingContext as DeviceEventReminder;

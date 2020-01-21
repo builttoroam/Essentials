@@ -35,19 +35,19 @@ namespace Samples.View
         {
             var modal = new CalendarEventAddPage();
 
-            if (!(SelectedCalendar.SelectedItem is DeviceCalendar tst) || string.IsNullOrEmpty(tst.Id))
+            if (!(SelectedCalendar.SelectedItem is DeviceCalendar calendar) || string.IsNullOrEmpty(calendar.Id))
                 return;
 
-            modal.BindingContext = new CalendarEventAddViewModel(tst.Id, tst.Name);
+            modal.BindingContext = new CalendarEventAddViewModel(calendar.Id, calendar.Name);
             await Navigation.PushAsync(modal);
         }
 
         async void OnEventTapped(object sender, ItemTappedEventArgs e)
         {
-            if (e.Item == null || !(e.Item is DeviceEvent evt))
+            if (e.Item == null || !(e.Item is DeviceEvent calendarEvent))
                 return;
 
-            var calendarEvent = await Calendar.GetEventInstanceByIdAsync(evt.Id, evt.StartDate);
+            calendarEvent = await Calendar.GetEventInstanceByIdAsync(calendarEvent.Id, calendarEvent.StartDate);
             var modal = new CalendarEventPage
             {
                 BindingContext = calendarEvent
