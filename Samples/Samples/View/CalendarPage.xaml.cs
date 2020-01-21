@@ -14,6 +14,15 @@ namespace Samples.View
             InitializeComponent();
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            var vm = BindingContext as CalendarViewModel;
+
+            vm?.RefreshCalendars();
+        }
+
         async void OnAddCalendarButtonClicked(object sender, EventArgs e)
         {
             var modal = new CalendarAddPage();
@@ -26,19 +35,19 @@ namespace Samples.View
         {
             var modal = new CalendarEventAddPage();
 
-            if (!(SelectedCalendar.SelectedItem is DeviceCalendar tst) || string.IsNullOrEmpty(tst.Id))
+            if (!(SelectedCalendar.SelectedItem is DeviceCalendar calendar) || string.IsNullOrEmpty(calendar.Id))
                 return;
 
-            modal.BindingContext = new CalendarEventAddViewModel(tst.Id, tst.Name);
+            modal.BindingContext = new CalendarEventAddViewModel(calendar.Id, calendar.Name);
             await Navigation.PushAsync(modal);
         }
 
         async void OnEventTapped(object sender, ItemTappedEventArgs e)
         {
-            if (e.Item == null || !(e.Item is DeviceEvent evt))
+            if (e.Item == null || !(e.Item is DeviceEvent calendarEvent))
                 return;
 
-            var calendarEvent = await Calendar.GetEventByIdAsync((e.Item as DeviceEvent)?.Id);
+            calendarEvent = await Calendar.GetEventInstanceByIdAsync(calendarEvent.Id, calendarEvent.StartDate);
             var modal = new CalendarEventPage
             {
                 BindingContext = calendarEvent

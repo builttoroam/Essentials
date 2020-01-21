@@ -9,11 +9,6 @@
                  x:DataType="viewmodels:CalendarAddViewModel"
                  Title="CalendarAddPage"
                  Padding="20,20,20,20">
-    <views:BasePage.Resources>
-        <ResourceDictionary>
-            <converters:InverseBoolConverter x:Key="InverseBoolConverter"/>
-        </ResourceDictionary>
-    </views:BasePage.Resources>
     <views:BasePage.Content>
     <StackLayout>
       <Grid>
@@ -21,20 +16,11 @@
           <ColumnDefinition/>
           <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-          <RowDefinition/>
-          <RowDefinition/>
-          <RowDefinition/>
-          <RowDefinition/>
-          <RowDefinition/>
-        </Grid.RowDefinitions>
         <Label Text="Title"
                HorizontalTextAlignment="Center"
-               Grid.Row="1"
                Grid.Column="0"/>
         <Entry Placeholder="Title..."
                Text="{Binding CalendarName}"
-               Grid.Row="1"
                Grid.Column="1"/>
       </Grid>
       <Button Text="Add Calendar"
