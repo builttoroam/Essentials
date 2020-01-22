@@ -6,7 +6,7 @@
                 xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
                 xmlns:converters="clr-namespace:Samples.Converters;assembly=Samples"
                 x:Class="Samples.View.CalendarEventPage"
-                x:DataType="essentials:DeviceEvent"
+                x:DataType="essentials:CalendarEvent"
                 Title="Event"
                 Padding="20,20,20,20">
   <views:BasePage.Resources>
@@ -171,7 +171,7 @@
                          Grid.Column="1"
                          BindableLayout.ItemsSource="{Binding Attendees}">
               <BindableLayout.ItemTemplate>
-                <DataTemplate x:DataType="essentials:DeviceEventAttendee">
+                <DataTemplate x:DataType="essentials:CalendarEventAttendee">
                   <Grid>
                     <Grid.ColumnDefinitions>
                       <ColumnDefinition Width="Auto"/>

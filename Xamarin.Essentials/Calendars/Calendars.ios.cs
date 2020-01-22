@@ -7,11 +7,11 @@ using Foundation;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Calendar
+    public static partial class Calendars
     {
-        static async Task<IEnumerable<DeviceCalendar>> PlatformGetCalendarsAsync()
+        static async Task<IEnumerable<Calendar>> PlatformGetCalendarsAsync()
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             EKCalendar[] calendars;
             try
@@ -23,7 +23,7 @@ namespace Xamarin.Essentials
                 throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
             }
             var calendarList = (from calendar in calendars
-                                select new DeviceCalendar
+                                select new Calendar
                                 {
                                     Id = calendar.CalendarIdentifier,
                                     Name = calendar.Title,
@@ -33,9 +33,9 @@ namespace Xamarin.Essentials
             return calendarList;
         }
 
-        static async Task<IEnumerable<DeviceEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<IEnumerable<CalendarEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             var startDateToConvert = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var endDateToConvert = endDate ?? startDateToConvert.Add(defaultEndTimeFromStartTime);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
@@ -54,7 +54,7 @@ namespace Xamarin.Essentials
             var events = CalendarRequest.Instance.EventsMatching(query);
 
             var eventList = (from e in events
-                            select new DeviceEvent
+                            select new CalendarEvent
                             {
                                 Id = e.CalendarItemIdentifier,
                                 CalendarId = e.Calendar.CalendarIdentifier,
@@ -68,15 +68,16 @@ namespace Xamarin.Essentials
             return eventList;
         }
 
+
         static DateTimeOffset ToDateTimeOffsetWithTimeZone(this NSDate originalDate, NSTimeZone timeZone)
         {
             var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZone != null ? timeZone.Name : NSTimeZone.LocalTimeZone.Name);
             return TimeZoneInfo.ConvertTime(originalDate.ToDateTime(), tz);
         }
 
-        static async Task<DeviceEvent> PlatformGetEventByIdAsync(string eventId)
+        static async Task<CalendarEvent> PlatformGetEventByIdAsync(string eventId)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             if (string.IsNullOrWhiteSpace(eventId))
             {
@@ -114,7 +115,7 @@ namespace Xamarin.Essentials
                 });
             }
 
-            return new DeviceEvent
+            return new CalendarEvent
             {
                 Id = calendarEvent.CalendarItemIdentifier,
                 CalendarId = calendarEvent.Calendar.CalendarIdentifier,
@@ -130,7 +131,7 @@ namespace Xamarin.Essentials
             };
         }
 
-        static async Task<DeviceEvent> PlatformGetEventInstanceByIdAsync(string eventId, DateTimeOffset instanceDate)
+        static async Task<CalendarEvent> PlatformGetEventInstanceByIdAsync(string eventId, DateTimeOffset instanceDate)
         {
             await Permissions.RequireAsync(PermissionType.CalendarRead);
 
@@ -163,10 +164,10 @@ namespace Xamarin.Essentials
                     alarms.Add(new DeviceEventReminder() { MinutesPriorToEventStart = (calendarEvent.StartDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone) - a.AbsoluteDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone)).Minutes });
                 }
             }
-            var attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<DeviceEventAttendee>();
+            var attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<CalendarEventAttendee>();
             if (calendarEvent.Organizer != null)
             {
-                attendees.ToList().Insert(0, new DeviceEventAttendee
+                attendees.ToList().Insert(0, new CalendarEventAttendee
                 {
                     Name = calendarEvent.Organizer.Name,
                     Email = calendarEvent.Organizer.Name,
@@ -174,7 +175,7 @@ namespace Xamarin.Essentials
                     IsOrganizer = true
                 });
             }
-            return new DeviceEvent
+            return new CalendarEvent
             {
                 Id = calendarEvent.CalendarItemIdentifier,
                 CalendarId = calendarEvent.Calendar.CalendarIdentifier,
@@ -262,10 +263,10 @@ namespace Xamarin.Essentials
             return rule;
         }
 
-        static IEnumerable<DeviceEventAttendee> GetAttendeesForEvent(IEnumerable<EKParticipant> inviteList)
+        static IEnumerable<CalendarEventAttendee> GetAttendeesForEvent(IEnumerable<EKParticipant> inviteList)
         {
             var attendees = (from attendee in inviteList
-                             select new DeviceEventAttendee
+                             select new CalendarEventAttendee
                              {
                                  Name = attendee.Name,
                                  Email = attendee.Name,
@@ -294,7 +295,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
+        static async Task<string> PlatformCreateCalendarEvent(CalendarEvent newEvent)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -457,7 +458,7 @@ namespace Xamarin.Essentials
             throw new Exception(error.DebugDescription);
         }
 
-        static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)
+        static async Task<string> PlatformCreateCalendar(Calendar newCalendar)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -474,7 +475,7 @@ namespace Xamarin.Essentials
         }
 
         // Not possible at this point in time from what I've found - https://stackoverflow.com/questions/28826222/add-invitees-to-calendar-event-programmatically-ios
-        static async Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId)
+        static async Task<bool> PlatformAddAttendeeToEvent(CalendarEventAttendee newAttendee, string eventId)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
@@ -490,7 +491,7 @@ namespace Xamarin.Essentials
             return true;
         }
 
-        static async Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId)
+        static async Task<bool> PlatformRemoveAttendeeFromEvent(CalendarEventAttendee newAttendee, string eventId)
         {
             await Permissions.RequireAsync(PermissionType.CalendarWrite);
 
