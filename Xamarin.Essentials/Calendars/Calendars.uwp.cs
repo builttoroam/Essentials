@@ -1,39 +1,41 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.Appointments;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Calendars
+    public static partial class Calendar
     {
-        static async Task<IEnumerable<Calendar>> PlatformGetCalendarsAsync()
+        static bool PlatformIsSupported => true;
+
+        static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
         {
-            await Permissions.RequestAsync<Permissions.CalendarRead>();
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
 
             var instance = await CalendarRequest.GetInstanceAsync();
             var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
-
-            var calendars = (from calendar in uwpCalendarList
-                                select new Calendar
-                                {
-                                    Id = calendar.LocalId,
-                                    Name = calendar.DisplayName
-                                }).ToList();
-
-            return calendars;
+            var calendars = new List<ICalendar>();
+            foreach (var c in uwpCalendarList)
+            {
+                calendars.Add(new DeviceCalendar()
+                {
+                    Id = c.LocalId,
+                    Name = c.DisplayName,
+                    IsReadOnly = c.OtherAppWriteAccess != AppointmentCalendarOtherAppWriteAccess.Limited
+                });
+            }
+            return calendars.AsReadOnly();
         }
 
-        static async Task<IEnumerable<CalendarEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
-            await Permissions.RequestAsync<Permissions.CalendarRead>();
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
 
             var options = new FindAppointmentsOptions();
             options.FetchProperties.Add(AppointmentProperties.Subject);
             options.FetchProperties.Add(AppointmentProperties.StartTime);
             options.FetchProperties.Add(AppointmentProperties.Duration);
-            options.FetchProperties.Add(AppointmentProperties.AllDay);
             var sDate = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var eDate = endDate ?? sDate.Add(defaultEndTimeFromStartTime);
 
@@ -42,51 +44,40 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync();
             var events = await instance.FindAppointmentsAsync(sDate, eDate.Subtract(sDate), options);
-
-            var eventList = (from e in events
-                             select new CalendarEvent
-                             {
-                                 Id = e.LocalId,
-                                 CalendarId = e.CalendarId,
-                                 Title = e.Subject,
-                                 StartDate = e.StartTime,
-                                 EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null
-                             })
-                            .Where(e => e.CalendarId == calendarId || calendarId == null)
-                            .OrderBy(e => e.StartDate)
-                            .ToList();
-
-            if (eventList.Count == 0 && !string.IsNullOrWhiteSpace(calendarId))
+            var eventList = new List<Event>();
+            foreach (var e in events)
             {
-                await GetCalendarById(calendarId);
+                if (calendarId == null || e.CalendarId == calendarId)
+                {
+                    eventList.Add(new Event
+                    {
+                        Id = e.LocalId,
+                        CalendarId = e.CalendarId,
+                        Title = e.Subject,
+                        Start = e.StartTime.ToUnixTimeMilliseconds(),
+                        End = e.StartTime.Add(e.Duration).ToUnixTimeMilliseconds()
+                    });
+                }
             }
+            eventList.Sort((x, y) =>
+            {
+                if (!x.StartDate.HasValue)
+                {
+                    if (!y.EndDate.HasValue)
+                    {
+                        return 0;
+                    }
+                    return -1;
+                }
+                return !y.EndDate.HasValue ? 1 : x.StartDate.Value.CompareTo(y.EndDate.Value);
+            });
 
-            return eventList;
+            return eventList.AsReadOnly();
         }
 
-        static async Task<Calendar> GetCalendarById(string calendarId)
+        static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
         {
-            var instance = await CalendarRequest.GetInstanceAsync();
-            var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
-
-            var result = (from calendar in uwpCalendarList
-                             select new Calendar
-                             {
-                                 Id = calendar.LocalId,
-                                 Name = calendar.DisplayName
-                             })
-                             .Where(c => c.Id == calendarId).FirstOrDefault();
-            if (result == null)
-            {
-                throw new ArgumentOutOfRangeException($"[UWP]: No calendar exists with the Id {calendarId}");
-            }
-
-            return result;
-        }
-
-        static async Task<CalendarEvent> PlatformGetEventByIdAsync(string eventId)
-        {
-            await Permissions.RequestAsync<Permissions.CalendarRead>();
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
 
             var instance = await CalendarRequest.GetInstanceAsync();
 
@@ -94,45 +85,69 @@ namespace Xamarin.Essentials
             try
             {
                 e = await instance.GetAppointmentAsync(eventId);
-                e.DetailsKind = AppointmentDetailsKind.PlainText;
             }
-            catch (ArgumentException)
+            catch (Exception ex)
             {
-                if (string.IsNullOrWhiteSpace(eventId))
-                {
-                    throw new ArgumentException($"[UWP]: No Event found for event Id {eventId}");
-                }
-                else
-                {
-                    throw new ArgumentOutOfRangeException($"[UWP]: No Event found for event Id {eventId}");
-                }
+                throw ex;
             }
 
-            return new CalendarEvent()
+            return new Event()
             {
                 Id = e.LocalId,
                 CalendarId = e.CalendarId,
                 Title = e.Subject,
                 Description = e.Details,
                 Location = e.Location,
-                StartDate = e.StartTime,
-                EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
+                Start = e.StartTime.ToUnixTimeMilliseconds(),
+                End = e.StartTime.Add(e.Duration).ToUnixTimeMilliseconds(),
                 Attendees = GetAttendeesForEvent(e.Invitees)
             };
         }
 
-        static IEnumerable<CalendarEventAttendee> GetAttendeesForEvent(IEnumerable<AppointmentInvitee> inviteList)
-        {
-            var attendees = (from attendee in inviteList
-                             select new CalendarEventAttendee
-                             {
-                                 Name = attendee.DisplayName,
-                                 Email = attendee.Address
-                             })
-                            .OrderBy(e => e.Name)
-                            .ToList();
+        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            return attendees;
+        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+        static IReadOnlyList<IAttendee> GetAttendeesForEvent(IList<AppointmentInvitee> inviteList)
+        {
+            var attendees = new List<IAttendee>();
+
+            foreach (var attendee in inviteList)
+            {
+                attendees.Add(new Attendee()
+                {
+                    Name = attendee.DisplayName,
+                    Email = attendee.Address
+                });
+            }
+            return attendees.AsReadOnly();
+        }
+
+        static async Task<string> PlatformCreateCalendarEvent(IEvent newEvent)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var instance = await CalendarRequest.GetInstanceAsync();
+
+            var app = new Appointment()
+            {
+                Subject = newEvent.Title,
+                Details = newEvent.Description,
+                Location = newEvent.Location,
+                StartTime = DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0),
+                Duration = new TimeSpan((DateTimeOffset.FromUnixTimeMilliseconds(newEvent.End ?? 0) - DateTimeOffset.FromUnixTimeMilliseconds(newEvent.Start ?? 0)).Ticks),
+                AllDay = newEvent.AllDay
+            };
+            try
+            {
+                var cal = await instance.GetAppointmentCalendarAsync(newEvent.CalendarId);
+                await cal.SaveAppointmentAsync(app);
+                return app.LocalId;
+            }
+            catch (NullReferenceException ex)
+            {
+                throw ex;
+            }
         }
     }
 }

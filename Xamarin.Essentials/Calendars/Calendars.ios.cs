@@ -7,11 +7,13 @@ using Foundation;
 
 namespace Xamarin.Essentials
 {
-    public static partial class Calendars
+    public static partial class Calendar
     {
-        static async Task<IEnumerable<Calendar>> PlatformGetCalendarsAsync()
+        static bool PlatformIsSupported => true;
+
+        static async Task<IReadOnlyList<ICalendar>> PlatformGetCalendarsAsync()
         {
-            await Permissions.RequestAsync<Permissions.CalendarRead>();
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
 
             EKCalendar[] calendars;
             try
@@ -22,91 +24,197 @@ namespace Xamarin.Essentials
             {
                 throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
             }
-            var calendarList = (from calendar in calendars
-                                select new Calendar
-                                {
-                                    Id = calendar.CalendarIdentifier,
-                                    Name = calendar.Title
-                                }).ToList();
+            var calendarList = new List<DeviceCalendar>();
 
-            return calendarList;
+            foreach (var t in calendars)
+            {
+                calendarList.Add(new DeviceCalendar
+                {
+                    Id = t.CalendarIdentifier,
+                    Name = t.Title,
+                    IsReadOnly = !t.AllowsContentModifications
+                });
+            }
+            return calendarList.AsReadOnly();
         }
 
-        static async Task<IEnumerable<CalendarEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
+        static async Task<IReadOnlyList<IEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
-            await Permissions.RequestAsync<Permissions.CalendarRead>();
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
 
+            var eventList = new List<Event>();
             var startDateToConvert = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var endDateToConvert = endDate ?? startDateToConvert.Add(defaultEndTimeFromStartTime);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
             var sDate = startDateToConvert.ToNSDate();
             var eDate = endDateToConvert.ToNSDate();
-            EKCalendar[] calendars = null;
-            if (!string.IsNullOrWhiteSpace(calendarId))
+            EKCalendar[] calendars;
+            try
             {
-                calendars = CalendarRequest.Instance.Calendars.Where(x => x.CalendarIdentifier == calendarId).ToArray();
-
-                if (calendars.Length == 0 && !string.IsNullOrWhiteSpace(calendarId))
-                    throw new ArgumentOutOfRangeException($"[iOS]: No calendar exists with the Id {calendarId}");
+                calendars = !string.IsNullOrWhiteSpace(calendarId)
+                    ? CalendarRequest.Instance.Calendars.Where(x => x.CalendarIdentifier == calendarId).ToArray()
+                    : null;
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
             }
 
             var query = CalendarRequest.Instance.PredicateForEvents(sDate, eDate, calendars);
             var events = CalendarRequest.Instance.EventsMatching(query);
 
-            var eventList = (from e in events
-                            select new CalendarEvent
-                            {
-                                Id = e.CalendarItemIdentifier,
-                                CalendarId = e.Calendar.CalendarIdentifier,
-                                Title = e.Title,
-                                StartDate = e.StartDate.ToDateTimeOffset(),
-                                EndDate = !e.AllDay ? (DateTimeOffset?)e.EndDate.ToDateTimeOffset() : null
-                            })
-                            .OrderBy(e => e.StartDate)
-                            .ToList();
+            foreach (var e in events)
+            {
+                eventList.Add(new Event
+                {
+                    Id = e.CalendarItemIdentifier,
+                    CalendarId = e.Calendar.CalendarIdentifier,
+                    Title = e.Title,
+                    Start = e.StartDate.ToEpochTime(),
+                    End = e.EndDate.ToEpochTime()
+                });
+            }
+            eventList.Sort((x, y) =>
+            {
+                if (!x.StartDate.HasValue)
+                {
+                    if (!y.EndDate.HasValue)
+                    {
+                        return 0;
+                    }
+                    return -1;
+                }
+                if (!y.EndDate.HasValue)
+                {
+                    return 1;
+                }
+                return x.StartDate.Value.CompareTo(y.EndDate.Value);
+            });
 
-            return eventList;
+            return eventList.AsReadOnly();
         }
 
-        static async Task<CalendarEvent> PlatformGetEventByIdAsync(string eventId)
+        static async Task PlatformRequestCalendarReadAccess() => await Permissions.RequireAsync(PermissionType.CalendarRead);
+
+        static async Task PlatformRequestCalendarWriteAccess() => await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+        static async Task<IEvent> PlatformGetEventByIdAsync(string eventId)
         {
-            await Permissions.RequestAsync<Permissions.CalendarRead>();
+            await Permissions.RequireAsync(PermissionType.CalendarRead);
 
-            if (string.IsNullOrWhiteSpace(eventId))
+            EKEvent e;
+            try
             {
-                throw new ArgumentException($"[iOS]: No Event found for event Id {eventId}");
+                e = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+            }
+            catch (NullReferenceException ex)
+            {
+                throw new Exception($"iOS: Unexpected null reference exception {ex.Message}");
+            }
+            if (calendarEvent.HasRecurrenceRules)
+            {
+                var rule = new RecurrenceRule();
+                var iOSRule = calendarEvent.RecurrenceRules[0];
+
+                // This will need an extension function as these don't line up
+                rule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
+                rule.DaysOfTheWeek = iOSRule.DaysOfTheWeek.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList();
+                rule.Interval = (uint)iOSRule.Interval;
+                rule.StartOfTheWeek = (DayOfTheWeek)iOSRule.FirstDayOfTheWeek;
+                rule.WeeksOfTheYear = iOSRule.WeeksOfTheYear.Select(x => x.Int32Value).ToList();
+                rule.DaysOfTheMonth = iOSRule.DaysOfTheMonth.Select(x => x.Int32Value).ToList();
+                rule.DaysOfTheYear = iOSRule.DaysOfTheYear.Select(x => x.Int32Value).ToList();
+                rule.MonthsOfTheYear = iOSRule.MonthsOfTheYear.Select(x => x.Int32Value).ToList();
+                rule.EndDate = iOSRule.RecurrenceEnd.EndDate.ToDateTimeOffset();
+
+                // Might have to calculate occuerences based on frequency/days of year and so forth for iOS.
+                // rule.TotalOccurences = (uint)iOSRule.??0
             }
 
-            var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
-            if (calendarEvent == null)
+            return new Event
             {
-                throw new ArgumentOutOfRangeException($"[iOS]: No Event found for event Id {eventId}");
-            }
-
-            return new CalendarEvent
-            {
-                Id = calendarEvent.CalendarItemIdentifier,
-                CalendarId = calendarEvent.Calendar.CalendarIdentifier,
-                Title = calendarEvent.Title,
-                Description = calendarEvent.Notes,
-                Location = calendarEvent.Location,
-                StartDate = calendarEvent.StartDate.ToDateTimeOffset(),
-                EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffset() : null,
-                Attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<CalendarEventAttendee>()
+                Id = e.CalendarItemIdentifier,
+                Title = e.Title,
+                Description = e.Notes,
+                Location = e.Location,
+                Start = e.StartDate.ToEpochTime(),
+                End = e.EndDate.ToEpochTime(),
+                Attendees = e.Attendees != null ? GetAttendeesForEvent(e.Attendees) : new List<IAttendee>()
             };
         }
 
-        static IEnumerable<CalendarEventAttendee> GetAttendeesForEvent(IEnumerable<EKParticipant> inviteList)
+        static IReadOnlyList<IAttendee> GetAttendeesForEvent(IList<EKParticipant> inviteList)
         {
-            var attendees = (from attendee in inviteList
-                             select new CalendarEventAttendee
-                             {
-                                 Name = attendee.Name,
-                                 Email = attendee.Name
-                             })
-                            .OrderBy(e => e.Name)
-                            .ToList();
+            var attendees = new List<IAttendee>();
 
-            return attendees;
+            foreach (var attendee in inviteList)
+            {
+                attendees.Add(new Attendee()
+                {
+                    Name = attendee.Name,
+                    Email = attendee.Name
+                });
+            }
+            return attendees.AsReadOnly();
+        }
+
+        static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            if (string.IsNullOrEmpty(eventId))
+            {
+                throw new ArgumentException("[iOS]: You must supply an event id to delete an event.");
+            }
+
+            var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+
+            if (calendarEvent.Calendar.CalendarIdentifier != calendarId)
+            {
+                throw new ArgumentOutOfRangeException("[iOS]: Supplied event does not belong to supplied calendar.");
+            }
+
+            if (CalendarRequest.Instance.RemoveEvent(calendarEvent, EKSpan.ThisEvent, true, out var error))
+            {
+                return true;
+            }
+            throw new Exception(error.DebugDescription);
+        }
+
+        static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var calendar = EKCalendar.Create(EKEntityType.Event, CalendarRequest.Instance);
+            calendar.Title = newCalendar.Name;
+            var source = CalendarRequest.Instance.Sources.Where(x => x.SourceType == EKSourceType.Local).FirstOrDefault();
+            calendar.Source = source;
+
+            if (CalendarRequest.Instance.SaveCalendar(calendar, true, out var error))
+            {
+                return calendar.CalendarIdentifier;
+            }
+            throw new Exception(error.DebugDescription);
+        }
+
+        // Not possible at this point in time from what I've found - https://stackoverflow.com/questions/28826222/add-invitees-to-calendar-event-programmatically-ios
+        static Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+        static async Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId)
+        {
+            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+
+            var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+
+            var calendarEventAttendees = calendarEvent.Attendees.ToList();
+            calendarEventAttendees.RemoveAll(x => x.Name == newAttendee.Name);
+
+            // calendarEvent.Attendees = calendarEventAttendees; - readonly cannot be done at this stage.
+
+            if (CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.ThisEvent, true, out var error))
+            {
+                return true;
+            }
+            throw new Exception(error.DebugDescription);
         }
     }
 }

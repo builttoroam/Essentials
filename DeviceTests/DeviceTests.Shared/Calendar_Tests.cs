@@ -106,13 +106,13 @@ namespace DeviceTests
             return Utils.OnMainThread(async () =>
             {
                 // Create Calendar
-                var calendars = await Calendar.GetCalendarsAsync();
+                var calendars = await Calendars.GetCalendarsAsync();
                 var calendar = calendars.FirstOrDefault(x => x.Name == "Test_Calendar");
                 var calendarId = string.Empty;
                 if (calendar == null)
                 {
-                    var newCalendar = new DeviceCalendar() { Name = "Test_Calendar" };
-                    calendarId = await Calendar.CreateCalendar(newCalendar);
+                    var newCalendar = new Calendar() { Name = "Test_Calendar" };
+                    calendarId = await Calendars.CreateCalendar(newCalendar);
                 }
                 else
                 {
@@ -120,26 +120,26 @@ namespace DeviceTests
                 }
 
                 var startDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
-                var events = await Calendar.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
+                var events = await Calendars.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
                 var newEvent = events.FirstOrDefault(x => x.Title == "Test_Event");
                 var eventId = string.Empty;
                 if (newEvent == null)
                 {
-                    newEvent = new DeviceEvent()
+                    newEvent = new CalendarEvent()
                     {
                         Title = "Test_Event",
                         CalendarId = calendarId,
                         StartDate = startDate,
                         EndDate = startDate.AddHours(10)
                     };
-                    eventId = await Calendar.CreateCalendarEvent(newEvent);
+                    eventId = await Calendars.CreateCalendarEvent(newEvent);
                 }
                 else
                 {
                     eventId = newEvent.Id;
                 }
                 Assert.NotEmpty(eventId);
-                var createdEvent = await Calendar.GetEventByIdAsync(eventId);
+                var createdEvent = await Calendars.GetEventByIdAsync(eventId);
                 newEvent.Id = createdEvent.Id;
                 newEvent.Attendees = createdEvent.Attendees;
 
@@ -168,8 +168,8 @@ namespace DeviceTests
                 };
                 createdEvent.AllDay = true;
 
-                var updateSuccessful = await Calendar.UpdateCalendarEvent(createdEvent);
-                var updatedEvent = await Calendar.GetEventByIdAsync(createdEvent.Id);
+                var updateSuccessful = await Calendars.UpdateCalendarEvent(createdEvent);
+                var updatedEvent = await Calendars.GetEventByIdAsync(createdEvent.Id);
 
                 // Updated Successfuly
                 Assert.True(updateSuccessful);
@@ -184,38 +184,38 @@ namespace DeviceTests
                 Assert.Equal(createdEvent.Attendees, updatedEvent.Attendees);
                 Assert.Equal(createdEvent.Reminders, updatedEvent.Reminders);
 
-                var attendeeToAddAndRemove = new DeviceEventAttendee() { Email = "fake@email.com", Name = "Fake Email", Type = AttendeeType.Resource };
+                var attendeeToAddAndRemove = new CalendarEventAttendee() { Email = "fake@email.com", Name = "Fake Email", Type = AttendeeType.Resource };
 
                 // Added Attendee to event successfully
-                var attendeeAddedSuccessfully = await Calendar.AddAttendeeToEvent(attendeeToAddAndRemove, updatedEvent.Id);
+                var attendeeAddedSuccessfully = await Calendars.AddAttendeeToEvent(attendeeToAddAndRemove, updatedEvent.Id);
                 Assert.True(attendeeAddedSuccessfully);
 
                 // Verify Attendee added to event
-                updatedEvent = await Calendar.GetEventByIdAsync(createdEvent.Id);
+                updatedEvent = await Calendars.GetEventByIdAsync(createdEvent.Id);
                 var expectedAttendeeCount = createdEvent.Attendees != null ? createdEvent.Attendees.Count() + 1 : 1;
                 Assert.Equal(updatedEvent.Attendees.Count(), expectedAttendeeCount);
 
                 // Remove Attendee from event
-                var removedAttendeeSuccessfully = await Calendar.RemoveAttendeeFromEvent(attendeeToAddAndRemove, updatedEvent.Id);
+                var removedAttendeeSuccessfully = await Calendars.RemoveAttendeeFromEvent(attendeeToAddAndRemove, updatedEvent.Id);
                 Assert.True(removedAttendeeSuccessfully);
 
                 var dateOfSecondOccurence = TimeZoneInfo.ConvertTime(new DateTimeOffset(2020, 4, 9, 0, 0, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
-                var eventInstance = await Calendar.GetEventInstanceByIdAsync(updatedEvent.Id, dateOfSecondOccurence);
+                var eventInstance = await Calendars.GetEventInstanceByIdAsync(updatedEvent.Id, dateOfSecondOccurence);
 
                 // Retrieve instance of event
                 Assert.Equal(eventInstance.Id, updatedEvent.Id);
                 Assert.Equal(eventInstance.StartDate.Date, dateOfSecondOccurence.Date);
 
                 // Delete instance of event
-                var canDeleteInstance = await Calendar.DeleteCalendarEventInstanceByDate(eventInstance.Id, calendarId, eventInstance.StartDate);
+                var canDeleteInstance = await Calendars.DeleteCalendarEventInstanceByDate(eventInstance.Id, calendarId, eventInstance.StartDate);
                 Assert.True(canDeleteInstance);
 
                 // Get whole event
-                var eventStillExists = await Calendar.GetEventByIdAsync(eventInstance.Id);
+                var eventStillExists = await Calendars.GetEventByIdAsync(eventInstance.Id);
                 Assert.NotNull(eventStillExists);
 
                 // Delete whole event
-                var deleteEvent = await Calendar.DeleteCalendarEventById(eventInstance.Id, calendarId);
+                var deleteEvent = await Calendars.DeleteCalendarEventById(eventInstance.Id, calendarId);
                 Assert.True(deleteEvent);
             });
         }
@@ -225,8 +225,8 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(async () =>
             {
-                var newCalendar = new DeviceCalendar() { Name = "Test_Calendar" };
-                var calendarId = await Calendar.CreateCalendar(newCalendar);
+                var newCalendar = new Calendar() { Name = "Test_Calendar" };
+                var calendarId = await Calendars.CreateCalendar(newCalendar);
                 Assert.NotEmpty(calendarId);
             });
         }
@@ -236,13 +236,13 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(async () =>
             {
-                var calendars = await Calendar.GetCalendarsAsync();
+                var calendars = await Calendars.GetCalendarsAsync();
                 var calendar = calendars.FirstOrDefault(x => x.Name == "Test_Calendar");
                 var calendarId = string.Empty;
                 if (calendar == null)
                 {
-                    var newCalendar = new DeviceCalendar() { Name = "Test_Calendar" };
-                    calendarId = await Calendar.CreateCalendar(newCalendar);
+                    var newCalendar = new Calendar() { Name = "Test_Calendar" };
+                    calendarId = await Calendars.CreateCalendar(newCalendar);
                 }
                 else
                 {
@@ -250,14 +250,14 @@ namespace DeviceTests
                 }
 
                 var startDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
-                var newEvent = new DeviceEvent()
+                var newEvent = new CalendarEvent()
                 {
                     Title = "Test_Event",
                     CalendarId = calendarId,
                     StartDate = startDate,
                     EndDate = startDate.AddHours(10)
                 };
-                var eventId = await Calendar.CreateCalendarEvent(newEvent);
+                var eventId = await Calendars.CreateCalendarEvent(newEvent);
                 Assert.NotEmpty(eventId);
             });
         }
@@ -267,13 +267,13 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(async () =>
             {
-                var calendars = await Calendar.GetCalendarsAsync();
+                var calendars = await Calendars.GetCalendarsAsync();
                 var calendar = calendars.FirstOrDefault(x => x.Name == "Test_Calendar");
                 var calendarId = string.Empty;
                 if (calendar == null)
                 {
-                    var newCalendar = new DeviceCalendar() { Name = "Test_Calendar" };
-                    calendarId = await Calendar.CreateCalendar(newCalendar);
+                    var newCalendar = new Calendar() { Name = "Test_Calendar" };
+                    calendarId = await Calendars.CreateCalendar(newCalendar);
                 }
                 else
                 {
@@ -281,28 +281,28 @@ namespace DeviceTests
                 }
 
                 var startDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
-                var events = await Calendar.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
+                var events = await Calendars.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
                 var newEvent = events.FirstOrDefault(x => x.Title == "Test_Event");
                 var eventId = string.Empty;
                 if (newEvent == null)
                 {
-                    newEvent = new DeviceEvent()
+                    newEvent = new CalendarEvent()
                     {
                         Title = "Test_Event",
                         CalendarId = calendarId,
                         StartDate = startDate,
                         EndDate = startDate.AddHours(10)
                     };
-                    eventId = await Calendar.CreateCalendarEvent(newEvent);
+                    eventId = await Calendars.CreateCalendarEvent(newEvent);
                 }
                 else
                 {
                     eventId = newEvent.Id;
                 }
-                var attendeeToAdd = new DeviceEventAttendee() { Email = "fake@email.com", Name = "Fake Out", Type = AttendeeType.Required };
-                Assert.True(await Calendar.AddAttendeeToEvent(attendeeToAdd, eventId));
+                var attendeeToAdd = new CalendarEventAttendee() { Email = "fake@email.com", Name = "Fake Out", Type = AttendeeType.Required };
+                Assert.True(await Calendars.AddAttendeeToEvent(attendeeToAdd, eventId));
 
-                newEvent = await Calendar.GetEventByIdAsync(eventId);
+                newEvent = await Calendars.GetEventByIdAsync(eventId);
                 var attendee = newEvent.Attendees.FirstOrDefault(x => x.Email == "fake@email.com");
 
                 Assert.Equal(attendee.Email, attendeeToAdd.Email);
@@ -317,13 +317,13 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(async () =>
             {
-                var calendars = await Calendar.GetCalendarsAsync();
+                var calendars = await Calendars.GetCalendarsAsync();
                 var calendar = calendars.FirstOrDefault(x => x.Name == "Test_Calendar");
                 var calendarId = string.Empty;
                 if (calendar == null)
                 {
-                    var newCalendar = new DeviceCalendar() { Name = "Test_Calendar" };
-                    calendarId = await Calendar.CreateCalendar(newCalendar);
+                    var newCalendar = new Calendar() { Name = "Test_Calendar" };
+                    calendarId = await Calendars.CreateCalendar(newCalendar);
                 }
                 else
                 {
@@ -331,19 +331,19 @@ namespace DeviceTests
                 }
 
                 var startDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
-                var events = await Calendar.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
+                var events = await Calendars.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
                 var newEvent = events.FirstOrDefault(x => x.Title == "Test_Event");
                 var eventId = string.Empty;
                 if (newEvent == null)
                 {
-                    newEvent = new DeviceEvent()
+                    newEvent = new CalendarEvent()
                     {
                         Title = "Test_Event",
                         CalendarId = calendarId,
                         StartDate = startDate,
                         EndDate = startDate.AddHours(10)
                     };
-                    eventId = await Calendar.CreateCalendarEvent(newEvent);
+                    eventId = await Calendars.CreateCalendarEvent(newEvent);
                 }
                 else
                 {
@@ -351,8 +351,8 @@ namespace DeviceTests
                 }
 
                 var attendeeCount = 0;
-                DeviceEventAttendee attendeeToAdd = null;
-                DeviceEventAttendee attendee = null;
+                CalendarEventAttendee attendeeToAdd = null;
+                CalendarEventAttendee attendee = null;
                 if (newEvent.Attendees != null)
                 {
                     if (newEvent.Attendees.Count() > 0)
@@ -365,9 +365,9 @@ namespace DeviceTests
                         }
                         else
                         {
-                            attendeeToAdd = new DeviceEventAttendee() { Email = "fake@email.com", Name = "Fake Out", Type = AttendeeType.Required };
-                            Assert.True(await Calendar.AddAttendeeToEvent(attendeeToAdd, eventId));
-                            newEvent = await Calendar.GetEventByIdAsync(eventId);
+                            attendeeToAdd = new CalendarEventAttendee() { Email = "fake@email.com", Name = "Fake Out", Type = AttendeeType.Required };
+                            Assert.True(await Calendars.AddAttendeeToEvent(attendeeToAdd, eventId));
+                            newEvent = await Calendars.GetEventByIdAsync(eventId);
                             attendeeCount = newEvent.Attendees.Count();
                             attendee = newEvent.Attendees.FirstOrDefault(x => x.Email == "fake@email.com");
 
@@ -380,9 +380,9 @@ namespace DeviceTests
                 }
                 else
                 {
-                    attendeeToAdd = new DeviceEventAttendee() { Email = "fake@email.com", Name = "Fake Out", Type = AttendeeType.Required };
-                    Assert.True(await Calendar.AddAttendeeToEvent(attendeeToAdd, eventId));
-                    newEvent = await Calendar.GetEventByIdAsync(eventId);
+                    attendeeToAdd = new CalendarEventAttendee() { Email = "fake@email.com", Name = "Fake Out", Type = AttendeeType.Required };
+                    Assert.True(await Calendars.AddAttendeeToEvent(attendeeToAdd, eventId));
+                    newEvent = await Calendars.GetEventByIdAsync(eventId);
                     attendeeCount = newEvent.Attendees.Count();
                     attendee = newEvent.Attendees.FirstOrDefault(x => x.Email == "fake@email.com");
 
@@ -391,8 +391,8 @@ namespace DeviceTests
                     Assert.Equal(attendee.IsOrganizer, attendeeToAdd.IsOrganizer);
                     Assert.Equal(attendee.Type, attendeeToAdd.Type);
                 }
-                Assert.True(await Calendar.RemoveAttendeeFromEvent(attendee, eventId));
-                newEvent = await Calendar.GetEventByIdAsync(eventId);
+                Assert.True(await Calendars.RemoveAttendeeFromEvent(attendee, eventId));
+                newEvent = await Calendars.GetEventByIdAsync(eventId);
                 var newAttendeeCount = newEvent.Attendees.Count();
 
                 Assert.Equal(attendeeCount - 1, newAttendeeCount);
@@ -404,13 +404,13 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(async () =>
             {
-                var calendars = await Calendar.GetCalendarsAsync();
+                var calendars = await Calendars.GetCalendarsAsync();
                 var calendar = calendars.FirstOrDefault(x => x.Name == "Test_Calendar");
                 var calendarId = string.Empty;
                 if (calendar == null)
                 {
-                    var newCalendar = new DeviceCalendar() { Name = "Test_Calendar" };
-                    calendarId = await Calendar.CreateCalendar(newCalendar);
+                    var newCalendar = new Calendar() { Name = "Test_Calendar" };
+                    calendarId = await Calendars.CreateCalendar(newCalendar);
                 }
                 else
                 {
@@ -418,28 +418,28 @@ namespace DeviceTests
                 }
 
                 var startDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
-                var events = await Calendar.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
+                var events = await Calendars.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
                 var newEvent = events.FirstOrDefault(x => x.Title == "Test_Event");
                 if (newEvent == null)
                 {
-                    newEvent = new DeviceEvent()
+                    newEvent = new CalendarEvent()
                     {
                         Title = "Test_Event",
                         CalendarId = calendarId,
                         StartDate = startDate,
                         EndDate = startDate.AddHours(10)
                     };
-                    var eventId = await Calendar.CreateCalendarEvent(newEvent);
-                    newEvent = await Calendar.GetEventByIdAsync(eventId);
+                    var eventId = await Calendars.CreateCalendarEvent(newEvent);
+                    newEvent = await Calendars.GetEventByIdAsync(eventId);
                 }
                 else
                 {
-                    newEvent = await Calendar.GetEventByIdAsync(newEvent.Id);
+                    newEvent = await Calendars.GetEventByIdAsync(newEvent.Id);
                 }
 
                 newEvent.AllDay = true;
 
-                var result = await Calendar.UpdateCalendarEvent(newEvent);
+                var result = await Calendars.UpdateCalendarEvent(newEvent);
                 Assert.True(result);
             });
         }
@@ -449,13 +449,13 @@ namespace DeviceTests
         {
             return Utils.OnMainThread(async () =>
             {
-                var calendars = await Calendar.GetCalendarsAsync();
+                var calendars = await Calendars.GetCalendarsAsync();
                 var calendar = calendars.FirstOrDefault(x => x.Name == "Test_Calendar");
                 var calendarId = string.Empty;
                 if (calendar == null)
                 {
-                    var newCalendar = new DeviceCalendar() { Name = "Test_Calendar" };
-                    calendarId = await Calendar.CreateCalendar(newCalendar);
+                    var newCalendar = new Calendar() { Name = "Test_Calendar" };
+                    calendarId = await Calendars.CreateCalendar(newCalendar);
                 }
                 else
                 {
@@ -463,52 +463,28 @@ namespace DeviceTests
                 }
 
                 var startDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
-                var events = await Calendar.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
+                var events = await Calendars.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
                 var newEvent = events.FirstOrDefault(x => x.Title == "Test_Event");
                 var eventId = string.Empty;
                 if (newEvent == null)
                 {
-                    newEvent = new DeviceEvent()
+                    newEvent = new CalendarEvent()
                     {
                         Title = "Test_Event",
                         CalendarId = calendarId,
                         StartDate = startDate,
                         EndDate = startDate.AddHours(10)
                     };
-                    eventId = await Calendar.CreateCalendarEvent(newEvent);
+                    eventId = await Calendars.CreateCalendarEvent(newEvent);
                 }
                 else
                 {
                     eventId = newEvent.Id;
                 }
-                var result = await Calendar.DeleteCalendarEventById(eventId, calendarId);
+                var result = await Calendars.DeleteCalendarEventById(eventId, calendarId);
 
                 Assert.True(result);
             });
         }
-
-        // [Fact]
-        // public Task Basic_Calendar_Event_Instance_Deletion()
-        // {
-        //     return Utils.OnMainThread(async () =>
-        //     {
-        //         var newCalendar = new DeviceCalendar() { Name = "TestBasicEventUpdate" };
-        //         var calendarId = await Calendar.CreateCalendar(newCalendar);
-        //
-        //         var dateTodelete = new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset);
-        //
-        //         var newEvent = new DeviceEvent()
-        //         {
-        //             Title = "TestBasicEventName",
-        //             CalendarId = calendarId,
-        //             StartDate = dateTodelete,
-        //             EndDate = dateTodelete.AddHours(10)
-        //         };
-        //         var eventId = await Calendar.CreateCalendarEvent(newEvent);
-        //         var result = await Calendar.DeleteCalendarEventInstanceByDate(eventId, calendarId, dateTodelete);
-        //
-        //         Assert.True(result);
-        //     });
-        // }
     }
 }
