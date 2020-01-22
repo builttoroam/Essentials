@@ -304,7 +304,7 @@ namespace Xamarin.Essentials
         public partial class Photos : BasePlatformPermission
         {
         }
-		
+
         public partial class Reminders : BasePlatformPermission
         {
         }

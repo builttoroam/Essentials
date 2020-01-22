@@ -138,7 +138,7 @@
                        Grid.Column="1"
                        BindableLayout.ItemsSource="{Binding Reminders}">
             <BindableLayout.ItemTemplate>
-              <DataTemplate x:DataType="essentials:DeviceEventReminder">
+              <DataTemplate x:DataType="essentials:CalendarEventReminder">
                 <Grid>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition/>

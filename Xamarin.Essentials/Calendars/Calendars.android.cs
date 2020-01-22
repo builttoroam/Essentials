@@ -230,7 +230,7 @@ namespace Xamarin.Essentials
 
         static async Task<CalendarEvent> PlatformGetEventInstanceByIdAsync(string eventId, DateTimeOffset instance)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             var eventsProjection = new List<string>
             {
@@ -315,7 +315,7 @@ namespace Xamarin.Essentials
             return attendees.OrderByDescending(x => x.IsOrganizer);
         }
 
-        static IEnumerable<DeviceEventReminder> GetRemindersForEvent(string eventId)
+        static IEnumerable<CalendarEventReminder> GetRemindersForEvent(string eventId)
         {
             var remindersUri = CalendarContract.Reminders.ContentUri;
             var remindersProjection = new List<string>
@@ -324,12 +324,12 @@ namespace Xamarin.Essentials
                 CalendarContract.Reminders.InterfaceConsts.Minutes
             };
             var remindersSpecificAttendees = $"{CalendarContract.Reminders.InterfaceConsts.EventId}={eventId}";
-            var reminders = new List<DeviceEventReminder>();
+            var reminders = new List<CalendarEventReminder>();
             using (var cur = Platform.AppContext.ApplicationContext.ContentResolver.Query(remindersUri, remindersProjection.ToArray(), remindersSpecificAttendees, null, null))
             {
                 while (cur.MoveToNext())
                 {
-                    reminders.Add(new DeviceEventReminder()
+                    reminders.Add(new CalendarEventReminder()
                     {
                         MinutesPriorToEventStart = cur.GetInt(remindersProjection.IndexOf(CalendarContract.Reminders.InterfaceConsts.Minutes))
                     });
@@ -338,9 +338,9 @@ namespace Xamarin.Essentials
             return reminders;
         }
 
-        static async Task<string> PlatformCreateCalendar(DeviceCalendar newCalendar)
+        static async Task<string> PlatformCreateCalendar(Calendar newCalendar)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var calendarUri = CalendarContract.Calendars.ContentUri;
             var cursor = Platform.AppContext.ApplicationContext.ContentResolver;
@@ -361,9 +361,9 @@ namespace Xamarin.Essentials
             return result.ToString();
         }
 
-        static async Task<string> PlatformCreateCalendarEvent(DeviceEvent newEvent)
+        static async Task<string> PlatformCreateCalendarEvent(CalendarEvent newEvent)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var result = 0;
             if (string.IsNullOrEmpty(newEvent.CalendarId))
@@ -381,9 +381,9 @@ namespace Xamarin.Essentials
             throw new ArgumentException("[Android]: Could not create appointment with supplied parameters");
         }
 
-        static async Task<bool> PlatformUpdateCalendarEvent(DeviceEvent eventToUpdate)
+        static async Task<bool> PlatformUpdateCalendarEvent(CalendarEvent eventToUpdate)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var thisEvent = await GetEventByIdAsync(eventToUpdate.Id);
 
@@ -410,7 +410,7 @@ namespace Xamarin.Essentials
             throw new ArgumentException("[Android]: Could not update appointment with supplied parameters");
         }
 
-        static ContentValues SetupContentValues(DeviceEvent newEvent)
+        static ContentValues SetupContentValues(CalendarEvent newEvent)
         {
             var eventValues = new ContentValues();
             eventValues.Put(CalendarContract.Events.InterfaceConsts.CalendarId, newEvent.CalendarId);
@@ -430,7 +430,7 @@ namespace Xamarin.Essentials
 
         static async Task<bool> PlatformDeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var thisEvent = await GetEventInstanceByIdAsync(eventId, dateOfInstanceUtc);
 
@@ -450,7 +450,7 @@ namespace Xamarin.Essentials
 
         static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             if (string.IsNullOrEmpty(eventId))
             {
@@ -470,9 +470,9 @@ namespace Xamarin.Essentials
             return result > 0;
         }
 
-        static async Task<bool> PlatformAddAttendeeToEvent(DeviceEventAttendee newAttendee, string eventId)
+        static async Task<bool> PlatformAddAttendeeToEvent(CalendarEventAttendee newAttendee, string eventId)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var calendarEvent = await GetEventByIdAsync(eventId);
 
@@ -495,9 +495,9 @@ namespace Xamarin.Essentials
             return result > 0;
         }
 
-        static async Task<bool> PlatformRemoveAttendeeFromEvent(DeviceEventAttendee newAttendee, string eventId)
+        static async Task<bool> PlatformRemoveAttendeeFromEvent(CalendarEventAttendee newAttendee, string eventId)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var calendarEvent = await GetEventByIdAsync(eventId);
 

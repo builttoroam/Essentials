@@ -65,6 +65,8 @@ namespace Xamarin.Essentials
 
         public partial class CalendarWrite : BasePlatformPermission
         {
+            protected override Func<IEnumerable<string>> RequiredDeclarations => () =>
+                new[] { "appointments" };
         }
 
         public partial class Camera : BasePlatformPermission

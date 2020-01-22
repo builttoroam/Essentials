@@ -56,7 +56,7 @@ namespace Samples.ViewModel
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday, IsChecked = false }
         };
 
-        public CalendarEventAddViewModel(string calendarId, string calendarName, DeviceEvent existingEvent = null)
+        public CalendarEventAddViewModel(string calendarId, string calendarName, CalendarEvent existingEvent = null)
         {
             CalendarId = calendarId;
             CalendarName = calendarName;
@@ -543,7 +543,7 @@ namespace Samples.ViewModel
         {
             var startDto = new DateTimeOffset(StartDate + StartTime);
             var endDto = new DateTimeOffset(EndDate + EndTime);
-            var newEvent = new DeviceEvent()
+            var newEvent = new CalendarEvent()
             {
                 Id = EventId,
                 CalendarId = CalendarId,
@@ -598,12 +598,12 @@ namespace Samples.ViewModel
 
             if (string.IsNullOrEmpty(EventId))
             {
-                var eventId = await Calendar.CreateCalendarEvent(newEvent);
+                var eventId = await Calendars.CreateCalendarEvent(newEvent);
                 await DisplayAlertAsync("Created event id: " + eventId);
             }
             else
             {
-                if (await Calendar.UpdateCalendarEvent(newEvent))
+                if (await Calendars.UpdateCalendarEvent(newEvent))
                 {
                     await DisplayAlertAsync("Updated event id: " + newEvent.Id);
                 }

@@ -35,7 +35,7 @@ namespace Samples.View
         {
             var modal = new CalendarEventAddPage();
 
-            if (!(SelectedCalendar.SelectedItem is DeviceCalendar calendar) || string.IsNullOrEmpty(calendar.Id))
+            if (!(SelectedCalendar.SelectedItem is Calendar calendar) || string.IsNullOrEmpty(calendar.Id))
                 return;
 
             modal.BindingContext = new CalendarEventAddViewModel(calendar.Id, calendar.Name);

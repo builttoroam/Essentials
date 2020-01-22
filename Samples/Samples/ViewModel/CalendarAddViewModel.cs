@@ -37,12 +37,12 @@ namespace Samples.ViewModel
 
         async void CreateCalendarCommand()
         {
-            var newCalendar = new DeviceCalendar()
+            var newCalendar = new Calendar()
             {
                 Name = CalendarName
             };
 
-            var calendarId = await Calendar.CreateCalendar(newCalendar);
+            var calendarId = await Calendars.CreateCalendar(newCalendar);
 
             await DisplayAlertAsync("Created calendar id: " + calendarId);
         }

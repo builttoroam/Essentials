@@ -155,13 +155,13 @@ namespace Xamarin.Essentials
                 EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
                 Attendees = GetAttendeesForEvent(e.Invitees, e.Organizer),
                 RecurrancePattern = rules,
-                Reminders = e.Reminder.HasValue ? new List<DeviceEventReminder>() { new DeviceEventReminder() { MinutesPriorToEventStart = e.Reminder.Value.Minutes } } : null
+                Reminders = e.Reminder.HasValue ? new List<CalendarEventReminder>() { new CalendarEventReminder() { MinutesPriorToEventStart = e.Reminder.Value.Minutes } } : null
             };
         }
 
         static async Task<CalendarEvent> PlatformGetEventInstanceByIdAsync(string eventId, DateTimeOffset instanceDate)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
 
@@ -227,7 +227,7 @@ namespace Xamarin.Essentials
                 EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
                 Attendees = GetAttendeesForEvent(e.Invitees, e.Organizer),
                 RecurrancePattern = rules,
-                Reminders = e.Reminder.HasValue ? new List<DeviceEventReminder>() { new DeviceEventReminder() { MinutesPriorToEventStart = e.Reminder.Value.Minutes } } : null
+                Reminders = e.Reminder.HasValue ? new List<CalendarEventReminder>() { new CalendarEventReminder() { MinutesPriorToEventStart = e.Reminder.Value.Minutes } } : null
             };
         }
 
@@ -283,7 +283,7 @@ namespace Xamarin.Essentials
 
         static async Task<string> PlatformCreateCalendarEvent(CalendarEvent newEvent)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             if (string.IsNullOrEmpty(newEvent.CalendarId))
             {
@@ -317,7 +317,7 @@ namespace Xamarin.Essentials
 
         static async Task<bool> PlatformUpdateCalendarEvent(CalendarEvent eventToUpdate)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var existingEvent = await GetEventByIdAsync(eventToUpdate.Id);
 
@@ -421,7 +421,7 @@ namespace Xamarin.Essentials
 
         static async Task<string> PlatformCreateCalendar(Calendar newCalendar)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var instance = await CalendarRequest.GetInstanceAsync();
 
@@ -435,7 +435,7 @@ namespace Xamarin.Essentials
 
         static async Task<bool> PlatformDeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             if (string.IsNullOrEmpty(eventId))
             {
@@ -460,7 +460,7 @@ namespace Xamarin.Essentials
 
         static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             if (string.IsNullOrEmpty(eventId))
             {
@@ -485,7 +485,7 @@ namespace Xamarin.Essentials
 
         static async Task<bool> PlatformAddAttendeeToEvent(CalendarEventAttendee newAttendee, string eventId)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var instance = await CalendarRequest.GetInstanceAsync();
 
@@ -504,7 +504,7 @@ namespace Xamarin.Essentials
 
         static async Task<bool> PlatformRemoveAttendeeFromEvent(CalendarEventAttendee newAttendee, string eventId)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarWrite);
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var instance = await CalendarRequest.GetInstanceAsync();
 

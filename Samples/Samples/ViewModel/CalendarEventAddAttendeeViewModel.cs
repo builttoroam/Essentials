@@ -84,14 +84,14 @@ namespace Samples.ViewModel
 
         async void CreateCalendarEventAttendeeCommand()
         {
-            var newAttendee = new DeviceEventAttendee()
+            var newAttendee = new CalendarEventAttendee()
             {
                 Name = Name,
                 Email = EmailAddress,
                 Type = (AttendeeType)Enum.Parse(typeof(AttendeeType), SelectedAttendeeType)
             };
 
-            var result = await Calendar.AddAttendeeToEvent(newAttendee, EventId);
+            var result = await Calendars.AddAttendeeToEvent(newAttendee, EventId);
 
             await DisplayAlertAsync("Added event attendee: " + newAttendee.Name);
         }

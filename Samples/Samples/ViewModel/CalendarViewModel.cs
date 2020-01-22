@@ -67,7 +67,7 @@ namespace Samples.ViewModel
 
         public bool HasCalendarReadAccess { get; set; }
 
-        ObservableCollection<Calendar> calendarList = new ObservableCollection<DeviceCalendar>();
+        ObservableCollection<Calendar> calendarList = new ObservableCollection<Calendar>();
 
         public ObservableCollection<Calendar> CalendarList
         {
@@ -123,7 +123,7 @@ namespace Samples.ViewModel
         {
             CalendarList.Clear();
 
-            CalendarList.Add(new DeviceCalendar() { Id = null, IsReadOnly = true, Name = "All" });
+            CalendarList.Add(new Calendar() { Id = null, IsReadOnly = true, Name = "All" });
             var calendars = await Calendars.GetCalendarsAsync();
             foreach (var calendar in calendars)
             {
