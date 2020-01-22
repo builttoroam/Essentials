@@ -11,7 +11,7 @@ namespace Xamarin.Essentials
     {
         static async Task<IEnumerable<Calendar>> PlatformGetCalendarsAsync()
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             EKCalendar[] calendars;
             try
@@ -34,7 +34,7 @@ namespace Xamarin.Essentials
 
         static async Task<IEnumerable<CalendarEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             var startDateToConvert = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var endDateToConvert = endDate ?? startDateToConvert.Add(defaultEndTimeFromStartTime);  // NOTE: 4 years is the maximum period that a iOS calendar events can search
@@ -69,7 +69,7 @@ namespace Xamarin.Essentials
 
         static async Task<CalendarEvent> PlatformGetEventByIdAsync(string eventId)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             if (string.IsNullOrWhiteSpace(eventId))
             {

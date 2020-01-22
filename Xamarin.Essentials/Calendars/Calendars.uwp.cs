@@ -10,7 +10,7 @@ namespace Xamarin.Essentials
     {
         static async Task<IEnumerable<Calendar>> PlatformGetCalendarsAsync()
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             var instance = await CalendarRequest.GetInstanceAsync();
             var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
@@ -27,7 +27,7 @@ namespace Xamarin.Essentials
 
         static async Task<IEnumerable<CalendarEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             var options = new FindAppointmentsOptions();
             options.FetchProperties.Add(AppointmentProperties.Subject);
@@ -86,7 +86,7 @@ namespace Xamarin.Essentials
 
         static async Task<CalendarEvent> PlatformGetEventByIdAsync(string eventId)
         {
-            await Permissions.RequireAsync(PermissionType.CalendarRead);
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             var instance = await CalendarRequest.GetInstanceAsync();
 
