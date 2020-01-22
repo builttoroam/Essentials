@@ -48,6 +48,7 @@ namespace Samples.View
                 return;
 
             calendarEvent = await Calendars.GetEventInstanceByIdAsync(calendarEvent.Id, calendarEvent.StartDate);
+
             var modal = new CalendarEventPage
             {
                 BindingContext = calendarEvent

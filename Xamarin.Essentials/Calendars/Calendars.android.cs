@@ -60,7 +60,7 @@ namespace Xamarin.Essentials
                     return false;
             }
         }
-
+      
         static async Task<IEnumerable<CalendarEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequestAsync<Permissions.CalendarRead>();
@@ -84,6 +84,7 @@ namespace Xamarin.Essentials
 
             var instancesUri = instanceUriBuilder.Build();
             var calendarSpecificEvent = string.Empty;
+          
             if (!string.IsNullOrEmpty(calendarId))
             {
                 // Android event ids are always integers
