@@ -624,8 +624,8 @@ namespace Xamarin.Essentials
             {
                 var ruleOccurenceMonthDays = rule.Substring(rule.IndexOf("BYMONTHDAY=", StringComparison.Ordinal) + 11);
                 ruleOccurenceMonthDays = ruleOccurenceMonthDays.Contains(";") ? ruleOccurenceMonthDays.Substring(0, ruleOccurenceMonthDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonthDays;
-                uint.TryParse(ruleOccurenceMonthDays.Split(',').FirstOrDefault(), out recurranceRule.DayOfTheMonth);
-                ruleOccurenceMonthDays = Math.Abs(ruleOccurenceMonthDays);
+                uint.TryParse(ruleOccurenceMonthDays.Split(',').FirstOrDefault(), out var result);
+                recurranceRule.DayOfTheMonth = result;
             }
 
             if (rule.Contains("BYMONTH="))
