@@ -424,8 +424,11 @@ namespace Xamarin.Essentials
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToUnixTimeMilliseconds().ToString() : newEvent.StartDate.AddDays(1).ToUnixTimeMilliseconds().ToString());
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventEndTimezone, TimeZoneInfo.Local.Id);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Deleted, 0);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Rrule, newEvent.RecurrancePattern.ConvertRule());
+            if (newEvent.RecurrancePattern != null)
+            {
+                eventValues.Put(CalendarContract.Events.InterfaceConsts.Rrule, newEvent.RecurrancePattern.ConvertRule());
+            }
+
             return eventValues;
         }
 
