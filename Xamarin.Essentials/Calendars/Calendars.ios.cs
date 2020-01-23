@@ -196,7 +196,7 @@ namespace Xamarin.Essentials
             recurrenceRule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
             if (iOSRule.DaysOfTheWeek != null)
             {
-                recurrenceRule = iOSRule.DaysOfTheWeek.ConvertToDayOfTheWeekList(rule);
+                recurrenceRule = iOSRule.DaysOfTheWeek.ConvertToDayOfTheWeekList(recurrenceRule);
             }
             recurrenceRule.Interval = (uint)iOSRule.Interval;
 
