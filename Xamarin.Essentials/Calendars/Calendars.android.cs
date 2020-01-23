@@ -491,7 +491,8 @@ namespace Xamarin.Essentials
             attendeeValues.Put(CalendarContract.Attendees.InterfaceConsts.AttendeeType, (int)newAttendee.Type);
 
             var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(attendeeUri, attendeeValues);
-            var result = Convert.ToInt32(resultUri.LastPathSegment);
+
+            int.TryParse(resultUri.LastPathSegment, out var result);
 
             return result > 0;
         }
@@ -589,7 +590,8 @@ namespace Xamarin.Essentials
                         {
                             recurranceRule.Frequency = RecurrenceFrequency.YearlyOnDay;
                         }
-                        recurranceRule.WeekOfMonth = (IterationOffset)Convert.ToInt32(iterationOffset.Value);
+                        int.TryParse(iterationOffset.Value.Split(',').FirstOrDefault(), out var result);
+                        recurranceRule.WeekOfMonth = (IterationOffset)result;
                     }
                     switch (day)
                     {
@@ -622,7 +624,8 @@ namespace Xamarin.Essentials
             {
                 var ruleOccurenceMonthDays = rule.Substring(rule.IndexOf("BYMONTHDAY=", StringComparison.Ordinal) + 11);
                 ruleOccurenceMonthDays = ruleOccurenceMonthDays.Contains(";") ? ruleOccurenceMonthDays.Substring(0, ruleOccurenceMonthDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonthDays;
-                recurranceRule.DayOfTheMonth = (uint)Math.Abs(Convert.ToInt32(ruleOccurenceMonthDays.Split(',').FirstOrDefault()));
+                uint.TryParse(ruleOccurenceMonthDays.Split(',').FirstOrDefault(), out recurranceRule.DayOfTheMonth);
+                ruleOccurenceMonthDays = Math.Abs(ruleOccurenceMonthDays);
             }
 
             if (rule.Contains("BYMONTH="))
@@ -636,8 +639,8 @@ namespace Xamarin.Essentials
             {
                 var ruleDayIterationOffset = rule.Substring(rule.IndexOf("BYSETPOS=", StringComparison.Ordinal) + 9);
                 ruleDayIterationOffset = ruleDayIterationOffset.Contains(";") ? ruleDayIterationOffset.Substring(0, ruleDayIterationOffset.IndexOf(";", StringComparison.Ordinal)) : ruleDayIterationOffset;
-                recurranceRule.WeekOfMonth = (IterationOffset)Convert.ToInt32(ruleDayIterationOffset.Split(',').FirstOrDefault());
-
+                int.TryParse(ruleDayIterationOffset.Split(',').FirstOrDefault(), out var result);
+                recurranceRule.WeekOfMonth = (IterationOffset)result;
                 if (recurranceRule.Frequency == RecurrenceFrequency.Monthly)
                 {
                     recurranceRule.Frequency = RecurrenceFrequency.MonthlyOnDay;

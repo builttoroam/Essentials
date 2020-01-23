@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using EventKit;
@@ -242,7 +243,7 @@ namespace Xamarin.Essentials
 
         static RecurrenceRule ConvertToDayOfTheWeekList(this EKRecurrenceDayOfWeek[] recurrenceDays, RecurrenceRule rule)
         {
-            rule.DaysOfTheWeek = recurrenceDays.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList();
+            rule.DaysOfTheWeek = recurrenceDays.ToList().Select(x => (DayOfTheWeek)int.Parse(x.DayOfTheWeek.ToString(CultureInfo.InvariantCulture))).ToList();
 
             foreach (var d in recurrenceDays)
             {
