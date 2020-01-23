@@ -60,7 +60,7 @@ namespace Xamarin.Essentials
                             .OrderBy(e => e.StartDate)
                             .ToList();
 
-            if (eventList.Count == 0 && !string.IsNullOrWhiteSpace(calendarId))
+            if (!eventList.Any() && !string.IsNullOrWhiteSpace(calendarId))
             {
                 await GetCalendarById(calendarId);
             }
