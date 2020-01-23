@@ -17,10 +17,8 @@ namespace Samples.View
         protected override void OnAppearing()
         {
             base.OnAppearing();
-
-            var vm = BindingContext as CalendarViewModel;
-
-            vm?.RefreshCalendars();
+            var viewModel = BindingContext as CalendarViewModel;
+            viewModel?.RefreshCalendars();
         }
 
         async void OnAddCalendarButtonClicked(object sender, EventArgs e)
