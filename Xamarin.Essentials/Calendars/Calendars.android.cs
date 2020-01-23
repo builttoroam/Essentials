@@ -344,7 +344,7 @@ namespace Xamarin.Essentials
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var calendarUri = CalendarContract.Calendars.ContentUri;
-            var cursor = Platform.AppContext.ApplicationContext.ContentResolver;
+            var currentContextContentResolver = Platform.AppContext.ApplicationContext.ContentResolver;
             var calendarValues = new ContentValues();
             calendarValues.Put(CalendarContract.Calendars.InterfaceConsts.AccountName, "Xamarin.Essentials.Calendar");
             calendarValues.Put(CalendarContract.Calendars.InterfaceConsts.AccountType, CalendarContract.AccountTypeLocal);
@@ -358,7 +358,7 @@ namespace Xamarin.Essentials
                     .AppendQueryParameter(CalendarContract.Calendars.InterfaceConsts.AccountName, "Xamarin.Essentials.Calendar")
                     .AppendQueryParameter(CalendarContract.Calendars.InterfaceConsts.AccountType, CalendarContract.AccountTypeLocal)
                     .Build();
-            var result = cursor.Insert(calendarUri, calendarValues);
+            var result = currentContextContentResolver.Insert(calendarUri, calendarValues);
             return result.ToString();
         }
 
