@@ -149,15 +149,14 @@
                    VerticalTextAlignment="End"
                    Grid.Column="3"/>
           </Grid>
-          <StackLayout Orientation="Horizontal"
-                       IsVisible="{Binding IsDaily}"
-                       Grid.Row="2">
-            <Label Text="Every Weekday: "/>
-            <Switch IsToggled="{Binding IsEveryWeekday}"/>
-          </StackLayout>
-          <StackLayout BindableLayout.ItemsSource="{Binding RecurrenceDays}"
-                       IsVisible="{Binding IsWeekly}"
-                       Grid.Row="2">
+        <StackLayout IsVisible="{Binding IsWeekly}"
+                     Grid.Row="2">
+            <Picker x:Name="SelectedRecurrenceDayOfWeekGroup"
+                    Title="Quick Select"
+                    ItemsSource="{Binding RecurrenceDayOfWeekGroup}"
+                    SelectedItem="{Binding SelectedRecurrenceDayOfWeekGroup, Mode=TwoWay}"/>
+            <StackLayout BindableLayout.ItemsSource="{Binding RecurrenceDays, Mode=TwoWay}">
+                
             <BindableLayout.ItemTemplate>
               <DataTemplate x:DataType="viewmodels:DayOfTheWeekSwitch">
                 <Grid>
@@ -176,6 +175,7 @@
               </DataTemplate>
             </BindableLayout.ItemTemplate>
           </StackLayout>
+        </StackLayout>
           <Grid Grid.Row="2"
                 IsVisible="{Binding IsMonthlyOrYearly}">
             <Grid.RowDefinitions>

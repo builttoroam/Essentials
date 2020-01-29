@@ -34,7 +34,7 @@ namespace Samples.ViewModel
             set
             {
                 isChecked = value;
-                OnPropertyChanged();
+                OnPropertyChanged("RecurrenceDays");
             }
         }
 
@@ -45,6 +45,17 @@ namespace Samples.ViewModel
 
     public class CalendarEventAddViewModel : BaseViewModel
     {
+        static readonly ObservableCollection<DayOfTheWeekSwitch> recurrenceNone = new ObservableCollection<DayOfTheWeekSwitch>()
+        {
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Monday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Tuesday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Wednesday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Thursday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Friday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday, IsChecked = false }
+        };
+
         static readonly ObservableCollection<DayOfTheWeekSwitch> recurrenceWeekdays = new ObservableCollection<DayOfTheWeekSwitch>()
         {
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Monday, IsChecked = true },
@@ -54,6 +65,28 @@ namespace Samples.ViewModel
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Friday, IsChecked = true },
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday, IsChecked = false },
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday, IsChecked = false }
+        };
+
+        static readonly ObservableCollection<DayOfTheWeekSwitch> recurrenceWeekEnd = new ObservableCollection<DayOfTheWeekSwitch>()
+        {
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Monday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Tuesday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Wednesday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Thursday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Friday, IsChecked = false },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday, IsChecked = true }
+        };
+
+        static readonly ObservableCollection<DayOfTheWeekSwitch> recurrenceAlldays = new ObservableCollection<DayOfTheWeekSwitch>()
+        {
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Monday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Tuesday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Wednesday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Thursday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Friday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday, IsChecked = true },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday, IsChecked = true }
         };
 
         public CalendarEventAddViewModel(string calendarId, string calendarName, CalendarEvent existingEvent = null)
@@ -281,23 +314,48 @@ namespace Samples.ViewModel
 
         public bool IsYearly => SelectedRecurrenceType == RecurrenceFrequency.Yearly || SelectedRecurrenceType == RecurrenceFrequency.YearlyOnDay;
 
-        bool isEveryWeekday;
-
-        public bool IsEveryWeekday
+        public enum DayOfWeekGroup
         {
-            get => isEveryWeekday;
+            None,
+            Weekday,
+            Weekend,
+            Alldays,
+            Custom
+        }
+
+        public List<DayOfWeekGroup> RecurrenceDayOfWeekGroup { get; } = new List<DayOfWeekGroup>()
+        {
+            DayOfWeekGroup.None,
+            DayOfWeekGroup.Weekday,
+            DayOfWeekGroup.Weekend,
+            DayOfWeekGroup.Alldays,
+            DayOfWeekGroup.Custom
+        };
+
+        DayOfWeekGroup? selectedRecurrenceDayOfWeekGroup = DayOfWeekGroup.None;
+
+        public DayOfWeekGroup? SelectedRecurrenceDayOfWeekGroup
+        {
+            get => selectedRecurrenceDayOfWeekGroup;
             set
             {
-                if (SetProperty(ref isEveryWeekday, value))
+                if (SetProperty(ref selectedRecurrenceDayOfWeekGroup, value))
                 {
-                    if (value)
+                    if (value == DayOfWeekGroup.Weekday)
                     {
-                        RecurrenceInterval = 0;
                         RecurrenceDays = recurrenceWeekdays;
                     }
-                    else
+                    else if (value == DayOfWeekGroup.Weekend)
                     {
-                        RecurrenceInterval = 1;
+                        RecurrenceDays = recurrenceWeekEnd;
+                    }
+                    else if (value == DayOfWeekGroup.Alldays)
+                    {
+                        RecurrenceDays = recurrenceAlldays;
+                    }
+                    else if (value == DayOfWeekGroup.None)
+                    {
+                        RecurrenceDays = recurrenceNone;
                     }
                 }
             }
@@ -328,7 +386,7 @@ namespace Samples.ViewModel
             }
         }
 
-        public ObservableCollection<DayOfTheWeekSwitch> RecurrenceDays { get; set; } = new ObservableCollection<DayOfTheWeekSwitch>()
+        private ObservableCollection<DayOfTheWeekSwitch> recurrenceDays = new ObservableCollection<DayOfTheWeekSwitch>()
         {
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Monday },
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Tuesday },
@@ -338,6 +396,35 @@ namespace Samples.ViewModel
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday },
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday }
         };
+
+        public ObservableCollection<DayOfTheWeekSwitch> RecurrenceDays
+        {
+            get => recurrenceDays;
+            set
+            {
+                if (SetProperty(ref recurrenceDays, value))
+                {
+                    if (value == recurrenceWeekdays)
+                    {
+                        SelectedRecurrenceDayOfWeekGroup = DayOfWeekGroup.Weekday;
+                    }
+                    else if (value == recurrenceWeekEnd)
+                    {
+                        SelectedRecurrenceDayOfWeekGroup = DayOfWeekGroup.Weekend;
+                    }
+                    else if (value == recurrenceAlldays)
+                    {
+                        SelectedRecurrenceDayOfWeekGroup = DayOfWeekGroup.Alldays;
+                    }
+                    else
+                    {
+                        SelectedRecurrenceDayOfWeekGroup = value == recurrenceNone ? DayOfWeekGroup.None : DayOfWeekGroup.Custom;
+                    }
+
+                    OnPropertyChanged(nameof(SelectedRecurrenceDayOfWeekGroup));
+                }
+            }
+        }
 
         public List<RecurrenceFrequency> RecurrenceTypes { get; } = new List<RecurrenceFrequency>()
         {
