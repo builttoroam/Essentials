@@ -71,10 +71,8 @@ namespace Xamarin.Essentials
         }
 
         static async Task<IEnumerable<CalendarEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
-        {
-            await Task.Delay(0);
-
-            // await Permissions.RequestAsync<Permissions.CalendarRead>();
+        { 
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             var sDate = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
             var eDate = endDate ?? sDate.Add(defaultEndTimeFromStartTime);
