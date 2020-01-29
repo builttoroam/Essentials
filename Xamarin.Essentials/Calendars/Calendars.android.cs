@@ -24,6 +24,7 @@ namespace Xamarin.Essentials
         const string bySetPosSearch = "BYSETPOS=";
         const string byIntervalSearch = "INTERVAL=";
         const string byCountSearch = "COUNT=";
+        const string byUntilSearch = "UNTIL=";
 
         static async Task<IEnumerable<Calendar>> PlatformGetCalendarsAsync()
         {
@@ -384,7 +385,7 @@ namespace Xamarin.Essentials
             var eventValues = SetupContentValues(newEvent);
 
             var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
-            if (int.TryParse(resultUri.LastPathSegment, out result))
+            if (int.TryParse(resultUri?.LastPathSegment, out result))
             {
                 return result.ToString();
             }
@@ -408,10 +409,12 @@ namespace Xamarin.Essentials
             {
                 await DeleteCalendarEventById(thisEvent.Id, thisEvent.CalendarId);
                 var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
-                if (int.TryParse(resultUri.LastPathSegment, out var result))
+                if (int.TryParse(resultUri?.LastPathSegment, out var result))
                 {
                     return true;
                 }
+
+                return false;
             }
             else if (Platform.AppContext.ApplicationContext.ContentResolver.Update(eventUri, eventValues, $"{CalendarContract.Attendees.InterfaceConsts.Id}={eventToUpdate.Id}", null) > 0)
             {
@@ -451,7 +454,7 @@ namespace Xamarin.Essentials
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Status, (int)EventsStatus.Canceled);
 
             var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
-            if (int.TryParse(resultUri.LastPathSegment, out var result))
+            if (int.TryParse(resultUri?.LastPathSegment, out var result))
             {
                 return result > 0;
             }
@@ -501,9 +504,12 @@ namespace Xamarin.Essentials
 
             var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(attendeeUri, attendeeValues);
 
-            int.TryParse(resultUri.LastPathSegment, out var result);
+            if (int.TryParse(resultUri?.LastPathSegment, out var result))
+            {
+                return result > 0;
+            }
 
-            return result > 0;
+            return false;
         }
 
         static async Task<bool> PlatformRemoveAttendeeFromEvent(CalendarEventAttendee newAttendee, string eventId)
@@ -530,7 +536,7 @@ namespace Xamarin.Essentials
         static RecurrenceRule GetRecurranceRuleForEvent(string rule)
         {
             var recurranceRule = new RecurrenceRule();
-            if (rule.Contains(byFrequencySearch))
+            if (rule.Contains(byFrequencySearch, StringComparison.Ordinal))
             {
                 var ruleFrequency = rule.Substring(rule.IndexOf(byFrequencySearch, StringComparison.Ordinal) + byFrequencySearch.Length);
                 ruleFrequency = ruleFrequency.Contains(";") ? ruleFrequency.Substring(0, ruleFrequency.IndexOf(";")) : ruleFrequency;
@@ -551,7 +557,7 @@ namespace Xamarin.Essentials
                 }
             }
 
-            if (rule.Contains(byIntervalSearch))
+            if (rule.Contains(byIntervalSearch, StringComparison.Ordinal))
             {
                 var ruleInterval = rule.Substring(rule.IndexOf(byIntervalSearch, StringComparison.Ordinal) + byIntervalSearch.Length);
                 ruleInterval = ruleInterval.Contains(";") ? ruleInterval.Substring(0, ruleInterval.IndexOf(";", StringComparison.Ordinal)) : ruleInterval;
@@ -562,21 +568,21 @@ namespace Xamarin.Essentials
                 recurranceRule.Interval = 1;
             }
 
-            if (rule.Contains("COUNT="))
+            if (rule.Contains(byCountSearch, StringComparison.Ordinal))
             {
-                var ruleOccurences = rule.Substring(rule.IndexOf("COUNT=", StringComparison.Ordinal) + 6);
+                var ruleOccurences = rule.Substring(rule.IndexOf(byCountSearch, StringComparison.Ordinal) + byCountSearch.Length);
                 ruleOccurences = ruleOccurences.Contains(";") ? ruleOccurences.Substring(0, ruleOccurences.IndexOf(";", StringComparison.Ordinal)) : ruleOccurences;
                 recurranceRule.TotalOccurrences = uint.Parse(ruleOccurences);
             }
 
-            if (rule.Contains("UNTIL="))
+            if (rule.Contains(byUntilSearch, StringComparison.Ordinal))
             {
-                var ruleEndDate = rule.Substring(rule.IndexOf("UNTIL=", StringComparison.Ordinal) + 6);
+                var ruleEndDate = rule.Substring(rule.IndexOf(byUntilSearch, StringComparison.Ordinal) + byUntilSearch.Length);
                 ruleEndDate = ruleEndDate.Contains(";") ? ruleEndDate.Substring(0, ruleEndDate.IndexOf(";", StringComparison.Ordinal)) : ruleEndDate;
                 recurranceRule.EndDate = DateTimeOffset.ParseExact(ruleEndDate.Replace("T", string.Empty).Replace("Z", string.Empty), "yyyyMMddHHmmss", null);
             }
 
-            if (rule.Contains(byDaySearch))
+            if (rule.Contains(byDaySearch, StringComparison.Ordinal))
             {
                 var ruleOccurenceDays = rule.Substring(rule.IndexOf(byDaySearch, StringComparison.Ordinal) + byDaySearch.Length);
                 ruleOccurenceDays = ruleOccurenceDays.Contains(";") ? ruleOccurenceDays.Substring(0, ruleOccurenceDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceDays;
@@ -629,7 +635,7 @@ namespace Xamarin.Essentials
                 }
             }
 
-            if (rule.Contains(byMonthDaySearch))
+            if (rule.Contains(byMonthDaySearch, StringComparison.Ordinal))
             {
                 var ruleOccurenceMonthDays = rule?.Substring(rule.IndexOf(byMonthDaySearch, StringComparison.Ordinal) + byMonthDaySearch.Length);
                 ruleOccurenceMonthDays = ruleOccurenceMonthDays.Contains(";") ? ruleOccurenceMonthDays.Substring(0, ruleOccurenceMonthDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonthDays;
@@ -637,14 +643,14 @@ namespace Xamarin.Essentials
                 recurranceRule.DayOfTheMonth = result;
             }
 
-            if (rule.Contains(byMonthSearch))
+            if (rule.Contains(byMonthSearch, StringComparison.Ordinal))
             {
                 var ruleOccurenceMonths = rule.Substring(rule.IndexOf(byMonthSearch, StringComparison.Ordinal) + byMonthSearch.Length);
                 ruleOccurenceMonths = ruleOccurenceMonths.Contains(";") ? ruleOccurenceMonths.Substring(0, ruleOccurenceMonths.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceMonths;
                 recurranceRule.MonthOfTheYear = (MonthOfYear)Convert.ToUInt32(ruleOccurenceMonths.Split(',').FirstOrDefault());
             }
 
-            if (rule.Contains(bySetPosSearch))
+            if (rule.Contains(bySetPosSearch, StringComparison.Ordinal))
             {
                 var ruleDayIterationOffset = rule.Substring(rule.IndexOf(bySetPosSearch, StringComparison.Ordinal) + bySetPosSearch.Length);
                 ruleDayIterationOffset = ruleDayIterationOffset.Contains(";") ? ruleDayIterationOffset.Substring(0, ruleDayIterationOffset.IndexOf(";", StringComparison.Ordinal)) : ruleDayIterationOffset;
