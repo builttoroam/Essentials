@@ -60,7 +60,7 @@ namespace Xamarin.Essentials
                     return false;
             }
         }
-      
+
         static async Task<IEnumerable<CalendarEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequestAsync<Permissions.CalendarRead>();
@@ -84,7 +84,7 @@ namespace Xamarin.Essentials
 
             var instancesUri = instanceUriBuilder.Build();
             var calendarSpecificEvent = string.Empty;
-          
+
             if (!string.IsNullOrEmpty(calendarId))
             {
                 // Android event ids are always integers
@@ -383,7 +383,7 @@ namespace Xamarin.Essentials
             var thisEvent = await GetEventByIdAsync(eventToUpdate.Id);
 
             var eventUri = CalendarContract.Events.ContentUri;
-            var eventValues = SetupContentValues(eventToUpdate);
+            var eventValues = SetupContentValues(eventToUpdate, true);
 
             if (string.IsNullOrEmpty(eventToUpdate.CalendarId) || thisEvent == null)
             {
@@ -405,7 +405,7 @@ namespace Xamarin.Essentials
             throw new ArgumentException("[Android]: Could not update appointment with supplied parameters");
         }
 
-        static ContentValues SetupContentValues(CalendarEvent newEvent)
+        static ContentValues SetupContentValues(CalendarEvent newEvent, bool existingEvent = false)
         {
             var eventValues = new ContentValues();
             eventValues.Put(CalendarContract.Events.InterfaceConsts.CalendarId, newEvent.CalendarId);
@@ -418,8 +418,17 @@ namespace Xamarin.Essentials
             eventValues.Put(CalendarContract.Events.InterfaceConsts.Dtend, newEvent.EndDate.HasValue ? newEvent.EndDate.Value.ToUnixTimeMilliseconds().ToString() : newEvent.StartDate.AddDays(1).ToUnixTimeMilliseconds().ToString());
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventTimezone, TimeZoneInfo.Local.Id);
             eventValues.Put(CalendarContract.Events.InterfaceConsts.EventEndTimezone, TimeZoneInfo.Local.Id);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Deleted, 0);
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Rrule, newEvent.RecurrancePattern.ConvertRule());
+            if (newEvent.RecurrancePattern != null)
+            {
+                eventValues.Put(CalendarContract.Events.InterfaceConsts.Rrule, newEvent.RecurrancePattern.ConvertRule());
+            }
+            else if (existingEvent)
+            {
+                eventValues.PutNull(CalendarContract.Events.InterfaceConsts.Rrule);
+                eventValues.PutNull(CalendarContract.Events.InterfaceConsts.Duration);
+                eventValues.Put(CalendarContract.Events.InterfaceConsts.Deleted, 0);
+            }
+
             return eventValues;
         }
 

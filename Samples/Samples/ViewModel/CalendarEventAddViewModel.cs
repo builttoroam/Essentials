@@ -278,7 +278,7 @@ namespace Samples.ViewModel
         public bool DisplayTimeInformation => !AllDay && !CanAlterRecurrence;
 
         // Recurrence Setup
-        public bool CanAlterRecurrence => SelectedRecurrenceType != null;
+        public bool CanAlterRecurrence => SelectedRecurrenceType != null && SelectedRecurrenceType != RecurrenceFrequency.None;
 
         public bool IsDaily => SelectedRecurrenceType == RecurrenceFrequency.Daily;
 
@@ -348,6 +348,7 @@ namespace Samples.ViewModel
 
         public List<RecurrenceFrequency> RecurrenceTypes { get; } = new List<RecurrenceFrequency>()
         {
+            RecurrenceFrequency.None,
             RecurrenceFrequency.Daily,
             RecurrenceFrequency.Weekly,
             RecurrenceFrequency.Monthly,
