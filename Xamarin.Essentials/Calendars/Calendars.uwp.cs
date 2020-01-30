@@ -436,14 +436,31 @@ namespace Xamarin.Essentials
         static async Task<bool> PlatformDeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc)
         {
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
+            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
 
             if (string.IsNullOrEmpty(eventId))
             {
                 throw new ArgumentException("[UWP]: You must supply an event id to delete an event.");
             }
-            var calendarEvent = await GetEventInstanceByIdAsync(eventId, dateOfInstanceUtc);
 
-            if (calendarEvent.CalendarId != calendarId)
+            Appointment uwpAppointment;
+            try
+            {
+                uwpAppointment = await instance.GetAppointmentInstanceAsync(eventId, dateOfInstanceUtc);
+            }
+            catch (ArgumentException)
+            {
+                if (string.IsNullOrWhiteSpace(eventId))
+                {
+                    throw new ArgumentException($"[UWP]: No Event found for event Id {eventId}");
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException($"[UWP]: No Event found for event Id {eventId}");
+                }
+            }
+
+            if (uwpAppointment.CalendarId != calendarId)
             {
                 throw new ArgumentOutOfRangeException("[UWP]: Supplied event does not belong to supplied calendar");
             }
@@ -451,7 +468,7 @@ namespace Xamarin.Essentials
             var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
             var rect = new Windows.Foundation.Rect(0, 0, mainDisplayInfo.Width, mainDisplayInfo.Height);
 
-            if (await AppointmentManager.ShowRemoveAppointmentAsync(calendarEvent.Id, rect, Windows.UI.Popups.Placement.Default, calendarEvent.StartDate))
+            if (await AppointmentManager.ShowRemoveAppointmentAsync(uwpAppointment.LocalId, rect, Windows.UI.Popups.Placement.Default, uwpAppointment.OriginalStartTime.Value))
             {
                 return true;
             }
