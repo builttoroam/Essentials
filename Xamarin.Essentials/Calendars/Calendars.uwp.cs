@@ -322,7 +322,7 @@ namespace Xamarin.Essentials
             var existingEvent = await GetEventByIdAsync(eventToUpdate.Id);
 
             Appointment thisEvent = null;
-            var instance = await CalendarRequest.GetInstanceAsync();
+            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
             if (string.IsNullOrEmpty(eventToUpdate.CalendarId) || existingEvent == null)
             {
                 return false;
@@ -487,7 +487,7 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
-            var instance = await CalendarRequest.GetInstanceAsync();
+            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
 
             var calendarEvent = await instance.GetAppointmentAsync(eventId);
             var calendar = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
@@ -506,7 +506,7 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
-            var instance = await CalendarRequest.GetInstanceAsync();
+            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
 
             var calendarEvent = await instance.GetAppointmentAsync(eventId);
             var calendar = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
