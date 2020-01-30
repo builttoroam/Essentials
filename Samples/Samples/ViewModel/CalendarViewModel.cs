@@ -68,19 +68,7 @@ namespace Samples.ViewModel
 
         public bool HasCalendarReadAccess { get; set; }
 
-        ObservableCollection<Calendar> calendarList = new ObservableCollection<Calendar>();
-
-        public ObservableCollection<Calendar> CalendarList
-        {
-            get => calendarList;
-            set
-            {
-                if (value != null)
-                {
-                    calendarList = new ObservableCollection<Calendar>(value);
-                }
-            }
-        }
+        public ObservableCollection<Calendar> CalendarList { get; } = new ObservableCollection<Calendar>();
 
         public ObservableCollection<CalendarEvent> EventList { get; } = new ObservableCollection<CalendarEvent>();
 
