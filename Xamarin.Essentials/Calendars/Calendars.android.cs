@@ -427,14 +427,14 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
-            var eventInstanceDeletion = new List<string>
-            {
-                CalendarContract.Instances.EventId,
-                CalendarContract.Events.InterfaceConsts.Rrule,
-                CalendarContract.Events.InterfaceConsts.LastDate,
-                CalendarContract.Instances.Begin,
-                CalendarContract.Instances.End
-            };
+            // var eventInstanceDeletion = new List<string>
+            // {
+            //    CalendarContract.Instances.EventId,
+            //    CalendarContract.Events.InterfaceConsts.Rrule,
+            //    CalendarContract.Events.InterfaceConsts.LastDate,
+            //    CalendarContract.Instances.Begin,
+            //    CalendarContract.Instances.End
+            // };
 
             var thisEvent = await GetEventInstanceByIdAsync(eventId, dateOfInstanceUtc);
             var eventUri = ContentUris.WithAppendedId(CalendarContract.Events.ContentExceptionUri, long.Parse(eventId));
