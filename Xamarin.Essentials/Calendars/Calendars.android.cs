@@ -427,13 +427,36 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
+            var eventInstanceDeletion = new List<string>
+            {
+                CalendarContract.Instances.EventId,
+                CalendarContract.Events.InterfaceConsts.Rrule,
+                CalendarContract.Events.InterfaceConsts.LastDate,
+                CalendarContract.Instances.Begin,
+                CalendarContract.Instances.End
+            };
+
             var thisEvent = await GetEventInstanceByIdAsync(eventId, dateOfInstanceUtc);
-
             var eventUri = ContentUris.WithAppendedId(CalendarContract.Events.ContentExceptionUri, long.Parse(eventId));
-
             var eventValues = new ContentValues();
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.OriginalInstanceTime, thisEvent.StartDate.ToUnixTimeMilliseconds());
-            eventValues.Put(CalendarContract.Events.InterfaceConsts.Status, (int)EventsStatus.Canceled);
+
+            // var currentContextContentResolver = Platform.AppContext.ApplicationContext.ContentResolver;
+            // using (var instanceQuery = CalendarContract.Instances.Query(currentContextContentResolver, eventInstanceDeletion.ToArray(), dateOfInstanceUtc.ToUnixTimeMilliseconds(), dateOfInstanceUtc.AddDays(1).ToUnixTimeMilliseconds()))
+            // {
+            //     while (instanceQuery.MoveToNext())
+            //     {
+            //         var foundEventId = instanceQuery.GetLong(eventInstanceDeletion.IndexOf(CalendarContract.Instances.EventId));
+            //         if (foundEventId == long.Parse(eventId))
+            //         {
+            //             eventValues.Put(CalendarContract.Events.InterfaceConsts.OriginalInstanceTime, instanceQuery.GetLong(eventInstanceDeletion.IndexOf(CalendarContract.Instances.Begin)));
+            //             eventValues.Put(CalendarContract.Events.InterfaceConsts.Status, (int)EventsStatus.Canceled);
+            //             break;
+            //         }
+            //     }
+            // }
+
+            eventValues.Put(CalendarContract.EventsColumns.OriginalInstanceTime, thisEvent.StartDate.ToUnixTimeMilliseconds());
+            eventValues.Put(CalendarContract.EventsColumns.Status, (int)EventsStatus.Canceled);
 
             var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(eventUri, eventValues);
             if (int.TryParse(resultUri.LastPathSegment, out var result))
