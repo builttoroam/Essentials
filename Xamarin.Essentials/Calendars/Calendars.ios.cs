@@ -383,7 +383,7 @@ namespace Xamarin.Essentials
 
         static EKRecurrenceDayOfWeek[] ConvertToiOS(this List<DayOfTheWeek> daysOfTheWeek)
         {
-            if (daysOfTheWeek == null || daysOfTheWeek.Count == 0)
+            if (daysOfTheWeek == null || !daysOfTheWeek.Any())
                 return null;
 
             var toReturn = new List<EKRecurrenceDayOfWeek>();

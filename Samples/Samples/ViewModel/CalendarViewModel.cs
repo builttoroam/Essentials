@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -67,19 +68,7 @@ namespace Samples.ViewModel
 
         public bool HasCalendarReadAccess { get; set; }
 
-        ObservableCollection<Calendar> calendarList = new ObservableCollection<Calendar>();
-
-        public ObservableCollection<Calendar> CalendarList
-        {
-            get => calendarList;
-            set
-            {
-                if (value != null)
-                {
-                    calendarList = new ObservableCollection<Calendar>(value);
-                }
-            }
-        }
+        public ObservableCollection<Calendar> CalendarList { get; } = new ObservableCollection<Calendar>();
 
         public ObservableCollection<CalendarEvent> EventList { get; } = new ObservableCollection<CalendarEvent>();
 
@@ -177,7 +166,7 @@ namespace Samples.ViewModel
         {
             startDate = StartDatePickersEnabled && !startDate.HasValue ? (DateTime?)StartDate.Date + StartTime : startDate;
             endDate = (EndDatePickersEnabled && !endDate.HasValue) ? (DateTime?)EndDate.Date + EndTime : endDate;
-            if (CalendarList.Count == 0)
+            if (!CalendarList.Any())
                 return;
 
             EventList.Clear();
