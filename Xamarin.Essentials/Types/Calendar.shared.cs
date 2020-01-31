@@ -81,7 +81,7 @@ namespace Xamarin.Essentials
         public RecurrenceFrequency? Frequency { get; set; }
 
         // Only allow event to occur on these days [not available for daily]
-        public List<DayOfTheWeek> DaysOfTheWeek { get; set; }
+        public List<CalendarDayOfWeek> DaysOfTheWeek { get; set; }
 
         public uint DayOfTheMonth { get; set; }
 
@@ -100,15 +100,15 @@ namespace Xamarin.Essentials
         YearlyOnDay = 5
     }
 
-    public enum DayOfTheWeek
+    public enum CalendarDayOfWeek
     {
         Sunday = 1,
         Monday = 2,
-        Tuesday = 3,
-        Wednesday = 4,
-        Thursday = 5,
-        Friday = 6,
-        Saturday = 7
+        Tuesday = 4,
+        Wednesday = 8,
+        Thursday = 16,
+        Friday = 32,
+        Saturday = 64
     }
 
     public enum MonthOfYear

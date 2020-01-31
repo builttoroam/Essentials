@@ -123,18 +123,18 @@ namespace Xamarin.Essentials
                 {
                     case RecurrenceFrequency.Daily:
                     case RecurrenceFrequency.Weekly:
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (CalendarDayOfWeek)x + 1).ToList();
                         break;
                     case RecurrenceFrequency.MonthlyOnDay:
                         rules.WeekOfMonth = (IterationOffset)uwpAppointment.Recurrence.WeekOfMonth;
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (CalendarDayOfWeek)x + 1).ToList();
                         break;
                     case RecurrenceFrequency.Monthly:
                         rules.DayOfTheMonth = uwpAppointment.Recurrence.Day;
                         break;
                     case RecurrenceFrequency.YearlyOnDay:
                         rules.WeekOfMonth = (IterationOffset)uwpAppointment.Recurrence.WeekOfMonth;
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (CalendarDayOfWeek)x + 1).ToList();
                         break;
                     case RecurrenceFrequency.Yearly:
                         rules.DayOfTheMonth = uwpAppointment.Recurrence.Day;
@@ -194,18 +194,18 @@ namespace Xamarin.Essentials
                 {
                     case RecurrenceFrequency.Daily:
                     case RecurrenceFrequency.Weekly:
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (CalendarDayOfWeek)x + 1).ToList();
                         break;
                     case RecurrenceFrequency.MonthlyOnDay:
                         rules.WeekOfMonth = (IterationOffset)uwpAppointment.Recurrence.WeekOfMonth;
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (CalendarDayOfWeek)x + 1).ToList();
                         break;
                     case RecurrenceFrequency.Monthly:
                         rules.DayOfTheMonth = uwpAppointment.Recurrence.Day;
                         break;
                     case RecurrenceFrequency.YearlyOnDay:
                         rules.WeekOfMonth = (IterationOffset)uwpAppointment.Recurrence.WeekOfMonth;
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (CalendarDayOfWeek)x + 1).ToList();
                         rules.MonthOfTheYear = (MonthOfYear)uwpAppointment.Recurrence.Month;
                         break;
                     case RecurrenceFrequency.Yearly:
@@ -384,7 +384,7 @@ namespace Xamarin.Essentials
                 case RecurrenceFrequency.Weekly:
                     if (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0)
                     {
-                        eventRecurrence.DaysOfWeek = recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0 ? (AppointmentDaysOfWeek)ConvertIntListToBitFlag(recurrenceRule.DaysOfTheWeek.ConvertAll(delegate(DayOfTheWeek x) { return (int)x; })) : 0;
+                        eventRecurrence.DaysOfWeek = recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0 ? (AppointmentDaysOfWeek)ConvertIntListToBitFlag(recurrenceRule.DaysOfTheWeek.ConvertAll(delegate(CalendarDayOfWeek x) { return (int)x; })) : 0;
                         eventRecurrence.Unit = AppointmentRecurrenceUnit.Weekly;
                     }
                     break;
@@ -392,7 +392,7 @@ namespace Xamarin.Essentials
                 case RecurrenceFrequency.MonthlyOnDay:
                     if (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0)
                     {
-                        eventRecurrence.DaysOfWeek = (AppointmentDaysOfWeek)ConvertIntListToBitFlag(recurrenceRule.DaysOfTheWeek.ConvertAll(delegate(DayOfTheWeek x) { return (int)x; }));
+                        eventRecurrence.DaysOfWeek = (AppointmentDaysOfWeek)ConvertIntListToBitFlag(recurrenceRule.DaysOfTheWeek.ConvertAll(delegate(CalendarDayOfWeek x) { return (int)x; }));
                         eventRecurrence.WeekOfMonth = (AppointmentWeekOfMonth)recurrenceRule.WeekOfMonth;
                         eventRecurrence.Unit = AppointmentRecurrenceUnit.MonthlyOnDay;
                     }
@@ -406,7 +406,7 @@ namespace Xamarin.Essentials
                     if (recurrenceRule.DaysOfTheWeek != null && recurrenceRule.DaysOfTheWeek.Count > 0)
                     {
                         eventRecurrence.WeekOfMonth = (AppointmentWeekOfMonth)recurrenceRule.WeekOfMonth;
-                        eventRecurrence.DaysOfWeek = (AppointmentDaysOfWeek)ConvertIntListToBitFlag(recurrenceRule.DaysOfTheWeek.ConvertAll(delegate(DayOfTheWeek x) { return (int)x; }));
+                        eventRecurrence.DaysOfWeek = (AppointmentDaysOfWeek)ConvertIntListToBitFlag(recurrenceRule.DaysOfTheWeek.ConvertAll(delegate(CalendarDayOfWeek x) { return (int)x; }));
                         eventRecurrence.Unit = AppointmentRecurrenceUnit.YearlyOnDay;
                     }
                     else

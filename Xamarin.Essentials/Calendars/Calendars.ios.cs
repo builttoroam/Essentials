@@ -196,7 +196,7 @@ namespace Xamarin.Essentials
             recurrenceRule.Frequency = (RecurrenceFrequency)iOSRule.Frequency;
             if (iOSRule.DaysOfTheWeek != null)
             {
-                recurrenceRule = iOSRule.DaysOfTheWeek.ConvertToDayOfTheWeekList(recurrenceRule);
+                recurrenceRule = iOSRule.DaysOfTheWeek.ConvertToCalendarDayOfWeekList(recurrenceRule);
             }
             recurrenceRule.Interval = (uint)iOSRule.Interval;
 
@@ -240,9 +240,9 @@ namespace Xamarin.Essentials
             return recurrenceRule;
         }
 
-        static RecurrenceRule ConvertToDayOfTheWeekList(this EKRecurrenceDayOfWeek[] recurrenceDays, RecurrenceRule rule)
+        static RecurrenceRule ConvertToCalendarDayOfWeekList(this EKRecurrenceDayOfWeek[] recurrenceDays, RecurrenceRule rule)
         {
-            rule.DaysOfTheWeek = recurrenceDays.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList();
+            rule.DaysOfTheWeek = recurrenceDays.ToList().Select(x => (CalendarDayOfWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList();
 
             foreach (var day in recurrenceDays)
             {
@@ -381,7 +381,7 @@ namespace Xamarin.Essentials
             }
         }
 
-        static EKRecurrenceDayOfWeek[] ConvertToiOS(this List<DayOfTheWeek> daysOfTheWeek)
+        static EKRecurrenceDayOfWeek[] ConvertToiOS(this List<CalendarDayOfWeek> daysOfTheWeek)
         {
             if (daysOfTheWeek == null || daysOfTheWeek.Count == 0)
                 return null;
@@ -396,7 +396,7 @@ namespace Xamarin.Essentials
 
         static NSNumber[] ConvertToiOS(this int dayOfTheMonth) => new NSNumber[1] { dayOfTheMonth };
 
-        static EKDay ConvertToiOS(this DayOfTheWeek day) => (EKDay)day;
+        static EKDay ConvertToiOS(this CalendarDayOfWeek day) => (EKDay)day;
 
         static EKRecurrenceRule ConvertRule(this RecurrenceRule recurrenceRule) => new EKRecurrenceRule(
                 type: recurrenceRule.Frequency.ConvertToiOS(),

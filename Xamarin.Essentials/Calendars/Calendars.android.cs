@@ -60,7 +60,7 @@ namespace Xamarin.Essentials
                     return false;
             }
         }
-      
+
         static async Task<IEnumerable<CalendarEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
         {
             await Permissions.RequestAsync<Permissions.CalendarRead>();
@@ -84,7 +84,6 @@ namespace Xamarin.Essentials
 
             var instancesUri = instanceUriBuilder.Build();
             var calendarSpecificEvent = string.Empty;
-          
             if (!string.IsNullOrEmpty(calendarId))
             {
                 // Android event ids are always integers
@@ -564,7 +563,7 @@ namespace Xamarin.Essentials
             {
                 var ruleOccurenceDays = rule.Substring(rule.IndexOf("BYDAY=", StringComparison.Ordinal) + 6);
                 ruleOccurenceDays = ruleOccurenceDays.Contains(";") ? ruleOccurenceDays.Substring(0, ruleOccurenceDays.IndexOf(";", StringComparison.Ordinal)) : ruleOccurenceDays;
-                recurranceRule.DaysOfTheWeek = new List<DayOfTheWeek>();
+                recurranceRule.DaysOfTheWeek = new List<CalendarDayOfWeek>();
                 foreach (var ruleOccurenceDay in ruleOccurenceDays.Split(','))
                 {
                     var day = ruleOccurenceDay;
@@ -588,25 +587,25 @@ namespace Xamarin.Essentials
                     switch (day)
                     {
                         case "MO":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Monday);
+                            recurranceRule.DaysOfTheWeek.Add(CalendarDayOfWeek.Monday);
                             break;
                         case "TU":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Tuesday);
+                            recurranceRule.DaysOfTheWeek.Add(CalendarDayOfWeek.Tuesday);
                             break;
                         case "WE":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Wednesday);
+                            recurranceRule.DaysOfTheWeek.Add(CalendarDayOfWeek.Wednesday);
                             break;
                         case "TH":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Thursday);
+                            recurranceRule.DaysOfTheWeek.Add(CalendarDayOfWeek.Thursday);
                             break;
                         case "FR":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Friday);
+                            recurranceRule.DaysOfTheWeek.Add(CalendarDayOfWeek.Friday);
                             break;
                         case "SA":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Saturday);
+                            recurranceRule.DaysOfTheWeek.Add(CalendarDayOfWeek.Saturday);
                             break;
                         case "SU":
-                            recurranceRule.DaysOfTheWeek.Add(DayOfTheWeek.Sunday);
+                            recurranceRule.DaysOfTheWeek.Add(CalendarDayOfWeek.Sunday);
                             break;
                     }
                 }
@@ -709,29 +708,29 @@ namespace Xamarin.Essentials
             return eventRecurrence.Substring(0, eventRecurrence.Length - 1);
         }
 
-        static string ToShortString(this DayOfTheWeek day)
+        static string ToShortString(this CalendarDayOfWeek day)
         {
             switch (day)
             {
-                case DayOfTheWeek.Monday:
+                case CalendarDayOfWeek.Monday:
                     return "MO";
-                case DayOfTheWeek.Tuesday:
+                case CalendarDayOfWeek.Tuesday:
                     return "TU";
-                case DayOfTheWeek.Wednesday:
+                case CalendarDayOfWeek.Wednesday:
                     return "WE";
-                case DayOfTheWeek.Thursday:
+                case CalendarDayOfWeek.Thursday:
                     return "TH";
-                case DayOfTheWeek.Friday:
+                case CalendarDayOfWeek.Friday:
                     return "FR";
-                case DayOfTheWeek.Saturday:
+                case CalendarDayOfWeek.Saturday:
                     return "SA";
-                case DayOfTheWeek.Sunday:
+                case CalendarDayOfWeek.Sunday:
                     return "SU";
             }
             return "INVALID";
         }
 
-        static string ToDayString(this List<DayOfTheWeek> dayList)
+        static string ToDayString(this List<CalendarDayOfWeek> dayList)
         {
             var toReturn = string.Empty;
             foreach (var day in dayList)

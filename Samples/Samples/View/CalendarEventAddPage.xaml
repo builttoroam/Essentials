@@ -158,7 +158,7 @@
             <StackLayout BindableLayout.ItemsSource="{Binding RecurrenceDays, Mode=TwoWay}">
                 
             <BindableLayout.ItemTemplate>
-              <DataTemplate x:DataType="viewmodels:DayOfTheWeekSwitch">
+              <DataTemplate x:DataType="viewmodels:CalendarDayOfWeekSwitch">
                 <Grid>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition />
