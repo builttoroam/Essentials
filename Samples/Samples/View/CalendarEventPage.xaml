@@ -131,30 +131,30 @@
         <Grid Grid.Row="5">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition/>
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto"/>
           </Grid.ColumnDefinitions>
-          <Label Text="Reminders: "/>
-          <StackLayout Grid.Row="0"
-                       Grid.Column="1"
-                       BindableLayout.ItemsSource="{Binding Reminders}">
-            <BindableLayout.ItemTemplate>
-              <DataTemplate x:DataType="essentials:CalendarEventReminder">
-                <Grid>
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition Width="Auto"/>
-                  </Grid.ColumnDefinitions>
-                  <Label Text="{Binding MinutesPriorToEventStart, Converter={StaticResource ReminderTextConverter}}"/>
-                  <Button Grid.Column="1"
-                          Margin="0,0,15,0"
-                          BackgroundColor="Red"
-                          Text=" - "
-                          Clicked="OnRemoveReminderFromEventButtonClicked"/>
-                </Grid>
-              </DataTemplate>
-            </BindableLayout.ItemTemplate>
-          </StackLayout>
-        </Grid>
+            <Label Text="Reminder: "
+                   Grid.Column="0"/>
+            <Entry x:Name="Reminder"
+                   Placeholder="X Minutes..."
+                   Text="{Binding Reminder.MinutesPriorToEventStart}"
+                   Grid.Column="1"
+                   IsVisible="{Binding HasReminder, Converter={StaticResource NegativeConverter}}"/>
+            <Button Text="Add"
+                    Grid.Column="2"
+                    Clicked="OnAddReminderFromEventButtonClicked"
+                    IsVisible="{Binding HasReminder, Converter={StaticResource NegativeConverter}}"/>
+            <Label Text="{Binding Reminder.MinutesPriorToEventStart, Converter={StaticResource ReminderTextConverter}}"
+                   Grid.Column="1"
+                   IsVisible="{Binding HasReminder}"/>
+            <Button Grid.Column="2"
+                    Margin="0,0,15,0"
+                    BackgroundColor="Red"
+                    Text=" - "
+                    Clicked="OnRemoveReminderFromEventButtonClicked"
+                    IsVisible="{Binding HasReminder}"/>
+            </Grid>
         <ScrollView Grid.Row="6">
           <Grid>
             <Grid.ColumnDefinitions>

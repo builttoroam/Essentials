@@ -46,7 +46,9 @@ namespace Xamarin.Essentials
 
         public IEnumerable<CalendarEventAttendee> Attendees { get; set; }
 
-        public IEnumerable<CalendarEventReminder> Reminders { get; set; }
+        public bool HasReminder => Reminder != null;
+
+        public CalendarEventReminder Reminder { get; set; }
 
         public RecurrenceRule RecurrancePattern { get; set; }
     }

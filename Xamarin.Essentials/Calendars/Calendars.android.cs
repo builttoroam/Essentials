@@ -218,7 +218,7 @@ namespace Xamarin.Essentials
                         EndDate = eventEndDate,
                         Attendees = GetAttendeesForEvent(eventId, currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Organizer))),
                         RecurrancePattern = !string.IsNullOrEmpty(currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) ? GetRecurranceRuleForEvent(currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) : null,
-                        Reminders = GetRemindersForEvent(eventId)
+                        Reminder = GetRemindersForEvent(eventId)
                     };
                     return eventResult;
                 }
@@ -276,7 +276,7 @@ namespace Xamarin.Essentials
                         EndDate = eventEndDate,
                         Attendees = GetAttendeesForEvent(eventId, currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Organizer))),
                         RecurrancePattern = !string.IsNullOrEmpty(currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) ? GetRecurranceRuleForEvent(currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) : null,
-                        Reminders = GetRemindersForEvent(eventId)
+                        Reminder = GetRemindersForEvent(eventId)
                     };
                 }
                 throw new ArgumentOutOfRangeException($"[Android]: No Event found for event Id {eventId}");
@@ -310,7 +310,7 @@ namespace Xamarin.Essentials
             return attendees.OrderByDescending(x => x.IsOrganizer);
         }
 
-        static IEnumerable<CalendarEventReminder> GetRemindersForEvent(string eventId)
+        static CalendarEventReminder GetRemindersForEvent(string eventId)
         {
             var remindersUri = CalendarContract.Reminders.ContentUri;
             var remindersProjection = new List<string>
@@ -330,7 +330,7 @@ namespace Xamarin.Essentials
                     });
                 }
             }
-            return reminders;
+            return reminders.First();
         }
 
         static async Task<string> PlatformCreateCalendar(Calendar newCalendar)
@@ -749,5 +749,9 @@ namespace Xamarin.Essentials
             }
             return toReturn.Substring(0, toReturn.Length - 1);
         }
+
+        static Task<bool> PlatformAddReminderToEvent(CalendarEventReminder calendarEventReminder, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+        static Task<bool> PlatformReminderFromEvent(string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

@@ -44,7 +44,7 @@ namespace Xamarin.Essentials
             if (eDate < sDate)
                 eDate = sDate;
 
-            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
+            var instance = await CalendarRequest.GetInstanceAsync();
             var events = await instance.FindAppointmentsAsync(sDate, eDate.Subtract(sDate), options);
 
             var eventList = (from e in events
@@ -70,7 +70,7 @@ namespace Xamarin.Essentials
 
         static async Task<Calendar> GetCalendarById(string calendarId)
         {
-            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
+            var instance = await CalendarRequest.GetInstanceAsync();
             var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
 
             var result = (from calendar in uwpCalendarList
@@ -92,7 +92,7 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequestAsync<Permissions.CalendarRead>();
 
-            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
+            var instance = await CalendarRequest.GetInstanceAsync();
 
             Appointment uwpAppointment;
             try
@@ -155,7 +155,7 @@ namespace Xamarin.Essentials
                 EndDate = !uwpAppointment.AllDay ? (DateTimeOffset?)uwpAppointment.StartTime.Add(uwpAppointment.Duration) : null,
                 Attendees = GetAttendeesForEvent(uwpAppointment.Invitees, uwpAppointment.Organizer),
                 RecurrancePattern = rules,
-                Reminders = uwpAppointment.Reminder.HasValue ? new List<CalendarEventReminder>() { new CalendarEventReminder() { MinutesPriorToEventStart = uwpAppointment.Reminder.Value.Minutes } } : null
+                Reminder = uwpAppointment.Reminder.HasValue ? new CalendarEventReminder() { MinutesPriorToEventStart = uwpAppointment.Reminder.Value.Minutes } : null
             };
         }
 
@@ -163,7 +163,7 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequestAsync<Permissions.CalendarRead>();
 
-            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
+            var instance = await CalendarRequest.GetInstanceAsync();
 
             Appointment uwpAppointment;
             try
@@ -227,7 +227,7 @@ namespace Xamarin.Essentials
                 EndDate = !uwpAppointment.AllDay ? (DateTimeOffset?)uwpAppointment.StartTime.Add(uwpAppointment.Duration) : null,
                 Attendees = GetAttendeesForEvent(uwpAppointment.Invitees, uwpAppointment.Organizer),
                 RecurrancePattern = rules,
-                Reminders = uwpAppointment.Reminder.HasValue ? new List<CalendarEventReminder>() { new CalendarEventReminder() { MinutesPriorToEventStart = uwpAppointment.Reminder.Value.Minutes } } : null
+                Reminder = uwpAppointment.Reminder.HasValue ? new CalendarEventReminder() { MinutesPriorToEventStart = uwpAppointment.Reminder.Value.Minutes } : null
             };
         }
 
@@ -521,6 +521,68 @@ namespace Xamarin.Essentials
             await calendar.SaveAppointmentAsync(calendarEvent);
 
             return attendeeToRemove != null;
+        }
+
+        static async Task<bool> PlatformAddReminderToEvent(CalendarEventReminder calendarEventReminder, string eventId)
+        {
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
+
+            var instance = await CalendarRequest.GetInstanceAsync();
+
+            Appointment uwpAppointment;
+            try
+            {
+                uwpAppointment = await instance.GetAppointmentAsync(eventId);
+            }
+            catch (ArgumentException)
+            {
+                if (string.IsNullOrWhiteSpace(eventId))
+                {
+                    throw new ArgumentException($"[UWP]: No Event found for event Id {eventId}");
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException($"[UWP]: No Event found for event Id {eventId}");
+                }
+            }
+
+            uwpAppointment.Reminder = TimeSpan.FromMinutes(calendarEventReminder.MinutesPriorToEventStart);
+            var calendar = await instance.GetAppointmentCalendarAsync(uwpAppointment.CalendarId);
+            await calendar.SaveAppointmentAsync(uwpAppointment);
+            uwpAppointment = await instance.GetAppointmentAsync(eventId);
+
+            return uwpAppointment.Reminder != null;
+        }
+
+        static async Task<bool> PlatformReminderFromEvent(string eventId)
+        {
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
+
+            var instance = await CalendarRequest.GetInstanceAsync();
+
+            Appointment uwpAppointment;
+            try
+            {
+                uwpAppointment = await instance.GetAppointmentAsync(eventId);
+            }
+            catch (ArgumentException)
+            {
+                if (string.IsNullOrWhiteSpace(eventId))
+                {
+                    throw new ArgumentException($"[UWP]: No Event found for event Id {eventId}");
+                }
+                else
+                {
+                    throw new ArgumentOutOfRangeException($"[UWP]: No Event found for event Id {eventId}");
+                }
+            }
+
+            uwpAppointment.Reminder = null;
+            var calendar = await instance.GetAppointmentCalendarAsync(uwpAppointment.CalendarId);
+            await calendar.SaveAppointmentAsync(uwpAppointment);
+            uwpAppointment = await instance.GetAppointmentAsync(eventId);
+
+            return uwpAppointment.Reminder == null;
         }
     }
 }

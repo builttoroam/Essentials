@@ -11,7 +11,7 @@ namespace Samples.Converters
             if (value == null || !(value is int minutes))
                 return null;
 
-            return minutes > 0 ? $"{minutes} minutes prior" : "No Reminders";
+            return minutes > 0 ? $"{minutes} minutes prior" : "No Reminder";
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => throw new NotImplementedException();
