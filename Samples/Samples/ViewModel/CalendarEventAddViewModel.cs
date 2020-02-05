@@ -34,7 +34,7 @@ namespace Samples.ViewModel
             set
             {
                 isChecked = value;
-				
+
                 OnPropertyChanged();
             }
         }
@@ -53,8 +53,8 @@ namespace Samples.ViewModel
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Wednesday, IsChecked = true },
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Thursday, IsChecked = true },
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Friday, IsChecked = true },
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday, IsChecked = false },
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday, IsChecked = false }
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday }
         };
 
         public CalendarEventAddViewModel(string calendarId, string calendarName, CalendarEvent existingEvent = null)
@@ -331,13 +331,13 @@ namespace Samples.ViewModel
 
         public ObservableCollection<DayOfTheWeekSwitch> RecurrenceDays { get; set; } = new ObservableCollection<DayOfTheWeekSwitch>()
         {
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Monday, IsChecked = false },
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Tuesday, IsChecked = false },
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Wednesday, IsChecked = false },
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Thursday, IsChecked = false },
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Friday, IsChecked = false },
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday, IsChecked = false },
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday, IsChecked = false }
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Monday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Tuesday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Wednesday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Thursday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Friday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday }
         };
 
         public List<RecurrenceFrequency> RecurrenceTypes { get; } = new List<RecurrenceFrequency>()

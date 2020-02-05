@@ -243,7 +243,7 @@ namespace Xamarin.Essentials
 
         static RecurrenceRule ConvertToDayOfTheWeekList(this EKRecurrenceDayOfWeek[] recurrenceDays, RecurrenceRule rule)
         {
-            rule.DaysOfTheWeek = recurrenceDays.ToList().Select(x => (DayOfTheWeek)int.Parse(x.DayOfTheWeek.ToString(CultureInfo.InvariantCulture))).ToList();
+            rule.DaysOfTheWeek = recurrenceDays.ToList().Select(x => (DayOfTheWeek)Convert.ToInt32(x.DayOfTheWeek)).ToList();
 
             foreach (var d in recurrenceDays)
             {

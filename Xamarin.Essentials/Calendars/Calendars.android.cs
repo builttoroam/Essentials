@@ -28,9 +28,7 @@ namespace Xamarin.Essentials
 
         static async Task<IEnumerable<Calendar>> PlatformGetCalendarsAsync()
         {
-            await Task.Delay(0);
-
-            // await Permissions.RequestAsync<Permissions.CalendarRead>();
+            await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             var calendarsUri = CalendarContract.Calendars.ContentUri;
             var calendarsProjection = new List<string>
@@ -72,7 +70,7 @@ namespace Xamarin.Essentials
         }
 
         static async Task<IEnumerable<CalendarEvent>> PlatformGetEventsAsync(string calendarId = null, DateTimeOffset? startDate = null, DateTimeOffset? endDate = null)
-        { 
+        {
             await Permissions.RequestAsync<Permissions.CalendarRead>();
 
             var sDate = startDate ?? DateTimeOffset.Now.Add(defaultStartTimeFromNow);
@@ -590,11 +588,10 @@ namespace Xamarin.Essentials
                 foreach (var d in ruleOccurenceDays.Split(','))
                 {
                     var day = d;
-                    if (d.Any(char.IsDigit))
+                    var regex = new Regex(@"[-]?\d+");
+                    var iterationOffset = regex.Match(d);
+                    if (iterationOffset.Success)
                     {
-                        var regex = new Regex(@"[-]?\d+");
-                        var iterationOffset = regex.Match(d);
-
                         day = d.Substring(iterationOffset.Index + iterationOffset.Length);
 
                         if (recurranceRule.Frequency == RecurrenceFrequency.Monthly)
@@ -654,8 +651,8 @@ namespace Xamarin.Essentials
             {
                 var ruleDayIterationOffset = rule.Substring(rule.IndexOf(bySetPosSearch, StringComparison.Ordinal) + bySetPosSearch.Length);
                 ruleDayIterationOffset = ruleDayIterationOffset.Contains(";") ? ruleDayIterationOffset.Substring(0, ruleDayIterationOffset.IndexOf(";", StringComparison.Ordinal)) : ruleDayIterationOffset;
-                int.TryParse(ruleDayIterationOffset.Split(',').FirstOrDefault(), out var result);
-                recurranceRule.WeekOfMonth = (IterationOffset)result;
+                Enum.TryParse<IterationOffset>(ruleDayIterationOffset.Split(',').FirstOrDefault(), out var result);
+                recurranceRule.WeekOfMonth = result;
                 if (recurranceRule.Frequency == RecurrenceFrequency.Monthly)
                 {
                     recurranceRule.Frequency = RecurrenceFrequency.MonthlyOnDay;
