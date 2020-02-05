@@ -23,8 +23,9 @@ namespace Samples.ViewModel
 
     public class CalendarDayOfWeekSwitch : INotifyPropertyChanged
     {
-        public CalendarDayOfWeekSwitch(int val, PropertyChangedEventHandler propertyChangedCallBack)
+        public CalendarDayOfWeekSwitch(CalendarDayOfWeek val, PropertyChangedEventHandler propertyChangedCallBack)
         {
+            Day = val;
             PropertyChanged += propertyChangedCallBack;
         }
 
@@ -40,7 +41,7 @@ namespace Samples.ViewModel
             set
             {
                 isChecked = value;
-                OnPropertyChanged(nameof(CalendarEventAddViewModel.RecurrenceDays));
+                OnPropertyChanged(nameof(PropertyChanged.Method.Name));
             }
         }
 
@@ -55,6 +56,16 @@ namespace Samples.ViewModel
         {
             CalendarId = calendarId;
             CalendarName = calendarName;
+            recurrenceDays = new ObservableCollection<CalendarDayOfWeekSwitch>()
+            {
+                new CalendarDayOfWeekSwitch(CalendarDayOfWeek.Sunday, OnChildCheckBoxChangedEvent),
+                new CalendarDayOfWeekSwitch(CalendarDayOfWeek.Monday, OnChildCheckBoxChangedEvent),
+                new CalendarDayOfWeekSwitch(CalendarDayOfWeek.Tuesday, OnChildCheckBoxChangedEvent),
+                new CalendarDayOfWeekSwitch(CalendarDayOfWeek.Wednesday, OnChildCheckBoxChangedEvent),
+                new CalendarDayOfWeekSwitch(CalendarDayOfWeek.Thursday, OnChildCheckBoxChangedEvent),
+                new CalendarDayOfWeekSwitch(CalendarDayOfWeek.Friday, OnChildCheckBoxChangedEvent),
+                new CalendarDayOfWeekSwitch(CalendarDayOfWeek.Saturday, OnChildCheckBoxChangedEvent)
+            };
 
             if (existingEvent != null)
             {
@@ -279,10 +290,10 @@ namespace Samples.ViewModel
 
         public enum DayOfWeekGroup
         {
-            None,
-            Weekday,
-            Weekend,
-            Alldays,
+            None = 0,
+            Weekday = 62,
+            Weekend = 65,
+            Alldays = 127,
             Custom
         }
 
@@ -299,26 +310,43 @@ namespace Samples.ViewModel
 
         public DayOfWeekGroup? SelectedRecurrenceDayOfWeekGroup
         {
-            get => selectedRecurrenceDayOfWeekGroup;
+            get
+            {
+                var result = RecurrenceDays.Where(x => x.IsChecked).Sum(x => (int)x.Day);
+                switch (result)
+                {
+                    case (int)DayOfWeekGroup.None:
+                        return DayOfWeekGroup.None;
+                    case (int)DayOfWeekGroup.Weekday:
+                        return DayOfWeekGroup.Weekday;
+                    case (int)DayOfWeekGroup.Weekend:
+                        return DayOfWeekGroup.Weekend;
+                    case (int)DayOfWeekGroup.Alldays:
+                        return DayOfWeekGroup.Alldays;
+                    default:
+                        return DayOfWeekGroup.Custom;
+                }
+            }
+
             set
             {
                 if (SetProperty(ref selectedRecurrenceDayOfWeekGroup, value))
                 {
                     if (value == DayOfWeekGroup.Weekday)
                     {
-                        SetCheckBoxes(62);
+                        SetCheckBoxes((int)DayOfWeekGroup.Weekday);
                     }
                     else if (value == DayOfWeekGroup.Weekend)
                     {
-                        SetCheckBoxes(65);
+                        SetCheckBoxes((int)DayOfWeekGroup.Weekend);
                     }
                     else if (value == DayOfWeekGroup.Alldays)
                     {
-                        SetCheckBoxes(127);
+                        SetCheckBoxes((int)DayOfWeekGroup.Alldays);
                     }
                     else if (value == DayOfWeekGroup.None)
                     {
-                        SetCheckBoxes(0);
+                        SetCheckBoxes((int)DayOfWeekGroup.None);
                     }
                 }
             }
@@ -349,45 +377,52 @@ namespace Samples.ViewModel
             }
         }
 
-        static void SetCheckBoxes(int bitFlagValue)
+        void SetCheckBoxes(int bitFlagValue)
         {
-            foreach (var recurrenceDay in RecurrenceDays)
-            {
-                recurrenceDay.IsChecked = false;
-            }
-
             var currentVal = bitFlagValue;
             var maxValue = (int)CalendarDayOfWeek.Saturday;
             for (var i = maxValue; i > 0; i /= 2)
             {
+                // RecurrenceDays[(int)Math.Log(i, 2)].TriggerPropertyChanged = false;
+                RecurrenceDays[(int)Math.Log(i, 2)].IsChecked = currentVal >= i;
+
+                // RecurrenceDays[(int)Math.Log(i, 2)].TriggerPropertyChanged = true;
+
                 if (currentVal >= i)
                 {
-                    RecurrenceDays[(int)Math.Log(i, 2)].IsChecked = true;
                     currentVal -= i;
                 }
             }
+            OnPropertyChanged(nameof(RecurrenceDays));
         }
 
-        static void OnChildCheckBoxChangedEvent(object sender, PropertyChangedEventArgs e)
+        void OnChildCheckBoxChangedEvent(object sender, PropertyChangedEventArgs e)
         {
-            if (sender is int value)
+            if (sender == null)
+            {
+                return;
+            }
+            if (!(sender is CalendarDayOfWeekSwitch calendarDayOfWeek))
             {
                 return;
             }
 
-            return;
+            OnPropertyChanged(nameof(SelectedRecurrenceDayOfWeekGroup));
         }
 
-        public static ObservableCollection<CalendarDayOfWeekSwitch> RecurrenceDays { get; } = new ObservableCollection<CalendarDayOfWeekSwitch>()
+        private ObservableCollection<CalendarDayOfWeekSwitch> recurrenceDays;
+
+        public ObservableCollection<CalendarDayOfWeekSwitch> RecurrenceDays
         {
-            new CalendarDayOfWeekSwitch((int)CalendarDayOfWeek.Sunday, OnChildCheckBoxChangedEvent),
-            new CalendarDayOfWeekSwitch((int)CalendarDayOfWeek.Monday, OnChildCheckBoxChangedEvent),
-            new CalendarDayOfWeekSwitch((int)CalendarDayOfWeek.Tuesday, OnChildCheckBoxChangedEvent),
-            new CalendarDayOfWeekSwitch((int)CalendarDayOfWeek.Wednesday, OnChildCheckBoxChangedEvent),
-            new CalendarDayOfWeekSwitch((int)CalendarDayOfWeek.Thursday, OnChildCheckBoxChangedEvent),
-            new CalendarDayOfWeekSwitch((int)CalendarDayOfWeek.Friday, OnChildCheckBoxChangedEvent),
-            new CalendarDayOfWeekSwitch((int)CalendarDayOfWeek.Saturday, OnChildCheckBoxChangedEvent)
-        };
+            get => recurrenceDays;
+            set
+            {
+                if (value != null)
+                {
+                    recurrenceDays = value;
+                }
+            }
+        }
 
         public List<RecurrenceFrequency> RecurrenceTypes { get; } = new List<RecurrenceFrequency>()
         {
@@ -617,6 +652,7 @@ namespace Samples.ViewModel
                     case RecurrenceFrequency.Weekly:
                         daysOfTheWeek = RecurrenceDays.Where(x => x.IsChecked).ToList().ConvertAll(x => x.Day);
                         break;
+
                     default:
                         if (SelectedMonthWeekRecurrenceDay.HasValue)
                         {
