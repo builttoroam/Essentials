@@ -102,6 +102,7 @@ namespace Xamarin.Essentials
 
     public enum CalendarDayOfWeek
     {
+        None = 0,
         Sunday = 1,
         Monday = 2,
         Tuesday = 4,
