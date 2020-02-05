@@ -117,9 +117,9 @@ namespace Samples.View
             if (!(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId) || !(Reminder.Text is string reminderMinutesString) || !int.TryParse(reminderMinutesString, out var reminderMinutes))
                 return;
 
-            if (await Calendars.AddReminderToEvent(new CalendarEventReminder() { MinutesPriorToEventStart = reminderMinutes }, eventId))
+            if (await Calendars.AddReminderToEvent(new CalendarEventReminder() { MinutesPriorToEventStart = Math.Abs(reminderMinutes) }, eventId))
             {
-                ViewModel.Reminder = new CalendarEventReminder() { MinutesPriorToEventStart = reminderMinutes };
+                ViewModel.Reminder = new CalendarEventReminder() { MinutesPriorToEventStart = Math.Abs(reminderMinutes) };
                 RefreshValues(ViewModel);
             }
         }

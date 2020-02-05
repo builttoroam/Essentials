@@ -140,7 +140,8 @@
                    Placeholder="X Minutes..."
                    Text="{Binding Reminder.MinutesPriorToEventStart}"
                    Grid.Column="1"
-                   IsVisible="{Binding HasReminder, Converter={StaticResource NegativeConverter}}"/>
+                   IsVisible="{Binding HasReminder, Converter={StaticResource NegativeConverter}}"
+                   Keyboard="Numeric"/>
             <Button Text="Add"
                     Grid.Column="2"
                     Clicked="OnAddReminderFromEventButtonClicked"

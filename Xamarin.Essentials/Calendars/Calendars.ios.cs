@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EventKit;
 using Foundation;
+using ObjCRuntime;
 
 namespace Xamarin.Essentials
 {
@@ -142,7 +143,7 @@ namespace Xamarin.Essentials
             var instanceOfEvent = (await GetEventsAsync(calendarEvent.Calendar.CalendarIdentifier, instanceDate, instanceDate.AddDays(1))).FirstOrDefault(x => x.Id == eventId);
 
             calendarEvent.StartDate = instanceOfEvent.StartDate.ToNSDate();
-            calendarEvent.EndDate = instanceOfEvent.AllDay ? null : instanceOfEvent.EndDate.Value.ToNSDate();
+            calendarEvent.EndDate = instanceOfEvent.AllDay ? instanceOfEvent.StartDate.AddDays(1).AddTicks(-1).ToNSDate() : instanceOfEvent.EndDate.Value.ToNSDate();
             if (calendarEvent == null)
             {
                 throw new ArgumentOutOfRangeException($"[iOS]: No Event found for event Id {eventId}");
@@ -159,7 +160,7 @@ namespace Xamarin.Essentials
                 alarms = new List<CalendarEventReminder>();
                 foreach (var a in calendarEvent.Alarms)
                 {
-                    alarms.Add(new CalendarEventReminder() { MinutesPriorToEventStart = (calendarEvent.StartDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone) - a.AbsoluteDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone)).Minutes });
+                    alarms.Add(new CalendarEventReminder() { MinutesPriorToEventStart = (int)-(a.RelativeOffset / 60) });
                 }
             }
             var attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<CalendarEventAttendee>();
@@ -185,7 +186,7 @@ namespace Xamarin.Essentials
                 EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone) : null,
                 Attendees = attendees,
                 RecurrancePattern = recurrenceRule,
-                Reminder = alarms.First()
+                Reminder = alarms?.FirstOrDefault()
             };
         }
 
@@ -521,7 +522,7 @@ namespace Xamarin.Essentials
 
             calendarEvent.Alarms = new EKAlarm[1]
             {
-                EKAlarm.FromTimeInterval((double)calendarEventReminder.MinutesPriorToEventStart * 60)
+                EKAlarm.FromTimeInterval(-((double)calendarEventReminder.MinutesPriorToEventStart * 60))
             };
 
             if (CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error))

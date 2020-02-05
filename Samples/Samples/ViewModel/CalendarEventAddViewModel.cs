@@ -96,7 +96,7 @@ namespace Samples.ViewModel
                             SelectedRecurrenceType = SelectedRecurrenceType == RecurrenceFrequency.MonthlyOnDay ? RecurrenceFrequency.Monthly : RecurrenceFrequency.Yearly;
                             IsMonthDaySpecific = false;
                             SelectedRecurrenceMonthWeek = existingEvent.RecurrancePattern.WeekOfMonth;
-                            SelectedMonthWeekRecurrenceDay = existingEvent.RecurrancePattern.DaysOfTheWeek.FirstOrDefault();
+                            SelectedMonthWeekRecurrenceDay = existingEvent.RecurrancePattern.DaysOfTheWeek?.FirstOrDefault();
                             break;
                         case RecurrenceFrequency.Monthly:
                         case RecurrenceFrequency.Yearly:
