@@ -8,7 +8,6 @@ using System.Text.RegularExpressions;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
-using PropertyChangingEventArgs = System.ComponentModel.PropertyChangingEventArgs;
 
 namespace Samples.ViewModel
 {
