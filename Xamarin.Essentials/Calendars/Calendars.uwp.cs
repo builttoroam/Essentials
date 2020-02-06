@@ -13,7 +13,7 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequestAsync<Permissions.CalendarRead>();
 
-            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
+            var instance = await CalendarRequest.GetInstanceAsync();
             var uwpCalendarList = await instance.FindAppointmentCalendarsAsync(FindAppointmentCalendarsOptions.IncludeHidden);
 
             var calendars = (from calendar in uwpCalendarList
@@ -322,7 +322,7 @@ namespace Xamarin.Essentials
             var existingEvent = await GetEventByIdAsync(eventToUpdate.Id);
 
             Appointment thisEvent = null;
-            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
+            var instance = await CalendarRequest.GetInstanceAsync();
             if (string.IsNullOrEmpty(eventToUpdate.CalendarId) || existingEvent == null)
             {
                 return false;
@@ -436,7 +436,7 @@ namespace Xamarin.Essentials
         static async Task<bool> PlatformDeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc)
         {
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
-            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
+            var instance = await CalendarRequest.GetInstanceAsync();
 
             if (string.IsNullOrEmpty(eventId))
             {
@@ -447,6 +447,11 @@ namespace Xamarin.Essentials
             try
             {
                 uwpAppointment = await instance.GetAppointmentInstanceAsync(eventId, dateOfInstanceUtc);
+
+                if (uwpAppointment.CalendarId != calendarId)
+                {
+                    throw new ArgumentOutOfRangeException("[UWP]: Supplied event does not belong to supplied calendar");
+                }
             }
             catch (ArgumentException)
             {
@@ -458,11 +463,6 @@ namespace Xamarin.Essentials
                 {
                     throw new ArgumentOutOfRangeException($"[UWP]: No Event found for event Id {eventId}");
                 }
-            }
-
-            if (uwpAppointment.CalendarId != calendarId)
-            {
-                throw new ArgumentOutOfRangeException("[UWP]: Supplied event does not belong to supplied calendar");
             }
 
             var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
@@ -504,7 +504,7 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
-            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
+            var instance = await CalendarRequest.GetInstanceAsync();
 
             var calendarEvent = await instance.GetAppointmentAsync(eventId);
             var calendar = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
@@ -523,7 +523,7 @@ namespace Xamarin.Essentials
         {
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
-            var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadWrite);
+            var instance = await CalendarRequest.GetInstanceAsync();
 
             var calendarEvent = await instance.GetAppointmentAsync(eventId);
             var calendar = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
