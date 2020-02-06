@@ -45,22 +45,26 @@ namespace Samples.View
                 {
                     var action = await DisplayActionSheet("Do you want to delete all instances of this event?", actionResponseCancel, null, actionResponseDeleteAll, actionResponseDeleteOne, actionResponseDeleteForward);
                     var deletionConfirmed = false;
+                    var deletionMessage = string.Empty;
                     switch (action)
                     {
                         case actionResponseDeleteAll:
                             deletionConfirmed = await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text);
+                            deletionMessage = $"Deleted event id: {eventId}";
                             break;
                         case actionResponseDeleteOne:
-                            deletionConfirmed = await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate); 
+                            deletionConfirmed = await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate);
+                            deletionMessage = $"Deleted instance of event id: {eventId}";
                             break;
                         case actionResponseDeleteForward:
                             deletionConfirmed = await Calendars.SetEventRecurrenceEndDate(eventId, calendarEvent.StartDate.AddDays(-1));
+                            deletionMessage = $"Deleted all future instances of event id: {eventId}";
                             break;
                     }
 
                     if (deletionConfirmed)
                     {
-                        await DisplayAlert(actionTitleInfo, "Deletion successful for event: " + eventId, actionResponseOk);
+                        await DisplayAlert(actionTitleInfo, deletionMessage, actionResponseOk);
                         await Navigation.PopAsync();
                     }
                     else
