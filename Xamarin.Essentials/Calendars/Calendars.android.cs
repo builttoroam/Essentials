@@ -432,7 +432,6 @@ namespace Xamarin.Essentials
             throw new ArgumentException("[Android]: Could not update appointment with supplied parameters");
         }
 
-
         static ContentValues SetupContentValues(CalendarEvent newEvent, bool existingEvent = false)
         {
             var eventValues = new ContentValues();
