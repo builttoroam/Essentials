@@ -359,7 +359,7 @@ namespace Xamarin.Essentials
             }
 
             existingEvent.RecurrancePattern.EndDate = recurrenceEndDate;
-
+            existingEvent.RecurrancePattern.TotalOccurrences = null;
             thisEvent = SetUpEvent(thisEvent, existingEvent);
 
             if (CalendarRequest.Instance.SaveEvent(thisEvent, EKSpan.FutureEvents, true, out var error))

@@ -390,6 +390,7 @@ namespace Xamarin.Essentials
             if (existingEvent.RecurrancePattern != null)
             {
                 existingEvent.RecurrancePattern.EndDate = recurrenceEndDate;
+                existingEvent.RecurrancePattern.TotalOccurrences = null;
                 thisEvent.Recurrence = existingEvent.RecurrancePattern.ConvertRule();
             }
 

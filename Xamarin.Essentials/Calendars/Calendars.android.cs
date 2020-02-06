@@ -421,6 +421,7 @@ namespace Xamarin.Essentials
             }
 
             thisEvent.RecurrancePattern.EndDate = recurrenceEndDate;
+            thisEvent.RecurrancePattern.TotalOccurrences = null;
 
             var eventUri = CalendarContract.Events.ContentUri;
             var eventValues = SetupContentValues(thisEvent);
