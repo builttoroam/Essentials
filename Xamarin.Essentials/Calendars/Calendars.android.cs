@@ -410,15 +410,11 @@ namespace Xamarin.Essentials
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var existingEvent = await GetEventByIdAsync(eventId);
-            CalendarEvent thisEvent;
-            if (existingEvent == null || string.IsNullOrEmpty(existingEvent.CalendarId))
+            if (string.IsNullOrEmpty(existingEvent?.CalendarId))
             {
                 return false;
             }
-            else
-            {
-                thisEvent = await GetEventByIdAsync(eventId);
-            }
+            var thisEvent = await GetEventByIdAsync(eventId);
 
             thisEvent.RecurrancePattern.EndDate = recurrenceEndDate;
             thisEvent.RecurrancePattern.TotalOccurrences = null;
@@ -426,11 +422,11 @@ namespace Xamarin.Essentials
             var eventUri = CalendarContract.Events.ContentUri;
             var eventValues = SetupContentValues(thisEvent);
 
-            if (Platform.AppContext.ApplicationContext.ContentResolver.Update(eventUri, eventValues, $"{CalendarContract.Attendees.InterfaceConsts.Id}={eventId}", null) > 0)
+            if (!(Platform.AppContext.ApplicationContext.ContentResolver.Update(eventUri, eventValues, $"{CalendarContract.Attendees.InterfaceConsts.Id}={eventId}", null) > 0))
             {
-                return true;
+                throw new ArgumentException("[Android]: Could not update appointment with supplied parameters");
             }
-            throw new ArgumentException("[Android]: Could not update appointment with supplied parameters");
+            return true;
         }
 
         static ContentValues SetupContentValues(CalendarEvent newEvent, bool existingEvent = false)

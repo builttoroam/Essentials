@@ -348,25 +348,21 @@ namespace Xamarin.Essentials
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var existingEvent = await GetEventByIdAsync(eventId);
-            EKEvent thisEvent;
-            if (existingEvent == null || string.IsNullOrEmpty(existingEvent.CalendarId))
+            if (string.IsNullOrEmpty(existingEvent?.CalendarId))
             {
                 return false;
             }
-            else
-            {
-                thisEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
-            }
+            var thisEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
 
             existingEvent.RecurrancePattern.EndDate = recurrenceEndDate;
             existingEvent.RecurrancePattern.TotalOccurrences = null;
             thisEvent = SetUpEvent(thisEvent, existingEvent);
 
-            if (CalendarRequest.Instance.SaveEvent(thisEvent, EKSpan.FutureEvents, true, out var error))
+            if (!CalendarRequest.Instance.SaveEvent(thisEvent, EKSpan.FutureEvents, true, out var error))
             {
-                return true;
+                throw new ArgumentException("[iOS]: Could not update appointments recurrence dates with supplied parameters");
             }
-            throw new ArgumentException("[iOS]: Could not update appointments recurrence dates with supplied parameters");
+            return true;
         }
 
         static EKEvent SetUpEvent(EKEvent eventToUpdate, CalendarEvent eventToUpdateFrom)

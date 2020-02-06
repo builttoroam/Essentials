@@ -375,17 +375,13 @@ namespace Xamarin.Essentials
             await Permissions.RequestAsync<Permissions.CalendarWrite>();
 
             var existingEvent = await GetEventByIdAsync(eventId);
-
-            Appointment thisEvent = null;
             var instance = await CalendarRequest.GetInstanceAsync();
-            if (existingEvent == null || string.IsNullOrEmpty(existingEvent?.CalendarId))
+
+            if (string.IsNullOrEmpty(existingEvent?.CalendarId))
             {
                 return false;
             }
-            else
-            {
-                thisEvent = await instance.GetAppointmentAsync(existingEvent.Id);
-            }
+            var thisEvent = await instance.GetAppointmentAsync(existingEvent.Id);
 
             if (existingEvent.RecurrancePattern != null)
             {
@@ -396,12 +392,11 @@ namespace Xamarin.Essentials
 
             var calendar = await instance.GetAppointmentCalendarAsync(existingEvent.CalendarId);
             await calendar.SaveAppointmentAsync(thisEvent);
-
-            if (!string.IsNullOrEmpty(thisEvent.LocalId))
+            if (string.IsNullOrEmpty(thisEvent.LocalId))
             {
-                return true;
+                throw new ArgumentException("[UWP]: Could not update appointments Recurrence End Date with supplied parameters");
             }
-            throw new ArgumentException("[UWP]: Could not update appointments Recurrence End Date with supplied parameters");
+            return true;
         }
 
         static AppointmentRecurrence ConvertRule(this RecurrenceRule recurrenceRule)

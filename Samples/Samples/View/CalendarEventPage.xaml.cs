@@ -45,29 +45,29 @@ namespace Samples.View
                 {
                     var action = await DisplayActionSheet("Do you want to delete all instances of this event?", actionResponseCancel, null, actionResponseDeleteAll, actionResponseDeleteOne, actionResponseDeleteForward);
 
-                    if (action == actionResponseDeleteAll)
+                    switch (action)
                     {
-                        if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
-                        {
-                            await DisplayAlert(actionTitleInfo, "Deleted event id: " + eventId, actionResponseOk);
-                            await Navigation.PopAsync();
-                        }
-                    }
-                    else if (action == actionResponseDeleteOne)
-                    {
-                        if (await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate))
-                        {
-                            await DisplayAlert(actionTitleInfo, "Deleted instance of event id: " + eventId, actionResponseOk);
-                            await Navigation.PopAsync();
-                        }
-                    }
-                    else if (action == actionResponseDeleteForward)
-                    {
-                        if (await Calendars.SetEventRecurrenceEndDate(eventId, calendarEvent.StartDate.AddDays(-1)))
-                        {
-                            await DisplayAlert(actionTitleInfo, "Deleted all future instances of event id: " + eventId, actionResponseOk);
-                            await Navigation.PopAsync();
-                        }
+                        case actionResponseDeleteAll:
+                            if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
+                            {
+                                await DisplayAlert(actionTitleInfo, "Deleted event id: " + eventId, actionResponseOk);
+                                await Navigation.PopAsync();
+                            }
+                            break;
+                        case actionResponseDeleteOne:
+                            if (await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate))
+                            {
+                                await DisplayAlert(actionTitleInfo, "Deleted instance of event id: " + eventId, actionResponseOk);
+                                await Navigation.PopAsync();
+                            }
+                            break;
+                        case actionResponseDeleteForward:
+                            if (await Calendars.SetEventRecurrenceEndDate(eventId, calendarEvent.StartDate.AddDays(-1)))
+                            {
+                                await DisplayAlert(actionTitleInfo, "Deleted all future instances of event id: " + eventId, actionResponseOk);
+                                await Navigation.PopAsync();
+                            }
+                            break;
                     }
                 }
                 else if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
