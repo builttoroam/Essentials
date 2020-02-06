@@ -22,9 +22,9 @@ namespace Samples.View
             if (!(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId))
                 return;
 
-            var vm = BindingContext as CalendarEvent;
+            var viewModel = BindingContext as CalendarEvent;
 
-            var calendarEvent = await Calendars.GetEventInstanceByIdAsync(eventId, vm.StartDate);
+            var calendarEvent = await Calendars.GetEventInstanceByIdAsync(eventId, viewModel.StartDate);
 
             if (!(calendarEvent is CalendarEvent))
                 return;

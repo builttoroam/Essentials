@@ -60,7 +60,7 @@ namespace Xamarin.Essentials
                             .OrderBy(e => e.StartDate)
                             .ToList();
 
-            if (eventList.Count == 0 && !string.IsNullOrWhiteSpace(calendarId))
+            if (!eventList.Any() && !string.IsNullOrWhiteSpace(calendarId))
             {
                 await GetCalendarById(calendarId);
             }
@@ -94,11 +94,11 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
 
-            Appointment e;
+            Appointment uwpAppointment;
             try
             {
-                e = await instance.GetAppointmentAsync(eventId);
-                e.DetailsKind = AppointmentDetailsKind.PlainText;
+                uwpAppointment = await instance.GetAppointmentAsync(eventId);
+                uwpAppointment.DetailsKind = AppointmentDetailsKind.PlainText;
             }
             catch (ArgumentException)
             {
@@ -112,50 +112,50 @@ namespace Xamarin.Essentials
                 }
             }
             RecurrenceRule rules = null;
-            if (e.Recurrence != null)
+            if (uwpAppointment.Recurrence != null)
             {
                 rules = new RecurrenceRule();
-                rules.Frequency = (RecurrenceFrequency)e.Recurrence.Unit;
-                rules.Interval = e.Recurrence.Interval;
-                rules.EndDate = e.Recurrence.Until;
-                rules.TotalOccurrences = e.Recurrence.Occurrences;
+                rules.Frequency = (RecurrenceFrequency)uwpAppointment.Recurrence.Unit;
+                rules.Interval = uwpAppointment.Recurrence.Interval;
+                rules.EndDate = uwpAppointment.Recurrence.Until;
+                rules.TotalOccurrences = uwpAppointment.Recurrence.Occurrences;
                 switch (rules.Frequency)
                 {
                     case RecurrenceFrequency.Daily:
                     case RecurrenceFrequency.Weekly:
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
                         break;
                     case RecurrenceFrequency.MonthlyOnDay:
-                        rules.WeekOfMonth = (IterationOffset)e.Recurrence.WeekOfMonth;
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.WeekOfMonth = (IterationOffset)uwpAppointment.Recurrence.WeekOfMonth;
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
                         break;
                     case RecurrenceFrequency.Monthly:
-                        rules.DayOfTheMonth = e.Recurrence.Day;
+                        rules.DayOfTheMonth = uwpAppointment.Recurrence.Day;
                         break;
                     case RecurrenceFrequency.YearlyOnDay:
-                        rules.WeekOfMonth = (IterationOffset)e.Recurrence.WeekOfMonth;
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.WeekOfMonth = (IterationOffset)uwpAppointment.Recurrence.WeekOfMonth;
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
                         break;
                     case RecurrenceFrequency.Yearly:
-                        rules.DayOfTheMonth = e.Recurrence.Day;
-                        rules.MonthOfTheYear = (MonthOfYear)e.Recurrence.Month;
+                        rules.DayOfTheMonth = uwpAppointment.Recurrence.Day;
+                        rules.MonthOfTheYear = (MonthOfYear)uwpAppointment.Recurrence.Month;
                         break;
                 }
             }
 
             return new CalendarEvent()
             {
-                Id = e.LocalId,
-                CalendarId = e.CalendarId,
-                Title = e.Subject,
-                Description = e.Details,
-                Location = e.Location,
-                Url = e.Uri != null ? e.Uri.ToString() : string.Empty,
-                StartDate = e.StartTime,
-                EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
-                Attendees = GetAttendeesForEvent(e.Invitees, e.Organizer),
+                Id = uwpAppointment.LocalId,
+                CalendarId = uwpAppointment.CalendarId,
+                Title = uwpAppointment.Subject,
+                Description = uwpAppointment.Details,
+                Location = uwpAppointment.Location,
+                Url = uwpAppointment.Uri != null ? uwpAppointment.Uri.ToString() : string.Empty,
+                StartDate = uwpAppointment.StartTime,
+                EndDate = !uwpAppointment.AllDay ? (DateTimeOffset?)uwpAppointment.StartTime.Add(uwpAppointment.Duration) : null,
+                Attendees = GetAttendeesForEvent(uwpAppointment.Invitees, uwpAppointment.Organizer),
                 RecurrancePattern = rules,
-                Reminders = e.Reminder.HasValue ? new List<CalendarEventReminder>() { new CalendarEventReminder() { MinutesPriorToEventStart = e.Reminder.Value.Minutes } } : null
+                Reminders = uwpAppointment.Reminder.HasValue ? new List<CalendarEventReminder>() { new CalendarEventReminder() { MinutesPriorToEventStart = uwpAppointment.Reminder.Value.Minutes } } : null
             };
         }
 
@@ -165,11 +165,11 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync(AppointmentStoreAccessType.AllCalendarsReadOnly);
 
-            Appointment e;
+            Appointment uwpAppointment;
             try
             {
-                e = await instance.GetAppointmentInstanceAsync(eventId, instanceDate);
-                e.DetailsKind = AppointmentDetailsKind.PlainText;
+                uwpAppointment = await instance.GetAppointmentInstanceAsync(eventId, instanceDate);
+                uwpAppointment.DetailsKind = AppointmentDetailsKind.PlainText;
             }
             catch (ArgumentException)
             {
@@ -183,51 +183,51 @@ namespace Xamarin.Essentials
                 }
             }
             RecurrenceRule rules = null;
-            if (e.Recurrence != null)
+            if (uwpAppointment.Recurrence != null)
             {
                 rules = new RecurrenceRule();
-                rules.Frequency = (RecurrenceFrequency)e.Recurrence.Unit;
-                rules.Interval = e.Recurrence.Interval;
-                rules.EndDate = e.Recurrence.Until;
-                rules.TotalOccurrences = e.Recurrence.Occurrences;
+                rules.Frequency = (RecurrenceFrequency)uwpAppointment.Recurrence.Unit;
+                rules.Interval = uwpAppointment.Recurrence.Interval;
+                rules.EndDate = uwpAppointment.Recurrence.Until;
+                rules.TotalOccurrences = uwpAppointment.Recurrence.Occurrences;
                 switch (rules.Frequency)
                 {
                     case RecurrenceFrequency.Daily:
                     case RecurrenceFrequency.Weekly:
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
                         break;
                     case RecurrenceFrequency.MonthlyOnDay:
-                        rules.WeekOfMonth = (IterationOffset)e.Recurrence.WeekOfMonth;
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.WeekOfMonth = (IterationOffset)uwpAppointment.Recurrence.WeekOfMonth;
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
                         break;
                     case RecurrenceFrequency.Monthly:
-                        rules.DayOfTheMonth = e.Recurrence.Day;
+                        rules.DayOfTheMonth = uwpAppointment.Recurrence.Day;
                         break;
                     case RecurrenceFrequency.YearlyOnDay:
-                        rules.WeekOfMonth = (IterationOffset)e.Recurrence.WeekOfMonth;
-                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)e.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
-                        rules.MonthOfTheYear = (MonthOfYear)e.Recurrence.Month;
+                        rules.WeekOfMonth = (IterationOffset)uwpAppointment.Recurrence.WeekOfMonth;
+                        rules.DaysOfTheWeek = ConvertBitFlagToIntList((int)uwpAppointment.Recurrence.DaysOfWeek, (int)AppointmentDaysOfWeek.Saturday).Select(x => (DayOfTheWeek)x + 1).ToList();
+                        rules.MonthOfTheYear = (MonthOfYear)uwpAppointment.Recurrence.Month;
                         break;
                     case RecurrenceFrequency.Yearly:
-                        rules.DayOfTheMonth = e.Recurrence.Day;
-                        rules.MonthOfTheYear = (MonthOfYear)e.Recurrence.Month;
+                        rules.DayOfTheMonth = uwpAppointment.Recurrence.Day;
+                        rules.MonthOfTheYear = (MonthOfYear)uwpAppointment.Recurrence.Month;
                         break;
                 }
             }
 
             return new CalendarEvent()
             {
-                Id = e.LocalId,
-                CalendarId = e.CalendarId,
-                Title = e.Subject,
-                Description = e.Details,
-                Location = e.Location,
-                Url = e.Uri != null ? e.Uri.ToString() : string.Empty,
-                StartDate = e.StartTime,
-                EndDate = !e.AllDay ? (DateTimeOffset?)e.StartTime.Add(e.Duration) : null,
-                Attendees = GetAttendeesForEvent(e.Invitees, e.Organizer),
+                Id = uwpAppointment.LocalId,
+                CalendarId = uwpAppointment.CalendarId,
+                Title = uwpAppointment.Subject,
+                Description = uwpAppointment.Details,
+                Location = uwpAppointment.Location,
+                Url = uwpAppointment.Uri != null ? uwpAppointment.Uri.ToString() : string.Empty,
+                StartDate = uwpAppointment.StartTime,
+                EndDate = !uwpAppointment.AllDay ? (DateTimeOffset?)uwpAppointment.StartTime.Add(uwpAppointment.Duration) : null,
+                Attendees = GetAttendeesForEvent(uwpAppointment.Invitees, uwpAppointment.Organizer),
                 RecurrancePattern = rules,
-                Reminders = e.Reminder.HasValue ? new List<CalendarEventReminder>() { new CalendarEventReminder() { MinutesPriorToEventStart = e.Reminder.Value.Minutes } } : null
+                Reminders = uwpAppointment.Reminder.HasValue ? new List<CalendarEventReminder>() { new CalendarEventReminder() { MinutesPriorToEventStart = uwpAppointment.Reminder.Value.Minutes } } : null
             };
         }
 
@@ -251,15 +251,15 @@ namespace Xamarin.Essentials
             var toReturn = 0;
             foreach (var i in listOfNumbers)
             {
-                toReturn += (int)GetEnumByIndex(i);
+                toReturn += (int)GetEnumByIndex<AppointmentDaysOfWeek>(i);
             }
             return toReturn;
         }
 
-        public static AppointmentDaysOfWeek GetEnumByIndex(int index)
+        public static T GetEnumByIndex<T>(int index)
         {
-            var enums = Enum.GetValues(typeof(AppointmentDaysOfWeek));
-            return (AppointmentDaysOfWeek)enums.GetValue(index);
+            var enumValues = Enum.GetValues(typeof(T));
+            return (T)enumValues.GetValue(index);
         }
 
         static IEnumerable<CalendarEventAttendee> GetAttendeesForEvent(IEnumerable<AppointmentInvitee> inviteList, AppointmentOrganizer organizer)
@@ -292,25 +292,25 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync();
 
-            var app = new Appointment();
-            app.Subject = newEvent.Title;
-            app.Details = newEvent.Description ?? string.Empty;
-            app.Location = newEvent.Location ?? string.Empty;
-            app.StartTime = newEvent.StartDate;
-            app.Duration = newEvent.EndDate.HasValue ? newEvent.EndDate.Value - newEvent.StartDate : TimeSpan.FromDays(1);
-            app.AllDay = newEvent.AllDay;
-            app.Uri = !string.IsNullOrEmpty(newEvent.Url) ? new Uri(newEvent.Url) : null;
+            var appointment = new Appointment();
+            appointment.Subject = newEvent.Title;
+            appointment.Details = newEvent.Description ?? string.Empty;
+            appointment.Location = newEvent.Location ?? string.Empty;
+            appointment.StartTime = newEvent.StartDate;
+            appointment.Duration = newEvent.EndDate.HasValue ? newEvent.EndDate.Value - newEvent.StartDate : TimeSpan.FromDays(1);
+            appointment.AllDay = newEvent.AllDay;
+            appointment.Uri = !string.IsNullOrEmpty(newEvent.Url) ? new Uri(newEvent.Url) : null;
 
             if (newEvent.RecurrancePattern != null)
             {
-                app.Recurrence = newEvent.RecurrancePattern.ConvertRule();
+                appointment.Recurrence = newEvent.RecurrancePattern.ConvertRule();
             }
 
-            var cal = await instance.GetAppointmentCalendarAsync(newEvent.CalendarId);
-            await cal.SaveAppointmentAsync(app);
+            var calendar = await instance.GetAppointmentCalendarAsync(newEvent.CalendarId);
+            await calendar.SaveAppointmentAsync(appointment);
 
-            if (!string.IsNullOrEmpty(app.LocalId))
-                return app.LocalId;
+            if (!string.IsNullOrEmpty(appointment.LocalId))
+                return appointment.LocalId;
 
             throw new ArgumentException("[UWP]: Could not create appointment with supplied parameters");
         }
@@ -360,8 +360,8 @@ namespace Xamarin.Essentials
             thisEvent.AllDay = eventToUpdate.AllDay;
             thisEvent.Uri = !string.IsNullOrEmpty(url) ? new Uri(url) : null;
 
-            var cal = await instance.GetAppointmentCalendarAsync(eventToUpdate.CalendarId);
-            await cal.SaveAppointmentAsync(thisEvent);
+            var calendar = await instance.GetAppointmentCalendarAsync(eventToUpdate.CalendarId);
+            await calendar.SaveAppointmentAsync(thisEvent);
 
             if (!string.IsNullOrEmpty(thisEvent.LocalId))
             {
@@ -425,10 +425,10 @@ namespace Xamarin.Essentials
 
             var instance = await CalendarRequest.GetInstanceAsync();
 
-            var cal = await instance.CreateAppointmentCalendarAsync(newCalendar.Name);
+            var calendar = await instance.CreateAppointmentCalendarAsync(newCalendar.Name);
 
-            if (cal != null)
-                return cal.LocalId;
+            if (calendar != null)
+                return calendar.LocalId;
 
             throw new ArgumentException("[UWP]: Could not create appointment with supplied parameters");
         }
@@ -490,14 +490,14 @@ namespace Xamarin.Essentials
             var instance = await CalendarRequest.GetInstanceAsync();
 
             var calendarEvent = await instance.GetAppointmentAsync(eventId);
-            var cal = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
+            var calendar = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
             var cntInvitiees = calendarEvent.Invitees.Count;
 
             if (calendarEvent == null)
                 throw new ArgumentException("[UWP]: You must supply a valid event id to add an attendee to.");
 
             calendarEvent.Invitees.Add(new AppointmentInvitee() { DisplayName = newAttendee.Name, Address = newAttendee.Email, Role = (AppointmentParticipantRole)(newAttendee.Type - 1) });
-            await cal.SaveAppointmentAsync(calendarEvent);
+            await calendar.SaveAppointmentAsync(calendarEvent);
 
             return calendarEvent.Invitees.Count == cntInvitiees + 1;
         }
@@ -509,7 +509,7 @@ namespace Xamarin.Essentials
             var instance = await CalendarRequest.GetInstanceAsync();
 
             var calendarEvent = await instance.GetAppointmentAsync(eventId);
-            var cal = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
+            var calendar = await instance.GetAppointmentCalendarAsync(calendarEvent.CalendarId);
 
             if (calendarEvent == null)
                 throw new ArgumentException("[UWP]: You must supply a valid event id to remove an attendee from.");
@@ -518,7 +518,7 @@ namespace Xamarin.Essentials
 
             calendarEvent.Invitees.Remove(attendeeToRemove);
 
-            await cal.SaveAppointmentAsync(calendarEvent);
+            await calendar.SaveAppointmentAsync(calendarEvent);
 
             return attendeeToRemove != null;
         }

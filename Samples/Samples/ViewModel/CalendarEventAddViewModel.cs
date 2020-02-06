@@ -46,6 +46,13 @@ namespace Samples.ViewModel
 
     public class CalendarEventAddViewModel : BaseViewModel
     {
+        static TimeSpan RoundToNearestMinutes(TimeSpan input, int minutes)
+        {
+            var totalMinutes = (int)(input + new TimeSpan(0, minutes / 2, 0)).TotalMinutes;
+
+            return new TimeSpan(0, totalMinutes - (totalMinutes % minutes), 0);
+        }
+
         static readonly ObservableCollection<DayOfTheWeekSwitch> recurrenceWeekdays = new ObservableCollection<DayOfTheWeekSwitch>()
         {
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Monday, IsChecked = true },
@@ -227,7 +234,7 @@ namespace Samples.ViewModel
             }
         }
 
-        TimeSpan startTime = DateTime.Now.AddHours(1).TimeOfDay.RoundToNearestMinutes(30);
+        TimeSpan startTime = RoundToNearestMinutes(DateTime.Now.AddHours(1).TimeOfDay, 30);
 
         public TimeSpan StartTime
         {
@@ -255,7 +262,7 @@ namespace Samples.ViewModel
             }
         }
 
-        TimeSpan endTime = DateTime.Now.AddHours(2).TimeOfDay.RoundToNearestMinutes(30);
+        TimeSpan endTime = RoundToNearestMinutes(DateTime.Now.AddHours(2).TimeOfDay, 30);
 
         public TimeSpan EndTime
         {
@@ -272,7 +279,7 @@ namespace Samples.ViewModel
         public bool DisplayTimeInformation => !AllDay && !CanAlterRecurrence;
 
         // Recurrence Setup
-        public bool CanAlterRecurrence => SelectedRecurrenceType != null;
+        public bool CanAlterRecurrence => SelectedRecurrenceType != null && SelectedRecurrenceType != RecurrenceFrequency.None;
 
         public bool IsDaily => SelectedRecurrenceType == RecurrenceFrequency.Daily;
 
@@ -342,6 +349,7 @@ namespace Samples.ViewModel
 
         public List<RecurrenceFrequency> RecurrenceTypes { get; } = new List<RecurrenceFrequency>()
         {
+            RecurrenceFrequency.None,
             RecurrenceFrequency.Daily,
             RecurrenceFrequency.Weekly,
             RecurrenceFrequency.Monthly,
