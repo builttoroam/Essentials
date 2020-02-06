@@ -10,6 +10,15 @@ namespace Samples.View
 {
     public partial class CalendarEventPage : BasePage
     {
+        const string actionResponseDeleteAll = "Yes to All";
+        const string actionResponseDeleteOne = "Just this one";
+        const string actionResponseDeleteForward = "From this date forward";
+        const string actionResponseOk = "Ok";
+        const string actionResponseYes = "Yes";
+        const string actionResponseCancel = "Cancel";
+        const string actionTitleInfo = "Info";
+        const string actionTitleWarning = "Warning!";
+
         CalendarEvent ViewModel => BindingContext as CalendarEvent;
 
         public CalendarEventPage()
@@ -29,41 +38,41 @@ namespace Samples.View
             if (!(calendarEvent is CalendarEvent))
                 return;
 
-            var answer = await DisplayAlert("Warning!", $"Are you sure you want to delete {calendarEvent.Title}? (this cannot be undone)", "Yes", "Cancel");
+            var answer = await DisplayAlert(actionTitleWarning, $"Are you sure you want to delete {calendarEvent.Title}? (this cannot be undone)", actionResponseYes, actionResponseCancel);
             if (answer)
             {
                 if (calendarEvent.RecurrancePattern != null)
                 {
-                    var action = await DisplayActionSheet("Do you want to delete all instances of this event?", "Cancel", null, "Yes to All", "Just this one", "From this date forward");
+                    var action = await DisplayActionSheet("Do you want to delete all instances of this event?", actionResponseCancel, null, actionResponseDeleteAll, actionResponseDeleteOne, actionResponseDeleteForward);
 
-                    if (action == "Yes to All")
+                    if (action == actionResponseDeleteAll)
                     {
                         if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
                         {
-                            await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                            await DisplayAlert(actionTitleInfo, "Deleted event id: " + eventId, actionResponseOk);
                             await Navigation.PopAsync();
                         }
                     }
-                    else if (action == "Just this one")
+                    else if (action == actionResponseDeleteOne)
                     {
                         if (await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate))
                         {
-                            await DisplayAlert("Info", "Deleted instance of event id: " + eventId, "Ok");
+                            await DisplayAlert(actionTitleInfo, "Deleted instance of event id: " + eventId, actionResponseOk);
                             await Navigation.PopAsync();
                         }
                     }
-                    else if (action == "From this date forward")
+                    else if (action == actionResponseDeleteForward)
                     {
                         if (await Calendars.SetEventRecurrenceEndDate(eventId, calendarEvent.StartDate.AddDays(-1)))
                         {
-                            await DisplayAlert("Info", "Deleted all future instances of event id: " + eventId, "Ok");
+                            await DisplayAlert(actionTitleInfo, "Deleted all future instances of event id: " + eventId, actionResponseOk);
                             await Navigation.PopAsync();
                         }
                     }
                 }
                 else if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
                 {
-                    await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                    await DisplayAlert(actionTitleInfo, "Deleted event id: " + eventId, actionResponseOk);
                     await Navigation.PopAsync();
                 }
             }
