@@ -34,7 +34,9 @@ namespace Samples.View
             {
                 if (calendarEvent.RecurrancePattern != null)
                 {
-                    if (await DisplayAlert("Warning!", $"Do you want to delete all instances of this event?", "Yes All", "Just this one"))
+                    var action = await DisplayActionSheet("Do you want to delete all instances of this event?", "Cancel", null, "Yes to All", "Just this one", "From this date forward");
+
+                    if (action == "Yes to All")
                     {
                         if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
                         {
@@ -42,10 +44,21 @@ namespace Samples.View
                             await Navigation.PopAsync();
                         }
                     }
-                    else if (await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate))
+                    else if (action == "Just this one")
                     {
-                        await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
-                        await Navigation.PopAsync();
+                        if (await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate))
+                        {
+                            await DisplayAlert("Info", "Deleted instance of event id: " + eventId, "Ok");
+                            await Navigation.PopAsync();
+                        }
+                    }
+                    else if (action == "From this date forward")
+                    {
+                        if (await Calendars.SetEventRecurrenceEndDate(eventId, calendarEvent.StartDate.AddDays(-1)))
+                        {
+                            await DisplayAlert("Info", "Deleted all future instances of event id: " + eventId, "Ok");
+                            await Navigation.PopAsync();
+                        }
                     }
                 }
                 else if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
