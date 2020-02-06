@@ -109,7 +109,10 @@ namespace Xamarin.Essentials
         Wednesday = 8,
         Thursday = 16,
         Friday = 32,
-        Saturday = 64
+        Saturday = 64,
+        Weekday = CalendarDayOfWeek.Monday | CalendarDayOfWeek.Tuesday | CalendarDayOfWeek.Wednesday | CalendarDayOfWeek.Thursday | CalendarDayOfWeek.Friday,
+        Weekend = CalendarDayOfWeek.Saturday | CalendarDayOfWeek.Sunday,
+        AllDays = CalendarDayOfWeek.Monday | CalendarDayOfWeek.Tuesday | CalendarDayOfWeek.Wednesday | CalendarDayOfWeek.Thursday | CalendarDayOfWeek.Friday | CalendarDayOfWeek.Saturday | CalendarDayOfWeek.Sunday,
     }
 
     public enum MonthOfYear

@@ -151,11 +151,43 @@
           </Grid>
           <StackLayout IsVisible="{Binding IsWeekly}"
                        Grid.Row="2">
-            <Picker x:Name="SelectedRecurrenceDayOfWeekGroup"
-                    Title="Quick Select"
-                    ItemsSource="{Binding RecurrenceDayOfWeekGroup}"
-                    SelectedItem="{Binding SelectedRecurrenceDayOfWeekGroup, Mode=TwoWay}" />
-            <StackLayout BindableLayout.ItemsSource="{Binding RecurrenceDays, Mode=TwoWay}">
+              <Grid>
+                  <Grid.ColumnDefinitions>
+                      <ColumnDefinition />
+                      <ColumnDefinition />
+                      <ColumnDefinition />
+                      <ColumnDefinition />
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                      <RowDefinition Height="Auto" />
+                      <RowDefinition Height="Auto" />
+                  </Grid.RowDefinitions>
+                  <Label Text="None:"
+                         Grid.Column="0"
+                         Grid.Row="0"/>
+                  <Switch IsToggled="{Binding IsNone}"
+                          Grid.Column="1"
+                          Grid.Row="0"/>
+                  <Label Text="Weekdays:"
+                         Grid.Column="2"
+                         Grid.Row="0"/>
+                  <Switch IsToggled="{Binding IsWeekdays}"
+                          Grid.Column="3"
+                          Grid.Row="0"/>
+                  <Label Text="Weekend:"
+                         Grid.Column="0"
+                         Grid.Row="1"/>
+                  <Switch IsToggled="{Binding IsWeekend}"
+                          Grid.Column="1"
+                          Grid.Row="1"/>
+                  <Label Text="All Days:"
+                         Grid.Column="2"
+                         Grid.Row="1"/>
+                  <Switch IsToggled="{Binding IsAllDays}"
+                          Grid.Column="3"
+                          Grid.Row="1"/>
+              </Grid>
+              <StackLayout BindableLayout.ItemsSource="{Binding RecurrenceDays, Mode=TwoWay}">
               <BindableLayout.ItemTemplate>
                 <DataTemplate x:DataType="viewmodels:CalendarDayOfWeekSwitch">
                   <Grid>
