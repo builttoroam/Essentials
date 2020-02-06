@@ -486,5 +486,80 @@ namespace DeviceTests
                 Assert.True(result);
             });
         }
+
+        [Fact]
+        public Task Basic_Calendar_Event_Instance_Creation()
+        {
+            return Utils.OnMainThread(async () =>
+            {
+                var calendars = await Calendars.GetCalendarsAsync();
+                var calendar = calendars.FirstOrDefault(x => x.Name == "Test_Calendar");
+                var calendarId = string.Empty;
+                if (calendar == null)
+                {
+                    var newCalendar = new Calendar() { Name = "Test_Calendar" };
+                    calendarId = await Calendars.CreateCalendar(newCalendar);
+                }
+                else
+                {
+                    calendarId = calendar.Id;
+                }
+
+                var startDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
+                var newEvent = new CalendarEvent()
+                {
+                    Title = "Test_Event",
+                    CalendarId = calendarId,
+                    StartDate = startDate,
+                    EndDate = startDate.AddHours(10),
+                    RecurrancePattern = new RecurrenceRule() { Frequency = RecurrenceFrequency.Daily, Interval = 1 }
+                };
+                var eventId = await Calendars.CreateCalendarEvent(newEvent);
+
+                var eventInstance = await Calendars.GetEventInstanceByIdAsync(eventId, startDate.AddDays(7));
+                Assert.NotEmpty(eventInstance.Id);
+                Assert.Equal(eventInstance.StartDate.Date, startDate.AddDays(7).Date);
+                Assert.Equal(eventInstance.EndDate.Value.Date, startDate.AddHours(10).AddDays(7).Date);
+            });
+        }
+
+        [Fact]
+        public Task Basic_Calendar_Event_Instance_Deletion()
+        {
+            return Utils.OnMainThread(async () =>
+            {
+                var calendars = await Calendars.GetCalendarsAsync();
+                var calendar = calendars.FirstOrDefault(x => x.Name == "Test_Calendar");
+                var calendarId = string.Empty;
+                if (calendar == null)
+                {
+                    var newCalendar = new Calendar() { Name = "Test_Calendar" };
+                    calendarId = await Calendars.CreateCalendar(newCalendar);
+                }
+                else
+                {
+                    calendarId = calendar.Id;
+                }
+
+                var startDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
+                var newEvent = new CalendarEvent()
+                {
+                    Title = "Test_Event",
+                    CalendarId = calendarId,
+                    StartDate = startDate,
+                    EndDate = startDate.AddHours(10),
+                    RecurrancePattern = new RecurrenceRule() { Frequency = RecurrenceFrequency.Daily, Interval = 1 }
+                };
+                var eventId = await Calendars.CreateCalendarEvent(newEvent);
+
+                var eventInstance = await Calendars.GetEventInstanceByIdAsync(eventId, startDate.AddDays(7));
+                Assert.NotEmpty(eventInstance.Id);
+                Assert.Equal(eventInstance.StartDate.Date, startDate.AddDays(7).Date);
+                Assert.Equal(eventInstance.EndDate.Value.Date, startDate.AddHours(10).AddDays(7).Date);
+
+                var deletionSuccessful = await Calendars.DeleteCalendarEventInstanceByDate(eventId, eventInstance.CalendarId, startDate.AddDays(7));
+                Assert.True(deletionSuccessful);
+            });
+        }
     }
 }
