@@ -44,30 +44,28 @@ namespace Samples.View
                 if (calendarEvent.RecurrancePattern != null)
                 {
                     var action = await DisplayActionSheet("Do you want to delete all instances of this event?", actionResponseCancel, null, actionResponseDeleteAll, actionResponseDeleteOne, actionResponseDeleteForward);
-
+                    var deletionConfirmed = false;
                     switch (action)
                     {
                         case actionResponseDeleteAll:
-                            if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
-                            {
-                                await DisplayAlert(actionTitleInfo, "Deleted event id: " + eventId, actionResponseOk);
-                                await Navigation.PopAsync();
-                            }
+                            deletionConfirmed = await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text);
                             break;
                         case actionResponseDeleteOne:
-                            if (await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate))
-                            {
-                                await DisplayAlert(actionTitleInfo, "Deleted instance of event id: " + eventId, actionResponseOk);
-                                await Navigation.PopAsync();
-                            }
+                            deletionConfirmed = await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate); 
                             break;
                         case actionResponseDeleteForward:
-                            if (await Calendars.SetEventRecurrenceEndDate(eventId, calendarEvent.StartDate.AddDays(-1)))
-                            {
-                                await DisplayAlert(actionTitleInfo, "Deleted all future instances of event id: " + eventId, actionResponseOk);
-                                await Navigation.PopAsync();
-                            }
+                            deletionConfirmed = await Calendars.SetEventRecurrenceEndDate(eventId, calendarEvent.StartDate.AddDays(-1));
                             break;
+                    }
+
+                    if (deletionConfirmed)
+                    {
+                        await DisplayAlert(actionTitleInfo, "Deletion successful for event: " + eventId, actionResponseOk);
+                        await Navigation.PopAsync();
+                    }
+                    else
+                    {
+                        await DisplayAlert(actionTitleInfo, "Unable to delete event: " + eventId, actionResponseOk);
                     }
                 }
                 else if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
