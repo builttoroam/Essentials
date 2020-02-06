@@ -17,7 +17,9 @@ namespace Samples.View
         protected override void OnAppearing()
         {
             base.OnAppearing();
+
             var viewModel = BindingContext as CalendarViewModel;
+
             viewModel?.RefreshCalendars();
         }
 

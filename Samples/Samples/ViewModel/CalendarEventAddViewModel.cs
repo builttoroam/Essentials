@@ -34,6 +34,7 @@ namespace Samples.ViewModel
             set
             {
                 isChecked = value;
+
                 OnPropertyChanged();
             }
         }
@@ -59,8 +60,8 @@ namespace Samples.ViewModel
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Wednesday, IsChecked = true },
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Thursday, IsChecked = true },
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Friday, IsChecked = true },
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday, IsChecked = false },
-            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday, IsChecked = false }
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Saturday },
+            new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday }
         };
 
         public CalendarEventAddViewModel(string calendarId, string calendarName, CalendarEvent existingEvent = null)
