@@ -58,7 +58,7 @@ namespace Samples.ViewModel
         {
             CalendarId = calendarId;
             CalendarName = calendarName;
-            recurrenceDays = new ObservableCollection<CalendarDayOfWeekSwitch>()
+            RecurrenceDays = new ObservableCollection<CalendarDayOfWeekSwitch>()
             {
                 new CalendarDayOfWeekSwitch(CalendarDayOfWeek.Sunday, OnChildCheckBoxChangedEvent),
                 new CalendarDayOfWeekSwitch(CalendarDayOfWeek.Monday, OnChildCheckBoxChangedEvent),
@@ -430,19 +430,7 @@ namespace Samples.ViewModel
             }
         }
 
-        ObservableCollection<CalendarDayOfWeekSwitch> recurrenceDays;
-
-        public ObservableCollection<CalendarDayOfWeekSwitch> RecurrenceDays
-        {
-            get => recurrenceDays;
-            set
-            {
-                if (value != null)
-                {
-                    recurrenceDays = value;
-                }
-            }
-        }
+        public ObservableCollection<CalendarDayOfWeekSwitch> RecurrenceDays { get; }
 
         public List<RecurrenceFrequency> RecurrenceTypes { get; } = new List<RecurrenceFrequency>()
         {
