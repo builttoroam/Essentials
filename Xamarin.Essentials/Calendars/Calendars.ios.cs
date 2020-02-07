@@ -499,11 +499,7 @@ namespace Xamarin.Essentials
 
             // calendarEvent.Attendees = calendarEventAttendees; - readonly cannot be done at this stage.
 
-            if (CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error))
-            {
-                return true;
-            }
-            throw new Exception(error.DebugDescription);
+            return CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error);
         }
 
         static async Task<bool> PlatformAddReminderToEvent(CalendarEventReminder calendarEventReminder, string eventId)
@@ -525,11 +521,7 @@ namespace Xamarin.Essentials
                 EKAlarm.FromTimeInterval(-((double)calendarEventReminder.MinutesPriorToEventStart * 60))
             };
 
-            if (CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error))
-            {
-                return true;
-            }
-            return false;
+            return CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error);
         }
 
         static async Task<bool> PlatformReminderFromEvent(string eventId)
@@ -548,11 +540,7 @@ namespace Xamarin.Essentials
 
             calendarEvent.Alarms = null;
 
-            if (CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error))
-            {
-                return true;
-            }
-            return false;
+            return CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error);
         }
     }
 }
