@@ -300,7 +300,7 @@ namespace Samples.ViewModel
             {
                 if (value)
                 {
-                    SetCheckBoxes((int)CalendarDayOfWeek.None);
+                    SetCheckBoxes(CalendarDayOfWeek.None);
                     OnPropertyChanged(nameof(IsWeekdays));
                     OnPropertyChanged(nameof(IsWeekend));
                     OnPropertyChanged(nameof(IsAllDays));
@@ -316,7 +316,7 @@ namespace Samples.ViewModel
             {
                 if (value)
                 {
-                    SetCheckBoxes((int)CalendarDayOfWeek.Weekday);
+                    SetCheckBoxes(CalendarDayOfWeek.Weekday);
                     OnPropertyChanged(nameof(IsNone));
                     OnPropertyChanged(nameof(IsWeekend));
                     OnPropertyChanged(nameof(IsAllDays));
@@ -332,7 +332,7 @@ namespace Samples.ViewModel
             {
                 if (value)
                 {
-                    SetCheckBoxes((int)CalendarDayOfWeek.Weekend);
+                    SetCheckBoxes(CalendarDayOfWeek.Weekend);
                     OnPropertyChanged(nameof(IsNone));
                     OnPropertyChanged(nameof(IsWeekdays));
                     OnPropertyChanged(nameof(IsAllDays));
@@ -348,7 +348,7 @@ namespace Samples.ViewModel
             {
                 if (value)
                 {
-                    SetCheckBoxes((int)CalendarDayOfWeek.AllDays);
+                    SetCheckBoxes(CalendarDayOfWeek.AllDays);
                     OnPropertyChanged(nameof(IsNone));
                     OnPropertyChanged(nameof(IsWeekend));
                     OnPropertyChanged(nameof(IsWeekdays));
@@ -383,27 +383,15 @@ namespace Samples.ViewModel
 
         bool IsUpdatingCheckBoxGroup { get; set; } = false;
 
-        void SetCheckBoxes(int bitFlagValue)
+        void SetCheckBoxes(CalendarDayOfWeek bitFlagValue)
         {
             try
             {
                 IsUpdatingCheckBoxGroup = true;
-                var currentVal = bitFlagValue;
-                var maxValue = (int)CalendarDayOfWeek.Saturday;
-                for (var i = maxValue; i > 0; i /= 2)
+                foreach (var day in RecurrenceDays)
                 {
-                    RecurrenceDays[(int)Math.Log(i, 2)].IsChecked = currentVal >= i;
-
-                    if (currentVal >= i)
-                    {
-                        currentVal -= i;
-                    }
+                    day.IsChecked = bitFlagValue.HasFlag(day.Day);
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
             }
             finally
             {
