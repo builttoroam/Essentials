@@ -506,17 +506,26 @@ namespace DeviceTests
                 }
 
                 var startDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
-                var newEvent = new CalendarEvent()
+                var events = await Calendars.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
+                var newEvent = events.FirstOrDefault(x => x.Title == "Test_Event_Instance");
+                CalendarEvent eventInstance;
+                if (newEvent == null)
                 {
-                    Title = "Test_Event",
-                    CalendarId = calendarId,
-                    StartDate = startDate,
-                    EndDate = startDate.AddHours(10),
-                    RecurrancePattern = new RecurrenceRule() { Frequency = RecurrenceFrequency.Daily, Interval = 1 }
-                };
-                var eventId = await Calendars.CreateCalendarEvent(newEvent);
+                    newEvent = new CalendarEvent()
+                    {
+                        Title = "Test_Event_Instance",
+                        CalendarId = calendarId,
+                        StartDate = startDate,
+                        EndDate = startDate.AddHours(10)
+                    };
+                    var eventId = await Calendars.CreateCalendarEvent(newEvent);
+                    eventInstance = await Calendars.GetEventInstanceByIdAsync(eventId, startDate.AddDays(7));
+                }
+                else
+                {
+                    eventInstance = await Calendars.GetEventInstanceByIdAsync(newEvent.Id, startDate.AddDays(7));
+                }
 
-                var eventInstance = await Calendars.GetEventInstanceByIdAsync(eventId, startDate.AddDays(7));
                 Assert.NotEmpty(eventInstance.Id);
                 Assert.Equal(eventInstance.StartDate.Date, startDate.AddDays(7).Date);
                 Assert.Equal(eventInstance.EndDate.Value.Date, startDate.AddHours(10).AddDays(7).Date);
