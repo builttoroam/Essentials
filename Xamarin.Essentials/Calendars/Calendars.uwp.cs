@@ -370,6 +370,35 @@ namespace Xamarin.Essentials
             throw new ArgumentException("[UWP]: Could not update appointment with supplied parameters");
         }
 
+        static async Task<bool> PlatformSetEventRecurrenceEndDate(string eventId, DateTimeOffset recurrenceEndDate)
+        {
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
+
+            var existingEvent = await GetEventByIdAsync(eventId);
+            var instance = await CalendarRequest.GetInstanceAsync();
+
+            if (string.IsNullOrEmpty(existingEvent?.CalendarId))
+            {
+                return false;
+            }
+            var thisEvent = await instance.GetAppointmentAsync(existingEvent.Id);
+
+            if (existingEvent.RecurrancePattern != null)
+            {
+                existingEvent.RecurrancePattern.EndDate = recurrenceEndDate;
+                existingEvent.RecurrancePattern.TotalOccurrences = null;
+                thisEvent.Recurrence = existingEvent.RecurrancePattern.ConvertRule();
+            }
+
+            var calendar = await instance.GetAppointmentCalendarAsync(existingEvent.CalendarId);
+            await calendar.SaveAppointmentAsync(thisEvent);
+            if (string.IsNullOrEmpty(thisEvent.LocalId))
+            {
+                throw new ArgumentException("[UWP]: Could not update appointments Recurrence End Date with supplied parameters");
+            }
+            return true;
+        }
+
         static AppointmentRecurrence ConvertRule(this RecurrenceRule recurrenceRule)
         {
             var eventRecurrence = new AppointmentRecurrence();

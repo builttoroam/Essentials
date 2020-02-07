@@ -344,6 +344,28 @@ namespace Xamarin.Essentials
             throw new ArgumentException("[iOS]: Could not update appointment with supplied parameters");
         }
 
+        static async Task<bool> PlatformSetEventRecurrenceEndDate(string eventId, DateTimeOffset recurrenceEndDate)
+        {
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
+
+            var existingEvent = await GetEventByIdAsync(eventId);
+            if (string.IsNullOrEmpty(existingEvent?.CalendarId))
+            {
+                return false;
+            }
+            var thisEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+
+            existingEvent.RecurrancePattern.EndDate = recurrenceEndDate;
+            existingEvent.RecurrancePattern.TotalOccurrences = null;
+            thisEvent = SetUpEvent(thisEvent, existingEvent);
+
+            if (!CalendarRequest.Instance.SaveEvent(thisEvent, EKSpan.FutureEvents, true, out var error))
+            {
+                throw new ArgumentException("[iOS]: Could not update appointments recurrence dates with supplied parameters");
+            }
+            return true;
+        }
+
         static EKEvent SetUpEvent(EKEvent eventToUpdate, CalendarEvent eventToUpdateFrom)
         {
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(NSTimeZone.LocalTimeZone.Name);
