@@ -443,15 +443,19 @@ namespace Xamarin.Essentials
                 throw new ArgumentException("[UWP]: You must supply an event id to delete an event.");
             }
 
-            Appointment uwpAppointment;
             try
             {
-                uwpAppointment = await instance.GetAppointmentInstanceAsync(eventId, dateOfInstanceUtc);
+                var uwpAppointment = await instance.GetAppointmentInstanceAsync(eventId, dateOfInstanceUtc);
 
                 if (uwpAppointment.CalendarId != calendarId)
                 {
                     throw new ArgumentOutOfRangeException("[UWP]: Supplied event does not belong to supplied calendar");
                 }
+
+                var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
+                var rect = new Windows.Foundation.Rect(0, 0, mainDisplayInfo.Width, mainDisplayInfo.Height);
+
+                return await AppointmentManager.ShowRemoveAppointmentAsync(uwpAppointment.LocalId, rect, Windows.UI.Popups.Placement.Default, uwpAppointment.OriginalStartTime.Value);
             }
             catch (ArgumentException)
             {
@@ -464,15 +468,6 @@ namespace Xamarin.Essentials
                     throw new ArgumentOutOfRangeException($"[UWP]: No Event found for event Id {eventId}");
                 }
             }
-
-            var mainDisplayInfo = DeviceDisplay.MainDisplayInfo;
-            var rect = new Windows.Foundation.Rect(0, 0, mainDisplayInfo.Width, mainDisplayInfo.Height);
-
-            if (await AppointmentManager.ShowRemoveAppointmentAsync(uwpAppointment.LocalId, rect, Windows.UI.Popups.Placement.Default, uwpAppointment.OriginalStartTime.Value))
-            {
-                return true;
-            }
-            return false;
         }
 
         static async Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId)
