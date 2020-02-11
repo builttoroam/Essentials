@@ -14,6 +14,11 @@
     <ResourceDictionary>
       <converters:RecurrenceEndTypeToBoolConverter x:Key="RecurrenceEndTypeToBoolConverter" />
       <converters:RecurrenceUntilTypeToBoolConverter x:Key="RecurrenceUntilTypeToBoolConverter" />
+      <converters:RecurrenceDayToBoolConverter x:Key="RecurrenceDayToBoolConverter"/>
+      <essentials:CalendarDayOfWeek x:Key="NoneParameter">None</essentials:CalendarDayOfWeek>
+      <essentials:CalendarDayOfWeek x:Key="WeekdayParameter">Weekday</essentials:CalendarDayOfWeek>
+      <essentials:CalendarDayOfWeek x:Key="WeekendParameter">Weekend</essentials:CalendarDayOfWeek>
+      <essentials:CalendarDayOfWeek x:Key="AllDaysParameter">AllDays</essentials:CalendarDayOfWeek>
     </ResourceDictionary>
   </views:BasePage.Resources>
   <views:BasePage.Content>
@@ -165,25 +170,25 @@
                   <Label Text="None:"
                          Grid.Column="0"
                          Grid.Row="0"/>
-                  <Switch IsToggled="{Binding IsNone}"
+                  <Switch IsToggled="{Binding SelectedRecurrenceDay, Converter={StaticResource RecurrenceDayToBoolConverter}, ConverterParameter={StaticResource NoneParameter}}"
                           Grid.Column="1"
                           Grid.Row="0"/>
                   <Label Text="Weekdays:"
                          Grid.Column="2"
                          Grid.Row="0"/>
-                  <Switch IsToggled="{Binding IsWeekdays}"
+                  <Switch IsToggled="{Binding SelectedRecurrenceDay, Converter={StaticResource RecurrenceDayToBoolConverter}, ConverterParameter={StaticResource WeekdayParameter}}"
                           Grid.Column="3"
                           Grid.Row="0"/>
                   <Label Text="Weekend:"
                          Grid.Column="0"
                          Grid.Row="1"/>
-                  <Switch IsToggled="{Binding IsWeekend}"
+                  <Switch IsToggled="{Binding SelectedRecurrenceDay, Converter={StaticResource RecurrenceDayToBoolConverter}, ConverterParameter={StaticResource WeekendParameter}}"
                           Grid.Column="1"
                           Grid.Row="1"/>
                   <Label Text="All Days:"
                          Grid.Column="2"
                          Grid.Row="1"/>
-                  <Switch IsToggled="{Binding IsAllDays}"
+                  <Switch IsToggled="{Binding SelectedRecurrenceDay, Converter={StaticResource RecurrenceDayToBoolConverter}, ConverterParameter={StaticResource AllDaysParameter}}"
                           Grid.Column="3"
                           Grid.Row="1"/>
               </Grid>

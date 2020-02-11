@@ -292,70 +292,6 @@ namespace Samples.ViewModel
 
         public bool IsYearly => SelectedRecurrenceType == RecurrenceFrequency.Yearly || SelectedRecurrenceType == RecurrenceFrequency.YearlyOnDay;
 
-        public bool IsNone
-        {
-            get => RecurrenceDays.Where(x => x.IsChecked).Sum(x => (int)x.Day) == (int)CalendarDayOfWeek.None;
-
-            set
-            {
-                if (value)
-                {
-                    SetCheckBoxes(CalendarDayOfWeek.None);
-                    OnPropertyChanged(nameof(IsWeekdays));
-                    OnPropertyChanged(nameof(IsWeekend));
-                    OnPropertyChanged(nameof(IsAllDays));
-                }
-            }
-        }
-
-        public bool IsWeekdays
-        {
-            get => RecurrenceDays.Where(x => x.IsChecked).Sum(x => (int)x.Day) == (int)CalendarDayOfWeek.Weekday;
-
-            set
-            {
-                if (value)
-                {
-                    SetCheckBoxes(CalendarDayOfWeek.Weekday);
-                    OnPropertyChanged(nameof(IsNone));
-                    OnPropertyChanged(nameof(IsWeekend));
-                    OnPropertyChanged(nameof(IsAllDays));
-                }
-            }
-        }
-
-        public bool IsWeekend
-        {
-            get => RecurrenceDays.Where(x => x.IsChecked).Sum(x => (int)x.Day) == (int)CalendarDayOfWeek.Weekend;
-
-            set
-            {
-                if (value)
-                {
-                    SetCheckBoxes(CalendarDayOfWeek.Weekend);
-                    OnPropertyChanged(nameof(IsNone));
-                    OnPropertyChanged(nameof(IsWeekdays));
-                    OnPropertyChanged(nameof(IsAllDays));
-                }
-            }
-        }
-
-        public bool IsAllDays
-        {
-            get => RecurrenceDays.Where(x => x.IsChecked).Sum(x => (int)x.Day) == (int)CalendarDayOfWeek.AllDays;
-
-            set
-            {
-                if (value)
-                {
-                    SetCheckBoxes(CalendarDayOfWeek.AllDays);
-                    OnPropertyChanged(nameof(IsNone));
-                    OnPropertyChanged(nameof(IsWeekend));
-                    OnPropertyChanged(nameof(IsWeekdays));
-                }
-            }
-        }
-
         bool isMonthDaySpecific = true;
 
         public bool IsMonthDaySpecific
@@ -411,10 +347,21 @@ namespace Samples.ViewModel
             }
             if (!IsUpdatingCheckBoxGroup)
             {
-                OnPropertyChanged(nameof(IsNone));
-                OnPropertyChanged(nameof(IsWeekdays));
-                OnPropertyChanged(nameof(IsWeekend));
-                OnPropertyChanged(nameof(IsAllDays));
+                SelectedRecurrenceDay = (CalendarDayOfWeek)RecurrenceDays.Where(x => x.IsChecked).Sum(x => (int)x.Day);
+            }
+        }
+
+        CalendarDayOfWeek selectedRecurrenceDay;
+
+        public CalendarDayOfWeek SelectedRecurrenceDay
+        {
+            get => selectedRecurrenceDay;
+            set
+            {
+                if (SetProperty(ref selectedRecurrenceDay, value))
+                {
+                    SetCheckBoxes(value);
+                }
             }
         }
 
