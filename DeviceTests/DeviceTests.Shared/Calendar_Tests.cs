@@ -445,6 +445,56 @@ namespace DeviceTests
         }
 
         [Fact]
+        public Task Basic_Calendar_Event_Recurrence_End_Update()
+        {
+            return Utils.OnMainThread(async () =>
+            {
+                var calendars = await Calendars.GetCalendarsAsync();
+                var calendar = calendars.FirstOrDefault(x => x.Name == "Test_Calendar");
+                var calendarId = string.Empty;
+                if (calendar == null)
+                {
+                    var newCalendar = new Calendar() { Name = "Test_Calendar" };
+                    calendarId = await Calendars.CreateCalendar(newCalendar);
+                }
+                else
+                {
+                    calendarId = calendar.Id;
+                }
+
+                var startDate = TimeZoneInfo.ConvertTime(new DateTimeOffset(2019, 4, 1, 10, 30, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
+                var events = await Calendars.GetEventsAsync(calendarId, startDate, startDate.AddHours(10));
+                var newEvent = events.FirstOrDefault(x => x.Title == "Test_Event");
+                if (newEvent == null)
+                {
+                    newEvent = new CalendarEvent()
+                    {
+                        Title = "Test_Event",
+                        CalendarId = calendarId,
+                        StartDate = startDate,
+                        EndDate = startDate.AddHours(10),
+                        RecurrancePattern = new RecurrenceRule()
+                        {
+                            Frequency = RecurrenceFrequency.Daily,
+                            Interval = 1
+                        }
+                    };
+                    var eventId = await Calendars.CreateCalendarEvent(newEvent);
+                    newEvent = await Calendars.GetEventByIdAsync(eventId);
+                }
+                else
+                {
+                    newEvent = await Calendars.GetEventByIdAsync(newEvent.Id);
+                }
+
+                newEvent.AllDay = true;
+
+                var result = await Calendars.SetEventRecurrenceEndDate(newEvent.Id, startDate.AddDays(12));
+                Assert.True(result);
+            });
+        }
+
+        [Fact]
         public Task Basic_Calendar_Event_Deletion()
         {
             return Utils.OnMainThread(async () =>
