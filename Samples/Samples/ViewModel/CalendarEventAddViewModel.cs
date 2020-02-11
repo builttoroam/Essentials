@@ -284,14 +284,6 @@ namespace Samples.ViewModel
         // Recurrence Setup
         public bool CanAlterRecurrence => SelectedRecurrenceType != null;
 
-        public bool IsDaily => SelectedRecurrenceType == RecurrenceFrequency.Daily;
-
-        public bool IsWeekly => SelectedRecurrenceType == RecurrenceFrequency.Weekly;
-
-        public bool IsMonthlyOrYearly => SelectedRecurrenceType == RecurrenceFrequency.MonthlyOnDay || SelectedRecurrenceType == RecurrenceFrequency.Monthly || SelectedRecurrenceType == RecurrenceFrequency.YearlyOnDay || SelectedRecurrenceType == RecurrenceFrequency.Yearly;
-
-        public bool IsYearly => SelectedRecurrenceType == RecurrenceFrequency.Yearly || SelectedRecurrenceType == RecurrenceFrequency.YearlyOnDay;
-
         bool isMonthDaySpecific = true;
 
         public bool IsMonthDaySpecific
@@ -387,10 +379,6 @@ namespace Samples.ViewModel
                 {
                     OnPropertyChanged(nameof(CanAlterRecurrence));
                     OnPropertyChanged(nameof(DisplayTimeInformation));
-                    OnPropertyChanged(nameof(IsDaily));
-                    OnPropertyChanged(nameof(IsWeekly));
-                    OnPropertyChanged(nameof(IsMonthlyOrYearly));
-                    OnPropertyChanged(nameof(IsYearly));
                     OnPropertyChanged(nameof(SelectedRecurrenceTypeDisplay));
                 }
             }
