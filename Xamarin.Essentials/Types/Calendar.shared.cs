@@ -92,6 +92,7 @@ namespace Xamarin.Essentials
 
     public enum RecurrenceFrequency
     {
+        None = -1,
         Daily = 0,
         Weekly = 1,
         Monthly = 2,
@@ -138,7 +139,7 @@ namespace Xamarin.Essentials
         First = 1,
         Second = 2,
         Third = 3,
-        Fourth = 4,
+        Fourth = 4
     }
 
 #else

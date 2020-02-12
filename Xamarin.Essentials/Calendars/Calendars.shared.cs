@@ -22,6 +22,8 @@ namespace Xamarin.Essentials
 
         public static Task<bool> UpdateCalendarEvent(CalendarEvent eventToUpdate) => PlatformUpdateCalendarEvent(eventToUpdate);
 
+        public static Task<bool> SetEventRecurrenceEndDate(string eventId, DateTimeOffset recurrenceEndDate) => PlatformSetEventRecurrenceEndDate(eventId, recurrenceEndDate);
+
         public static Task<bool> DeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc) => PlatformDeleteCalendarEventInstanceByDate(eventId, calendarId, dateOfInstanceUtc);
 
         public static Task<bool> DeleteCalendarEventById(string eventId, string calendarId) => PlatformDeleteCalendarEventById(eventId, calendarId);

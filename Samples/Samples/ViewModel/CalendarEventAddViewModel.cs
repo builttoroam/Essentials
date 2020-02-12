@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -207,7 +207,7 @@ namespace Samples.ViewModel
                 }
             }
         }
-
+        
         public string EventActionText => string.IsNullOrEmpty(EventId) ? "Add Event" : "Update Event";
 
         public string EventId { get; set; }

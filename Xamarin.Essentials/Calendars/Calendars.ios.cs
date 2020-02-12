@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using EventKit;
@@ -345,6 +346,28 @@ namespace Xamarin.Essentials
             throw new ArgumentException("[iOS]: Could not update appointment with supplied parameters");
         }
 
+        static async Task<bool> PlatformSetEventRecurrenceEndDate(string eventId, DateTimeOffset recurrenceEndDate)
+        {
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
+
+            var existingEvent = await GetEventByIdAsync(eventId);
+            if (string.IsNullOrEmpty(existingEvent?.CalendarId))
+            {
+                return false;
+            }
+            var thisEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
+
+            existingEvent.RecurrancePattern.EndDate = recurrenceEndDate;
+            existingEvent.RecurrancePattern.TotalOccurrences = null;
+            thisEvent = SetUpEvent(thisEvent, existingEvent);
+
+            if (!CalendarRequest.Instance.SaveEvent(thisEvent, EKSpan.FutureEvents, true, out var error))
+            {
+                throw new ArgumentException("[iOS]: Could not update appointments recurrence dates with supplied parameters");
+            }
+            return true;
+        }
+
         static EKEvent SetUpEvent(EKEvent eventToUpdate, CalendarEvent eventToUpdateFrom)
         {
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(NSTimeZone.LocalTimeZone.Name);
@@ -385,7 +408,7 @@ namespace Xamarin.Essentials
 
         static EKRecurrenceDayOfWeek[] ConvertToiOS(this List<CalendarDayOfWeek> daysOfTheWeek)
         {
-            if (daysOfTheWeek == null || daysOfTheWeek.Count == 0)
+            if (daysOfTheWeek == null || !daysOfTheWeek.Any())
                 return null;
 
             var toReturn = new List<EKRecurrenceDayOfWeek>();
@@ -419,15 +442,17 @@ namespace Xamarin.Essentials
             {
                 throw new ArgumentException("[iOS]: You must supply an event id to delete an event.");
             }
+            var calendars = CalendarRequest.Instance.Calendars.Where(x => x.CalendarIdentifier == calendarId).ToArray();
+            var query = CalendarRequest.Instance.PredicateForEvents(dateOfInstanceUtc.ToNSDate(), dateOfInstanceUtc.AddDays(1).ToNSDate(), calendars);
+            var events = CalendarRequest.Instance.EventsMatching(query);
+            var thisEvent = events.FirstOrDefault(x => x.CalendarItemIdentifier == eventId);
 
-            var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
-
-            if (calendarEvent.Calendar.CalendarIdentifier != calendarId)
+            if ((thisEvent?.Calendar.CalendarIdentifier ?? string.Empty) != calendarId)
             {
                 throw new ArgumentOutOfRangeException("[iOS]: Supplied event does not belong to supplied calendar.");
             }
 
-            if (CalendarRequest.Instance.RemoveEvent(calendarEvent, EKSpan.ThisEvent, true, out var error))
+            if (CalendarRequest.Instance.RemoveEvent(thisEvent, EKSpan.ThisEvent, true, out var error))
             {
                 return true;
             }
@@ -445,7 +470,7 @@ namespace Xamarin.Essentials
 
             var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
 
-            if (calendarEvent.Calendar.CalendarIdentifier != calendarId)
+            if ((calendarEvent?.Calendar.CalendarIdentifier ?? string.Empty) != calendarId)
             {
                 throw new ArgumentOutOfRangeException("[iOS]: Supplied event does not belong to supplied calendar.");
             }
@@ -463,7 +488,7 @@ namespace Xamarin.Essentials
 
             var calendar = EKCalendar.Create(EKEntityType.Event, CalendarRequest.Instance);
             calendar.Title = newCalendar.Name;
-            var source = CalendarRequest.Instance.Sources.Where(x => x.SourceType == EKSourceType.Local).FirstOrDefault();
+            var source = CalendarRequest.Instance.Sources.FirstOrDefault(x => x.SourceType == EKSourceType.Local);
             calendar.Source = source;
 
             if (CalendarRequest.Instance.SaveCalendar(calendar, true, out var error))

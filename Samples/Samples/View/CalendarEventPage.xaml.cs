@@ -10,6 +10,15 @@ namespace Samples.View
 {
     public partial class CalendarEventPage : BasePage
     {
+        const string actionResponseDeleteAll = "Yes to All";
+        const string actionResponseDeleteOne = "Just this one";
+        const string actionResponseDeleteForward = "From this date forward";
+        const string actionResponseOk = "Ok";
+        const string actionResponseYes = "Yes";
+        const string actionResponseCancel = "Cancel";
+        const string actionTitleInfo = "Info";
+        const string actionTitleWarning = "Warning!";
+
         CalendarEvent ViewModel => BindingContext as CalendarEvent;
 
         public CalendarEventPage()
@@ -29,28 +38,43 @@ namespace Samples.View
             if (!(calendarEvent is CalendarEvent))
                 return;
 
-            var answer = await DisplayAlert("Warning!", $"Are you sure you want to delete {calendarEvent.Title}? (this cannot be undone)", "Yes", "Cancel");
+            var answer = await DisplayAlert(actionTitleWarning, $"Are you sure you want to delete {calendarEvent.Title}? (this cannot be undone)", actionResponseYes, actionResponseCancel);
             if (answer)
             {
                 if (calendarEvent.RecurrancePattern != null)
                 {
-                    if (await DisplayAlert("Warning!", $"Do you want to delete all instances of this event?", "Yes All", "Just this one"))
+                    var action = await DisplayActionSheet("Do you want to delete all instances of this event?", actionResponseCancel, null, actionResponseDeleteAll, actionResponseDeleteOne, actionResponseDeleteForward);
+                    var deletionConfirmed = false;
+                    var deletionMessage = string.Empty;
+                    switch (action)
                     {
-                        if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
-                        {
-                            await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
-                            await Navigation.PopAsync();
-                        }
+                        case actionResponseDeleteAll:
+                            deletionConfirmed = await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text);
+                            deletionMessage = $"Deleted event id: {eventId}";
+                            break;
+                        case actionResponseDeleteOne:
+                            deletionConfirmed = await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate);
+                            deletionMessage = $"Deleted instance of event id: {eventId}";
+                            break;
+                        case actionResponseDeleteForward:
+                            deletionConfirmed = await Calendars.SetEventRecurrenceEndDate(eventId, calendarEvent.StartDate.AddDays(-1));
+                            deletionMessage = $"Deleted all future instances of event id: {eventId}";
+                            break;
                     }
-                    else if (await Calendars.DeleteCalendarEventInstanceByDate(eventId, CalendarId.Text, calendarEvent.StartDate))
+
+                    if (deletionConfirmed)
                     {
-                        await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                        await DisplayAlert(actionTitleInfo, deletionMessage, actionResponseOk);
                         await Navigation.PopAsync();
+                    }
+                    else
+                    {
+                        await DisplayAlert(actionTitleInfo, "Unable to delete event: " + eventId, actionResponseOk);
                     }
                 }
                 else if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
                 {
-                    await DisplayAlert("Info", "Deleted event id: " + eventId, "Ok");
+                    await DisplayAlert(actionTitleInfo, "Deleted event id: " + eventId, actionResponseOk);
                     await Navigation.PopAsync();
                 }
             }
