@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -52,10 +52,17 @@ namespace Samples.ViewModel
 
     public class CalendarEventAddViewModel : BaseViewModel
     {
+        static TimeSpan RoundToNearestMinutes(TimeSpan input, int minutes)
+        {
+            var totalMinutes = (int)(input + new TimeSpan(0, minutes / 2, 0)).TotalMinutes;
+
+            return new TimeSpan(0, totalMinutes - (totalMinutes % minutes), 0);
+        }
+
         bool allDay;
         string description;
         DateTime endDate = DateTime.Now.Date;
-        TimeSpan endTime = DateTime.Now.AddHours(2).TimeOfDay.RoundToNearestMinutes(30);
+        TimeSpan endTime = RoundToNearestMinutes(DateTime.Now.AddHours(2).TimeOfDay, 30);
         string eventLocation;
         string eventTitle;
         bool isMonthDaySpecific = true;
@@ -70,7 +77,7 @@ namespace Samples.ViewModel
         RecurrenceFrequency? selectedRecurrenceType = null;
         MonthOfYear selectedRecurrenceYearlyMonth = MonthOfYear.January;
         DateTime startDate = DateTime.Now.Date;
-        TimeSpan startTime = DateTime.Now.AddHours(1).TimeOfDay.RoundToNearestMinutes(30);
+        TimeSpan startTime = RoundToNearestMinutes(DateTime.Now.AddHours(1).TimeOfDay, 30);
         string url;
 
         public CalendarEventAddViewModel(string calendarId, string calendarName, CalendarEvent existingEvent = null)
@@ -207,7 +214,7 @@ namespace Samples.ViewModel
                 }
             }
         }
-        
+
         public string EventActionText => string.IsNullOrEmpty(EventId) ? "Add Event" : "Update Event";
 
         public string EventId { get; set; }

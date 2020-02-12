@@ -24,7 +24,7 @@ namespace Samples.Converters
         {
             if (value == null || !(value is bool switchValue) || !(parameter is CalendarDayOfWeek expectedResult) || switchValue == false)
             {
-                return false;
+                return null;
             }
 
             return expectedResult;

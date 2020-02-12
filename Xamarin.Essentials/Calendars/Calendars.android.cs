@@ -92,7 +92,7 @@ namespace Xamarin.Essentials
 
             var instancesUri = instanceUriBuilder.Build();
             var calendarSpecificEvent = string.Empty;
-          
+
             if (!string.IsNullOrEmpty(calendarId))
             {
                 // Android event ids are always integers
