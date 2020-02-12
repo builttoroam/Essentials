@@ -614,12 +614,12 @@ namespace Xamarin.Essentials
                 recurranceRule.DaysOfTheWeek = new List<DayOfTheWeek>();
                 foreach (var ruleOccurenceDay in ruleOccurenceDays.Split(','))
                 {
-                    var day = d;
+                    var day = ruleOccurenceDay;
                     var regex = new Regex(@"[-]?\d+");
-                    var iterationOffset = regex.Match(d);
+                    var iterationOffset = regex.Match(ruleOccurenceDay);
                     if (iterationOffset.Success)
                     {
-                        day = d.Substring(iterationOffset.Index + iterationOffset.Length);
+                        day = ruleOccurenceDay.Substring(iterationOffset.Index + iterationOffset.Length);
 
                         if (recurranceRule.Frequency == RecurrenceFrequency.Monthly)
                         {
