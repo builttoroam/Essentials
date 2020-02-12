@@ -18,6 +18,8 @@ namespace Xamarin.Essentials
 
         static Task<bool> PlatformUpdateCalendarEvent(CalendarEvent eventToUpdate) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
+        static Task<bool> PlatformSetEventRecurrenceEndDate(string eventId, DateTimeOffset recurrenceEndDate) => throw ExceptionUtils.NotSupportedOrImplementedException;
+
         static Task<bool> PlatformDeleteCalendarEventInstanceByDate(string eventId, string calendarId, DateTimeOffset dateOfInstanceUtc) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
         static Task<bool> PlatformDeleteCalendarEventById(string eventId, string calendarId) => throw ExceptionUtils.NotSupportedOrImplementedException;

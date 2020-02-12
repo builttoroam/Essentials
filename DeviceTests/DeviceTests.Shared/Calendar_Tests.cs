@@ -162,7 +162,7 @@ namespace DeviceTests
                     Frequency = RecurrenceFrequency.YearlyOnDay,
                     Interval = 1,
                     WeekOfMonth = IterationOffset.Second,
-                    DaysOfTheWeek = new List<DayOfTheWeek>() { DayOfTheWeek.Thursday },
+                    DaysOfTheWeek = new List<CalendarDayOfWeek>() { CalendarDayOfWeek.Thursday },
                     MonthOfTheYear = MonthOfYear.April,
                     TotalOccurrences = 4
                 };
