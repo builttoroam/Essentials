@@ -13,6 +13,8 @@ namespace Samples.ViewModel
 
         const string endOfDay = "23:59";
 
+        bool alreadyAppeared;
+
         public CalendarViewModel()
         {
             GetCalendars = new Command(OnClickGetCalendars);
@@ -22,6 +24,18 @@ namespace Samples.ViewModel
             EndTimeSelectedCommand = new Command(OnEndTimeSelected);
             StartDateEnabledCheckBoxChanged = new Command(OnStartCheckboxChanged);
             EndDateEnabledCheckBoxChanged = new Command(OnEndCheckboxChanged);
+        }
+
+        public override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            if (!alreadyAppeared)
+            {
+                alreadyAppeared = true;
+
+                RefreshCalendars();
+            }
         }
 
         Calendar selectedCalendar;
