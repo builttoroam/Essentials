@@ -110,9 +110,9 @@ namespace Xamarin.Essentials
         Thursday = 16,
         Friday = 32,
         Saturday = 64,
-        Weekday = CalendarDayOfWeek.Monday | CalendarDayOfWeek.Tuesday | CalendarDayOfWeek.Wednesday | CalendarDayOfWeek.Thursday | CalendarDayOfWeek.Friday,
-        Weekend = CalendarDayOfWeek.Saturday | CalendarDayOfWeek.Sunday,
-        AllDays = CalendarDayOfWeek.Monday | CalendarDayOfWeek.Tuesday | CalendarDayOfWeek.Wednesday | CalendarDayOfWeek.Thursday | CalendarDayOfWeek.Friday | CalendarDayOfWeek.Saturday | CalendarDayOfWeek.Sunday,
+        Weekday = Monday | Tuesday | Wednesday | Thursday | Friday,
+        Weekend = Saturday | Sunday,
+        AllDays = Monday | Tuesday | Wednesday | Thursday | Friday | Saturday | Sunday,
     }
 
     public enum MonthOfYear

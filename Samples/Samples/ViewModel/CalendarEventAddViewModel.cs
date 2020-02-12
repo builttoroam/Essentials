@@ -13,26 +13,24 @@ namespace Samples.ViewModel
 {
     public static class RecurrenceEndType
     {
-        public const string Indefinitely = "Indefinitely";
-
         public const string AfterOccurences = "After a set number of times";
-
+        public const string Indefinitely = "Indefinitely";
         public const string UntilEndDate = "Continues until a specified date";
     }
 
     public class CalendarDayOfWeekSwitch : INotifyPropertyChanged
     {
+        bool isChecked;
+
         public CalendarDayOfWeekSwitch(CalendarDayOfWeek val, PropertyChangedEventHandler propertyChangedCallBack)
         {
             Day = val;
             PropertyChanged += propertyChangedCallBack;
         }
 
-        bool isChecked;
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public CalendarDayOfWeek Day { get; set; }
-
-        public override string ToString() => Day.ToString();
 
         public bool IsChecked
         {
@@ -47,13 +45,34 @@ namespace Samples.ViewModel
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public override string ToString() => Day.ToString();
 
         protected void OnPropertyChanged([CallerMemberName]string propertyName = "") => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 
     public class CalendarEventAddViewModel : BaseViewModel
     {
+        bool allDay;
+        string description;
+        DateTime endDate = DateTime.Now.Date;
+        TimeSpan endTime = DateTime.Now.AddHours(2).TimeOfDay.RoundToNearestMinutes(30);
+        string eventLocation;
+        string eventTitle;
+        bool isMonthDaySpecific = true;
+        DateTime? recurrenceEndDate;
+        uint? recurrenceEndInterval;
+        uint recurrenceInterval = 1;
+        CalendarDayOfWeek? selectedMonthWeekRecurrenceDay = null;
+        CalendarDayOfWeek selectedRecurrenceDay;
+        string selectedRecurrenceEndType = "Indefinitely";
+        uint selectedRecurrenceMonthDay = 1;
+        IterationOffset? selectedRecurrenceMonthWeek = null;
+        RecurrenceFrequency? selectedRecurrenceType = null;
+        MonthOfYear selectedRecurrenceYearlyMonth = MonthOfYear.January;
+        DateTime startDate = DateTime.Now.Date;
+        TimeSpan startTime = DateTime.Now.AddHours(1).TimeOfDay.RoundToNearestMinutes(30);
+        string url;
+
         public CalendarEventAddViewModel(string calendarId, string calendarName, CalendarEvent existingEvent = null)
         {
             CalendarId = calendarId;
@@ -131,85 +150,6 @@ namespace Samples.ViewModel
             CreateOrUpdateEvent = new Command(CreateOrUpdateCalendarEvent);
         }
 
-        public string EventId { get; set; }
-
-        public string CalendarId { get; set; }
-
-        public string CalendarName { get; set; }
-
-        string eventTitle;
-
-        public string EventTitle
-        {
-            get => eventTitle;
-            set
-            {
-                if (SetProperty(ref eventTitle, value))
-                {
-                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
-                }
-            }
-        }
-
-        public string EventActionText => string.IsNullOrEmpty(EventId) ? "Add Event" : "Update Event";
-
-        public bool CanCreateOrUpdateEvent => !string.IsNullOrWhiteSpace(EventTitle)
-            && ((EndDate.Date == StartDate.Date && (EndTime > StartTime || AllDay)) || EndDate.Date > StartDate.Date)
-            && (!CanAlterRecurrence || StartDate < RecurrenceEndDate || SelectedRecurrenceEndType == RecurrenceEndType.Indefinitely || (RecurrenceEndInterval.HasValue && RecurrenceEndInterval.Value > 0))
-            && IsValidUrl(Url);
-
-        string description;
-
-        public string Description
-        {
-            get => description;
-            set => SetProperty(ref description, value);
-        }
-
-        string url;
-
-        public string Url
-        {
-            get => url;
-            set
-            {
-                if (SetProperty(ref url, value))
-                {
-                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
-                }
-            }
-        }
-
-        public bool IsValidUrl(string url)
-        {
-            if (string.IsNullOrEmpty(url))
-            {
-                return true;
-            }
-            else if (!Regex.IsMatch(url, @"^https?:\/\/", RegexOptions.IgnoreCase))
-            {
-                url = "http://" + url;
-                Url = url;
-            }
-
-            if (Uri.TryCreate(url, UriKind.Absolute, out var uriResult))
-            {
-                return uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps;
-            }
-
-            return false;
-        }
-
-        string eventLocation;
-
-        public string EventLocation
-        {
-            get => eventLocation;
-            set => SetProperty(ref eventLocation, value);
-        }
-
-        bool allDay;
-
         public bool AllDay
         {
             get => allDay;
@@ -223,35 +163,26 @@ namespace Samples.ViewModel
             }
         }
 
-        DateTime startDate = DateTime.Now.Date;
+        public string CalendarId { get; set; }
 
-        public DateTime StartDate
+        public string CalendarName { get; set; }
+
+        public bool CanAlterRecurrence => SelectedRecurrenceType != null;
+
+        public bool CanCreateOrUpdateEvent => !string.IsNullOrWhiteSpace(EventTitle)
+            && ((EndDate.Date == StartDate.Date && (EndTime > StartTime || AllDay)) || EndDate.Date > StartDate.Date)
+            && (!CanAlterRecurrence || StartDate < RecurrenceEndDate || SelectedRecurrenceEndType == RecurrenceEndType.Indefinitely || (RecurrenceEndInterval.HasValue && RecurrenceEndInterval.Value > 0))
+            && IsValidUrl(Url);
+
+        public ICommand CreateOrUpdateEvent { get; }
+
+        public string Description
         {
-            get => startDate;
-            set
-            {
-                if (SetProperty(ref startDate, value))
-                {
-                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
-                }
-            }
+            get => description;
+            set => SetProperty(ref description, value);
         }
 
-        TimeSpan startTime = DateTime.Now.AddHours(1).TimeOfDay.RoundToNearestMinutes(30);
-
-        public TimeSpan StartTime
-        {
-            get => startTime;
-            set
-            {
-                if (SetProperty(ref startTime, value))
-                {
-                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
-                }
-            }
-        }
-
-        DateTime endDate = DateTime.Now.Date;
+        public bool DisplayTimeInformation => !AllDay && !CanAlterRecurrence;
 
         public DateTime EndDate
         {
@@ -265,8 +196,6 @@ namespace Samples.ViewModel
             }
         }
 
-        TimeSpan endTime = DateTime.Now.AddHours(2).TimeOfDay.RoundToNearestMinutes(30);
-
         public TimeSpan EndTime
         {
             get => endTime;
@@ -279,12 +208,27 @@ namespace Samples.ViewModel
             }
         }
 
-        public bool DisplayTimeInformation => !AllDay && !CanAlterRecurrence;
+        public string EventActionText => string.IsNullOrEmpty(EventId) ? "Add Event" : "Update Event";
 
-        // Recurrence Setup
-        public bool CanAlterRecurrence => SelectedRecurrenceType != null;
+        public string EventId { get; set; }
 
-        bool isMonthDaySpecific = true;
+        public string EventLocation
+        {
+            get => eventLocation;
+            set => SetProperty(ref eventLocation, value);
+        }
+
+        public string EventTitle
+        {
+            get => eventTitle;
+            set
+            {
+                if (SetProperty(ref eventTitle, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
+                }
+            }
+        }
 
         public bool IsMonthDaySpecific
         {
@@ -309,84 +253,49 @@ namespace Samples.ViewModel
             }
         }
 
-        bool IsUpdatingCheckBoxGroup { get; set; } = false;
-
-        void SetCheckBoxes(CalendarDayOfWeek bitFlagValue)
+        public List<CalendarDayOfWeek> MonthWeekRecurrenceDay { get; set; } = new List<CalendarDayOfWeek>()
         {
-            try
-            {
-                IsUpdatingCheckBoxGroup = true;
-                foreach (var day in RecurrenceDays)
-                {
-                    day.IsChecked = bitFlagValue.HasFlag(day.Day);
-                }
-            }
-            finally
-            {
-                IsUpdatingCheckBoxGroup = false;
-            }
-        }
-
-        void OnChildCheckBoxChangedEvent(object sender, PropertyChangedEventArgs e)
-        {
-            if (sender == null)
-            {
-                return;
-            }
-            if (!(sender is CalendarDayOfWeekSwitch calendarDayOfWeek))
-            {
-                return;
-            }
-            if (!IsUpdatingCheckBoxGroup)
-            {
-                SelectedRecurrenceDay = (CalendarDayOfWeek)RecurrenceDays.Where(x => x.IsChecked).Sum(x => (int)x.Day);
-            }
-        }
-
-        CalendarDayOfWeek selectedRecurrenceDay;
-
-        public CalendarDayOfWeek SelectedRecurrenceDay
-        {
-            get => selectedRecurrenceDay;
-            set
-            {
-                if (SetProperty(ref selectedRecurrenceDay, value))
-                {
-                    SetCheckBoxes(value);
-                }
-            }
-        }
+            CalendarDayOfWeek.Monday,
+            CalendarDayOfWeek.Tuesday,
+            CalendarDayOfWeek.Wednesday,
+            CalendarDayOfWeek.Thursday,
+            CalendarDayOfWeek.Friday,
+            CalendarDayOfWeek.Saturday,
+            CalendarDayOfWeek.Sunday
+        };
 
         public ObservableCollection<CalendarDayOfWeekSwitch> RecurrenceDays { get; }
 
-        public List<RecurrenceFrequency> RecurrenceTypes { get; } = new List<RecurrenceFrequency>()
+        public DateTime? RecurrenceEndDate
         {
-            RecurrenceFrequency.Daily,
-            RecurrenceFrequency.Weekly,
-            RecurrenceFrequency.Monthly,
-            RecurrenceFrequency.Yearly
-        };
-
-        RecurrenceFrequency? selectedRecurrenceType = null;
-
-        public RecurrenceFrequency? SelectedRecurrenceType
-        {
-            get => selectedRecurrenceType;
-
+            get => recurrenceEndDate;
             set
             {
-                if (SetProperty(ref selectedRecurrenceType, value))
+                if (SetProperty(ref recurrenceEndDate, value))
                 {
-                    OnPropertyChanged(nameof(CanAlterRecurrence));
-                    OnPropertyChanged(nameof(DisplayTimeInformation));
-                    OnPropertyChanged(nameof(SelectedRecurrenceTypeDisplay));
+                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
                 }
             }
         }
 
-        public string SelectedRecurrenceTypeDisplay => SelectedRecurrenceType.ToString().Replace("ily", "yly").Replace("ly", "(s)");
+        public uint? RecurrenceEndInterval
+        {
+            get => recurrenceEndInterval;
+            set
+            {
+                if (SetProperty(ref recurrenceEndInterval, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
+                }
+            }
+        }
 
-        uint recurrenceInterval = 1;
+        public ObservableCollection<string> RecurrenceEndTypes { get; } = new ObservableCollection<string>()
+        {
+            RecurrenceEndType.Indefinitely,
+            RecurrenceEndType.AfterOccurences,
+            RecurrenceEndType.UntilEndDate
+        };
 
         public uint RecurrenceInterval
         {
@@ -399,23 +308,6 @@ namespace Samples.ViewModel
             1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
         };
 
-        uint selectedRecurrenceMonthDay = 1;
-
-        public uint SelectedRecurrenceMonthDay
-        {
-            get => selectedRecurrenceMonthDay;
-            set
-            {
-                if (SetProperty(ref selectedRecurrenceMonthDay, value))
-                {
-                    if (value != 0)
-                    {
-                        IsMonthDaySpecific = true;
-                    }
-                }
-            }
-        }
-
         public List<IterationOffset> RecurrenceMonthWeek { get; } = new List<IterationOffset>()
         {
             IterationOffset.First,
@@ -425,32 +317,13 @@ namespace Samples.ViewModel
             IterationOffset.Last
         };
 
-        IterationOffset? selectedRecurrenceMonthWeek = null;
-
-        public IterationOffset? SelectedRecurrenceMonthWeek
+        public List<RecurrenceFrequency> RecurrenceTypes { get; } = new List<RecurrenceFrequency>()
         {
-            get => selectedRecurrenceMonthWeek;
-            set => SetProperty(ref selectedRecurrenceMonthWeek, value);
-        }
-
-        public List<CalendarDayOfWeek> MonthWeekRecurrenceDay { get; set; } = new List<CalendarDayOfWeek>()
-        {
-            CalendarDayOfWeek.Monday,
-            CalendarDayOfWeek.Tuesday,
-            CalendarDayOfWeek.Wednesday,
-            CalendarDayOfWeek.Thursday,
-            CalendarDayOfWeek.Friday,
-            CalendarDayOfWeek.Saturday,
-            CalendarDayOfWeek.Sunday
+            RecurrenceFrequency.Daily,
+            RecurrenceFrequency.Weekly,
+            RecurrenceFrequency.Monthly,
+            RecurrenceFrequency.Yearly
         };
-
-        CalendarDayOfWeek? selectedMonthWeekRecurrenceDay = null;
-
-        public CalendarDayOfWeek? SelectedMonthWeekRecurrenceDay
-        {
-            get => selectedMonthWeekRecurrenceDay;
-            set => SetProperty(ref selectedMonthWeekRecurrenceDay, value);
-        }
 
         public List<MonthOfYear> RecurrenceYearlyMonth { get; } = new List<MonthOfYear>()
         {
@@ -468,30 +341,23 @@ namespace Samples.ViewModel
             MonthOfYear.December
         };
 
-        MonthOfYear selectedRecurrenceYearlyMonth = MonthOfYear.January;
-
-        public MonthOfYear SelectedRecurrenceYearlyMonth
+        public CalendarDayOfWeek? SelectedMonthWeekRecurrenceDay
         {
-            get => selectedRecurrenceYearlyMonth;
+            get => selectedMonthWeekRecurrenceDay;
+            set => SetProperty(ref selectedMonthWeekRecurrenceDay, value);
+        }
+
+        public CalendarDayOfWeek SelectedRecurrenceDay
+        {
+            get => selectedRecurrenceDay;
             set
             {
-                if (SetProperty(ref selectedRecurrenceYearlyMonth, value))
+                if (SetProperty(ref selectedRecurrenceDay, value))
                 {
-                    var days = Enumerable.Range(1, DateTime.DaysInMonth(StartDate.Year, (int)value)).Select(x => (uint)x).ToList();
-                    RecurrenceMonthDay.Clear();
-                    days.ForEach(x => RecurrenceMonthDay.Add(x));
+                    SetCheckBoxes(value);
                 }
             }
         }
-
-        public ObservableCollection<string> RecurrenceEndTypes { get; } = new ObservableCollection<string>()
-        {
-            RecurrenceEndType.Indefinitely,
-            RecurrenceEndType.AfterOccurences,
-            RecurrenceEndType.UntilEndDate
-        };
-
-        string selectedRecurrenceEndType = "Indefinitely";
 
         public string SelectedRecurrenceEndType
         {
@@ -525,35 +391,115 @@ namespace Samples.ViewModel
             }
         }
 
-        DateTime? recurrenceEndDate;
-
-        public DateTime? RecurrenceEndDate
+        public uint SelectedRecurrenceMonthDay
         {
-            get => recurrenceEndDate;
+            get => selectedRecurrenceMonthDay;
             set
             {
-                if (SetProperty(ref recurrenceEndDate, value))
+                if (SetProperty(ref selectedRecurrenceMonthDay, value))
+                {
+                    if (value != 0)
+                    {
+                        IsMonthDaySpecific = true;
+                    }
+                }
+            }
+        }
+
+        public IterationOffset? SelectedRecurrenceMonthWeek
+        {
+            get => selectedRecurrenceMonthWeek;
+            set => SetProperty(ref selectedRecurrenceMonthWeek, value);
+        }
+
+        public RecurrenceFrequency? SelectedRecurrenceType
+        {
+            get => selectedRecurrenceType;
+
+            set
+            {
+                if (SetProperty(ref selectedRecurrenceType, value))
+                {
+                    OnPropertyChanged(nameof(CanAlterRecurrence));
+                    OnPropertyChanged(nameof(DisplayTimeInformation));
+                    OnPropertyChanged(nameof(SelectedRecurrenceTypeDisplay));
+                }
+            }
+        }
+
+        public string SelectedRecurrenceTypeDisplay => SelectedRecurrenceType.ToString().Replace("ily", "yly").Replace("ly", "(s)");
+
+        public MonthOfYear SelectedRecurrenceYearlyMonth
+        {
+            get => selectedRecurrenceYearlyMonth;
+            set
+            {
+                if (SetProperty(ref selectedRecurrenceYearlyMonth, value))
+                {
+                    var days = Enumerable.Range(1, DateTime.DaysInMonth(StartDate.Year, (int)value)).Select(x => (uint)x).ToList();
+                    RecurrenceMonthDay.Clear();
+                    days.ForEach(x => RecurrenceMonthDay.Add(x));
+                }
+            }
+        }
+
+        public DateTime StartDate
+        {
+            get => startDate;
+            set
+            {
+                if (SetProperty(ref startDate, value))
                 {
                     OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
                 }
             }
         }
 
-        uint? recurrenceEndInterval;
-
-        public uint? RecurrenceEndInterval
+        public TimeSpan StartTime
         {
-            get => recurrenceEndInterval;
+            get => startTime;
             set
             {
-                if (SetProperty(ref recurrenceEndInterval, value))
+                if (SetProperty(ref startTime, value))
                 {
                     OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
                 }
             }
         }
 
-        public ICommand CreateOrUpdateEvent { get; }
+        public string Url
+        {
+            get => url;
+            set
+            {
+                if (SetProperty(ref url, value))
+                {
+                    OnPropertyChanged(nameof(CanCreateOrUpdateEvent));
+                }
+            }
+        }
+
+        bool IsUpdatingCheckBoxGroup { get; set; } = false;
+
+        public bool IsValidUrl(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                return true;
+            }
+            else if (!Regex.IsMatch(url, @"^https?:\/\/", RegexOptions.IgnoreCase))
+            {
+                url = "http://" + url;
+                Url = url;
+            }
+
+            if (Uri.TryCreate(url, UriKind.Absolute, out var uriResult))
+            {
+                return uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps;
+            }
+
+            return false;
+        }
 
         async void CreateOrUpdateCalendarEvent()
         {
@@ -624,6 +570,38 @@ namespace Samples.ViewModel
                 {
                     await DisplayAlertAsync("Updated event id: " + newEvent.Id);
                 }
+            }
+        }
+
+        void OnChildCheckBoxChangedEvent(object sender, PropertyChangedEventArgs e)
+        {
+            if (sender == null)
+            {
+                return;
+            }
+            if (!(sender is CalendarDayOfWeekSwitch calendarDayOfWeek))
+            {
+                return;
+            }
+            if (!IsUpdatingCheckBoxGroup)
+            {
+                SelectedRecurrenceDay = (CalendarDayOfWeek)RecurrenceDays.Where(x => x.IsChecked).Sum(x => (int)x.Day);
+            }
+        }
+
+        void SetCheckBoxes(CalendarDayOfWeek bitFlagValue)
+        {
+            try
+            {
+                IsUpdatingCheckBoxGroup = true;
+                foreach (var day in RecurrenceDays)
+                {
+                    day.IsChecked = bitFlagValue.HasFlag(day.Day);
+                }
+            }
+            finally
+            {
+                IsUpdatingCheckBoxGroup = false;
             }
         }
     }
