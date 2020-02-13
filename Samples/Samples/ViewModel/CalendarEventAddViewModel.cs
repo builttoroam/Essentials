@@ -63,7 +63,7 @@ namespace Samples.ViewModel
             new DayOfTheWeekSwitch() { Day = DayOfTheWeek.Sunday, IsChecked = false }
         };
 
-        public CalendarEventAddViewModel(string calendarId, string calendarName, CalendarEvent existingEvent = null)
+        public CalendarEventAddViewModel(string calendarId, string calendarName, CalendarEventViewModel existingEvent = null)
         {
             CalendarId = calendarId;
             CalendarName = calendarName;

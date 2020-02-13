@@ -5,8 +5,9 @@
                 xmlns:viewmodels="clr-namespace:Samples.ViewModel"
                 xmlns:essentials="clr-namespace:Xamarin.Essentials;assembly=Xamarin.Essentials"
                 xmlns:converters="clr-namespace:Samples.Converters;assembly=Samples"
+                xmlns:behaviors="clr-namespace:Samples.Behaviors;assembly=Samples"
                 x:Class="Samples.View.CalendarEventPage"
-                x:DataType="essentials:CalendarEvent"
+                x:DataType="viewmodels:CalendarEventViewModel"
                 Title="Event"
                 Padding="20,20,20,20">
   <views:BasePage.Resources>
@@ -14,6 +15,7 @@
       <x:String x:Key="DateDisplayFormatter">{0:dd/MM/yy hh:mm tt}</x:String>
       <x:String x:Key="TimeSpanFormatter">{0:h\:mm}</x:String>
       <converters:AttendeeRequiredColorConverter x:Key="AttendeeRequiredColorConverter" />
+      <converters:RemoveCalendarAttendeeEventArgsConverter x:Key="RemoveCalendarAttendeeEventArgsConverter" />
       <converters:ReminderTextConverter x:Key="ReminderTextConverter" />
       <converters:RecurrenceRuleTextConverter x:Key="RecurrenceRuleTextConverter" />
       <converters:StartWidthDisplayConverter x:Key="StartWidthDisplayConverter" />
@@ -138,22 +140,22 @@
                    Grid.Column="0"/>
             <Entry x:Name="Reminder"
                    Placeholder="X Minutes..."
-                   Text="{Binding Reminder.MinutesPriorToEventStart}"
+                   Text="{Binding ReminderMinutes}"
                    Grid.Column="1"
                    IsVisible="{Binding HasReminder, Converter={StaticResource NegativeConverter}}"
                    Keyboard="Numeric"/>
             <Button Text="Add"
                     Grid.Column="2"
-                    Clicked="OnAddReminderFromEventButtonClicked"
+                    Command="{Binding AddReminderClickedCommand}"
                     IsVisible="{Binding HasReminder, Converter={StaticResource NegativeConverter}}"/>
-            <Label Text="{Binding Reminder.MinutesPriorToEventStart, Converter={StaticResource ReminderTextConverter}}"
+            <Label Text="{Binding ReminderMinutes, Converter={StaticResource ReminderTextConverter}}"
                    Grid.Column="1"
                    IsVisible="{Binding HasReminder}"/>
             <Button Grid.Column="2"
                     Margin="0,0,15,0"
                     BackgroundColor="Red"
                     Text=" - "
-                    Clicked="OnRemoveReminderFromEventButtonClicked"
+                    Command="{Binding RemoveReminderClickedCommand}"
                     IsVisible="{Binding HasReminder}"/>
             </Grid>
         <ScrollView Grid.Row="6">
@@ -199,7 +201,8 @@
                             Margin="0,0,15,0"
                             BackgroundColor="Red"
                             Text=" - "
-                            Clicked="OnRemoveAttendeeFromEventButtonClicked"/>
+                            Command="{Binding RemoveAttendeeClickedCommand, Source={RelativeSource AncestorType={x:Type viewmodels:CalendarEventViewModel}}}"
+                            CommandParameter="{Binding .}"/>
                   </Grid>
                 </DataTemplate>
               </BindableLayout.ItemTemplate>

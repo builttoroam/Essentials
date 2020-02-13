@@ -49,7 +49,7 @@ namespace Samples.View
 
             var modal = new CalendarEventPage
             {
-                BindingContext = calendarEvent
+                BindingContext = new CalendarEventViewModel(calendarEvent)
             };
             await Navigation.PushAsync(modal);
         }

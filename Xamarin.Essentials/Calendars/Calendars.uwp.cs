@@ -580,7 +580,7 @@ namespace Xamarin.Essentials
             uwpAppointment.Reminder = null;
             var calendar = await instance.GetAppointmentCalendarAsync(uwpAppointment.CalendarId);
             await calendar.SaveAppointmentAsync(uwpAppointment);
-            return uwpAppointment.Reminder = null;
+            return uwpAppointment.Reminder == null;
         }
     }
 }
