@@ -516,11 +516,13 @@ namespace Xamarin.Essentials
 
             var attendeeToRemove = calendarEvent.Invitees.Where(x => x.DisplayName == newAttendee.Name && x.Address == newAttendee.Email).FirstOrDefault();
 
+            var cntInvitiees = calendarEvent.Invitees.Count;
+
             calendarEvent.Invitees.Remove(attendeeToRemove);
 
             await calendar.SaveAppointmentAsync(calendarEvent);
 
-            return attendeeToRemove != null;
+            return calendarEvent.Invitees.Count == cntInvitiees - 1;
         }
 
         static async Task<bool> PlatformAddReminderToEvent(CalendarEventReminder calendarEventReminder, string eventId)
@@ -549,8 +551,6 @@ namespace Xamarin.Essentials
             uwpAppointment.Reminder = TimeSpan.FromMinutes(calendarEventReminder.MinutesPriorToEventStart);
             var calendar = await instance.GetAppointmentCalendarAsync(uwpAppointment.CalendarId);
             await calendar.SaveAppointmentAsync(uwpAppointment);
-            uwpAppointment = await instance.GetAppointmentAsync(eventId);
-
             return uwpAppointment.Reminder != null;
         }
 
@@ -580,9 +580,7 @@ namespace Xamarin.Essentials
             uwpAppointment.Reminder = null;
             var calendar = await instance.GetAppointmentCalendarAsync(uwpAppointment.CalendarId);
             await calendar.SaveAppointmentAsync(uwpAppointment);
-            uwpAppointment = await instance.GetAppointmentAsync(eventId);
-
-            return uwpAppointment.Reminder == null;
+            return uwpAppointment.Reminder = null;
         }
     }
 }
