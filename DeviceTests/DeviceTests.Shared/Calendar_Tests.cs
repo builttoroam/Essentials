@@ -154,7 +154,7 @@ namespace DeviceTests
                 Assert.Equal(newEvent.Duration, createdEvent.Duration);
                 Assert.Equal(newEvent.EndDate, createdEvent.EndDate);
                 Assert.Equal(newEvent.Attendees, createdEvent.Attendees);
-                Assert.Equal(newEvent.Reminders, createdEvent.Reminders);
+                Assert.Equal(newEvent.Reminder, createdEvent.Reminder);
                 Assert.Equal(newEvent.RecurrancePattern, createdEvent.RecurrancePattern);
 
                 createdEvent.RecurrancePattern = new RecurrenceRule()
@@ -182,7 +182,7 @@ namespace DeviceTests
                 Assert.Equal(createdEvent.AllDay, updatedEvent.AllDay);
                 Assert.NotEqual(createdEvent.StartDate, updatedEvent.StartDate);
                 Assert.Equal(createdEvent.Attendees, updatedEvent.Attendees);
-                Assert.Equal(createdEvent.Reminders, updatedEvent.Reminders);
+                Assert.Equal(createdEvent.Reminder, updatedEvent.Reminder);
 
                 var attendeeToAddAndRemove = new CalendarEventAttendee() { Email = "fake@email.com", Name = "Fake Email", Type = AttendeeType.Resource };
 

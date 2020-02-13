@@ -29,5 +29,9 @@ namespace Xamarin.Essentials
         static Task<bool> PlatformAddAttendeeToEvent(CalendarEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
 
         static Task<bool> PlatformRemoveAttendeeFromEvent(CalendarEventAttendee newAttendee, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+        static Task<bool> PlatformReminderFromEvent(string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
+
+        static Task<bool> PlatformAddReminderToEvent(CalendarEventReminder calendarEventReminder, string eventId) => throw ExceptionUtils.NotSupportedOrImplementedException;
     }
 }

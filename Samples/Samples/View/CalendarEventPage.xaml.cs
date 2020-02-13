@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using Samples.ViewModel;
 using Xamarin.Essentials;
@@ -110,29 +108,22 @@ namespace Samples.View
                     {
                         lst.Remove(attendeeToRemove);
                     }
-                    BindingContext = new CalendarEvent()
-                    {
-                        AllDay = ViewModel.AllDay,
-                        Attendees = lst,
-                        CalendarId = ViewModel.CalendarId,
-                        Description = ViewModel.Description,
-                        Duration = ViewModel.Duration,
-                        EndDate = ViewModel.EndDate,
-                        Id = ViewModel.Id,
-                        Location = ViewModel.Location,
-                        StartDate = ViewModel.StartDate,
-                        Title = ViewModel.Title
-                    };
+                    ViewModel.Attendees = lst;
+                    RefreshValues(ViewModel);
                 }
             }
         }
 
-        void OnRemoveReminderFromEventButtonClicked(object sender, EventArgs e)
+        async void OnRemoveReminderFromEventButtonClicked(object sender, EventArgs e)
         {
             if (!(sender is Button btn) || !(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId))
                 return;
 
-            var attendee = btn?.BindingContext as CalendarEventReminder;
+            if (await Calendars.RemoveReminderFromEvent(eventId))
+            {
+                ViewModel.Reminder = null;
+                RefreshValues(ViewModel);
+            }
         }
 
         async void OnEditEventButtonClicked(object sender, EventArgs e)
@@ -144,5 +135,35 @@ namespace Samples.View
             modal.BindingContext = new CalendarEventAddViewModel(ViewModel.CalendarId, calendarName, ViewModel);
             await Navigation.PushAsync(modal);
         }
+
+        async void OnAddReminderFromEventButtonClicked(object sender, EventArgs e)
+        {
+            if (!(EventId.Text is string eventId) || string.IsNullOrEmpty(eventId) || !(Reminder.Text is string reminderMinutesString) || !int.TryParse(reminderMinutesString, out var reminderMinutes))
+                return;
+
+            if (await Calendars.AddReminderToEvent(new CalendarEventReminder() { MinutesPriorToEventStart = Math.Abs(reminderMinutes) }, eventId))
+            {
+                ViewModel.Reminder = new CalendarEventReminder() { MinutesPriorToEventStart = Math.Abs(reminderMinutes) };
+                RefreshValues(ViewModel);
+            }
+        }
+
+        void RefreshValues(CalendarEvent eventRefresh) =>
+            BindingContext = new CalendarEvent()
+            {
+                AllDay = eventRefresh.AllDay,
+                Attendees = eventRefresh.Attendees,
+                CalendarId = eventRefresh.CalendarId,
+                Description = eventRefresh.Description,
+                Duration = eventRefresh.Duration,
+                EndDate = eventRefresh.EndDate,
+                RecurrancePattern = eventRefresh.RecurrancePattern,
+                Id = eventRefresh.Id,
+                Location = eventRefresh.Location,
+                StartDate = eventRefresh.StartDate,
+                Title = eventRefresh.Title,
+                Reminder = eventRefresh.Reminder,
+                Url = eventRefresh.Url
+            };
     }
 }

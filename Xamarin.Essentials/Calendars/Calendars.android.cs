@@ -226,7 +226,7 @@ namespace Xamarin.Essentials
                         EndDate = eventEndDate,
                         Attendees = GetAttendeesForEvent(eventId, currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Organizer))),
                         RecurrancePattern = !string.IsNullOrEmpty(currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) ? GetRecurranceRuleForEvent(currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) : null,
-                        Reminders = GetRemindersForEvent(eventId)
+                        Reminder = GetRemindersForEvent(eventId)
                     };
                     return eventResult;
                 }
@@ -284,7 +284,7 @@ namespace Xamarin.Essentials
                         EndDate = eventEndDate,
                         Attendees = GetAttendeesForEvent(eventId, currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Organizer))),
                         RecurrancePattern = !string.IsNullOrEmpty(currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) ? GetRecurranceRuleForEvent(currentContextContentResolver.GetString(eventsProjection.IndexOf(CalendarContract.Events.InterfaceConsts.Rrule))) : null,
-                        Reminders = GetRemindersForEvent(eventId)
+                        Reminder = GetRemindersForEvent(eventId)
                     };
                 }
                 throw new ArgumentOutOfRangeException($"[Android]: No Event found for event Id {eventId}");
@@ -318,7 +318,7 @@ namespace Xamarin.Essentials
             return attendees.OrderByDescending(x => x.IsOrganizer);
         }
 
-        static IEnumerable<CalendarEventReminder> GetRemindersForEvent(string eventId)
+        static CalendarEventReminder GetRemindersForEvent(string eventId)
         {
             var remindersUri = CalendarContract.Reminders.ContentUri;
             var remindersProjection = new List<string>
@@ -338,7 +338,7 @@ namespace Xamarin.Essentials
                     });
                 }
             }
-            return reminders;
+            return reminders.FirstOrDefault();
         }
 
         static async Task<string> PlatformCreateCalendar(Calendar newCalendar)
@@ -787,6 +787,47 @@ namespace Xamarin.Essentials
                 toReturn += day.ToShortString() + ",";
             }
             return toReturn.Substring(0, toReturn.Length - 1);
+        }
+
+        static async Task<bool> PlatformAddReminderToEvent(CalendarEventReminder calendarEventReminder, string eventId)
+        {
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
+
+            var calendarEvent = await GetEventByIdAsync(eventId);
+
+            if (calendarEvent == null)
+            {
+                throw new ArgumentException("[Android]: You must supply a valid event id to add an reminder to an event.");
+            }
+
+            var reminderUri = CalendarContract.Reminders.ContentUri;
+            var reminderValues = new ContentValues();
+            reminderValues.Put(CalendarContract.Reminders.InterfaceConsts.EventId, eventId);
+            reminderValues.Put(CalendarContract.Reminders.InterfaceConsts.Minutes, calendarEventReminder.MinutesPriorToEventStart);
+
+            var resultUri = Platform.AppContext.ApplicationContext.ContentResolver.Insert(reminderUri, reminderValues);
+            var result = Convert.ToInt32(resultUri.LastPathSegment);
+
+            return result > 0;
+        }
+
+        static async Task<bool> PlatformReminderFromEvent(string eventId)
+        {
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
+
+            var calendarEvent = await GetEventByIdAsync(eventId);
+
+            if (calendarEvent == null)
+            {
+                throw new ArgumentException("[Android]: You must supply a valid event id to remove an reminder from an event.");
+            }
+
+            var reminderUri = CalendarContract.Reminders.ContentUri;
+            var reminderSpecificAttendees = $"{CalendarContract.Reminders.InterfaceConsts.EventId}='{eventId}'";
+
+            var result = Platform.AppContext.ApplicationContext.ContentResolver.Delete(reminderUri, reminderSpecificAttendees, null);
+
+            return result > 0;
         }
     }
 }

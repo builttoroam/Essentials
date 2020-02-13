@@ -33,5 +33,9 @@ namespace Xamarin.Essentials
         public static Task<bool> AddAttendeeToEvent(CalendarEventAttendee newAttendee, string eventId) => PlatformAddAttendeeToEvent(newAttendee, eventId);
 
         public static Task<bool> RemoveAttendeeFromEvent(CalendarEventAttendee newAttendee, string eventId) => PlatformRemoveAttendeeFromEvent(newAttendee, eventId);
+
+        public static Task<bool> AddReminderToEvent(CalendarEventReminder newReminder, string eventId) => PlatformAddReminderToEvent(newReminder, eventId);
+
+        public static Task<bool> RemoveReminderFromEvent(string eventId) => PlatformReminderFromEvent(eventId);
     }
 }

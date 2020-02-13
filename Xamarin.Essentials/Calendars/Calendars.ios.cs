@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using EventKit;
 using Foundation;
+using ObjCRuntime;
 
 namespace Xamarin.Essentials
 {
@@ -84,8 +85,7 @@ namespace Xamarin.Essentials
                 throw new ArgumentException($"[iOS]: No Event found for event Id {eventId}");
             }
 
-            var calendarEvent = CalendarRequest.Instance.GetCalendarItem(eventId) as EKEvent;
-            if (calendarEvent == null)
+            if (!(CalendarRequest.Instance.GetCalendarItem(eventId) is EKEvent calendarEvent))
             {
                 throw new ArgumentOutOfRangeException($"[iOS]: No Event found for event Id {eventId}");
             }
@@ -127,7 +127,7 @@ namespace Xamarin.Essentials
                 EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone) : null,
                 Attendees = attendees,
                 RecurrancePattern = recurrenceRule,
-                Reminders = alarms
+                Reminder = alarms.First()
             };
         }
 
@@ -144,7 +144,7 @@ namespace Xamarin.Essentials
             var instanceOfEvent = (await GetEventsAsync(calendarEvent.Calendar.CalendarIdentifier, instanceDate, instanceDate.AddDays(1))).FirstOrDefault(x => x.Id == eventId);
 
             calendarEvent.StartDate = instanceOfEvent.StartDate.ToNSDate();
-            calendarEvent.EndDate = instanceOfEvent.AllDay ? null : instanceOfEvent.EndDate.Value.ToNSDate();
+            calendarEvent.EndDate = instanceOfEvent.AllDay ? instanceOfEvent.StartDate.AddDays(1).AddTicks(-1).ToNSDate() : instanceOfEvent.EndDate.Value.ToNSDate();
             if (calendarEvent == null)
             {
                 throw new ArgumentOutOfRangeException($"[iOS]: No Event found for event Id {eventId}");
@@ -161,7 +161,7 @@ namespace Xamarin.Essentials
                 alarms = new List<CalendarEventReminder>();
                 foreach (var a in calendarEvent.Alarms)
                 {
-                    alarms.Add(new CalendarEventReminder() { MinutesPriorToEventStart = (calendarEvent.StartDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone) - a.AbsoluteDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone)).Minutes });
+                    alarms.Add(new CalendarEventReminder() { MinutesPriorToEventStart = (int)-(a.RelativeOffset / 60) });
                 }
             }
             var attendees = calendarEvent.Attendees != null ? GetAttendeesForEvent(calendarEvent.Attendees) : new List<CalendarEventAttendee>();
@@ -187,7 +187,7 @@ namespace Xamarin.Essentials
                 EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone) : null,
                 Attendees = attendees,
                 RecurrancePattern = recurrenceRule,
-                Reminders = alarms
+                Reminder = alarms?.FirstOrDefault()
             };
         }
 
@@ -526,11 +526,48 @@ namespace Xamarin.Essentials
 
             // calendarEvent.Attendees = calendarEventAttendees; - readonly cannot be done at this stage.
 
-            if (CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error))
+            return CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error);
+        }
+
+        static async Task<bool> PlatformAddReminderToEvent(CalendarEventReminder calendarEventReminder, string eventId)
+        {
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
+
+            if (string.IsNullOrWhiteSpace(eventId))
             {
-                return true;
+                throw new ArgumentException($"[iOS]: No Event found for event Id {eventId}");
             }
-            throw new Exception(error.DebugDescription);
+
+            if (!(CalendarRequest.Instance.GetCalendarItem(eventId) is EKEvent calendarEvent))
+            {
+                throw new ArgumentOutOfRangeException($"[iOS]: No Event found for event Id {eventId}");
+            }
+
+            calendarEvent.Alarms = new EKAlarm[1]
+            {
+                EKAlarm.FromTimeInterval(-((double)calendarEventReminder.MinutesPriorToEventStart * 60))
+            };
+
+            return CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error);
+        }
+
+        static async Task<bool> PlatformReminderFromEvent(string eventId)
+        {
+            await Permissions.RequestAsync<Permissions.CalendarWrite>();
+
+            if (string.IsNullOrWhiteSpace(eventId))
+            {
+                throw new ArgumentException($"[iOS]: No Event found for event Id {eventId}");
+            }
+
+            if (!(CalendarRequest.Instance.GetCalendarItem(eventId) is EKEvent calendarEvent))
+            {
+                throw new ArgumentOutOfRangeException($"[iOS]: No Event found for event Id {eventId}");
+            }
+
+            calendarEvent.Alarms = null;
+
+            return CalendarRequest.Instance.SaveEvent(calendarEvent, EKSpan.FutureEvents, true, out var error);
         }
     }
 }
