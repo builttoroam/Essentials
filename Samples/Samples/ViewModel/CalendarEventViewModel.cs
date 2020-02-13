@@ -40,10 +40,15 @@ namespace Samples.ViewModel
         {
             Attendees.Clear();
 
-            var attendees = (await Calendars.GetEventByIdAsync(Id)).Attendees;
-            foreach (var attendee in attendees)
+            var calendarEvent = await Calendars.GetEventByIdAsync(Id);
+
+            if (calendarEvent != null)
             {
-                Attendees.Add(attendee);
+                var attendees = calendarEvent.Attendees;
+                foreach (var attendee in attendees)
+                {
+                    Attendees.Add(attendee);
+                }
             }
         }
 

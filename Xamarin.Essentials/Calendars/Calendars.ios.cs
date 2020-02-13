@@ -126,7 +126,7 @@ namespace Xamarin.Essentials
                 EndDate = !calendarEvent.AllDay ? (DateTimeOffset?)calendarEvent.EndDate.ToDateTimeOffsetWithTimeZone(calendarEvent.TimeZone) : null,
                 Attendees = attendees,
                 RecurrancePattern = recurrenceRule,
-                Reminder = alarms.First()
+                Reminder = alarms != null ? alarms.FirstOrDefault() : null
             };
         }
 
