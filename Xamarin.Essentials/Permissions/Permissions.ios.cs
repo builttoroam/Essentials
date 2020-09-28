@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using AddressBook;
 using AVFoundation;
+using EventKit;
+using Foundation;
 using MediaPlayer;
 using Speech;
 
@@ -312,6 +314,18 @@ namespace Xamarin.Essentials
 
                 return tcs.Task;
             }
+        }
+
+        static Task<PermissionStatus> RequestRemindersAsync()
+        {
+            var tcs = new TaskCompletionSource<PermissionStatus>(CalendarRequest.Instance);
+            CalendarRequest.Instance.RequestAccess(
+                EKEntityType.Reminder,
+                (bool granted, NSError e) =>
+                {
+                    tcs.SetResult(granted ? PermissionStatus.Granted : PermissionStatus.Denied);
+                });
+            return tcs.Task;
         }
     }
 }
