@@ -51,33 +51,45 @@
     <views:BasePage.Content>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition />
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
             </Grid.RowDefinitions>
             <StackLayout>
                 <Label Text="Quickly view a range of calendars and upcoming events." FontAttributes="Bold" Margin="12" />
-                <Button Grid.Column="1"
-                        Text="Load Calendars"
+                <Button Text="Load Calendars"
                         Command="{Binding GetCalendars}" 
                         HorizontalOptions="Center"/>
             </StackLayout>
-            <Picker x:Name="SelectedCalendar"
-                    Grid.Row="1"
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Picker x:Name="SelectedCalendar"
                     Title="Select a Calendar"
                     ItemsSource="{Binding CalendarList}"
                     ItemDisplayBinding="{Binding Name}"
-                    SelectedItem="{Binding SelectedCalendar}" />
-            <Grid Grid.Row="2">
+                    SelectedItem="{Binding SelectedCalendar, Mode=TwoWay}"/>
+                <Button Grid.Column="1"
+                        Text="Add"
+                        Clicked="OnAddCalendarButtonClicked"/>
+            </Grid>
+            <Button Grid.Row="2"
+                    Text="Add Event"
+                    IsEnabled="{Binding CanCreateCalendarEvent}"
+                    Clicked="OnAddEventButtonClicked"/>
+            <Grid Grid.Row="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto" />
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition />
                     <ColumnDefinition />
                 </Grid.ColumnDefinitions>
@@ -152,12 +164,12 @@
                     </TimePicker.Behaviors>
                 </TimePicker>
             </Grid>
-            <BoxView Grid.Row="3"
+            <BoxView Grid.Row="4"
                      VerticalOptions="Center"
                      HorizontalOptions="FillAndExpand"
                      HeightRequest="1"
                      Color="#5b5d68" />
-            <ListView Grid.Row="4"
+            <ListView Grid.Row="5"
                       HasUnevenRows="true"
                       ItemsSource="{Binding EventList}"
                       ItemTemplate="{StaticResource EventItemTemplate}"

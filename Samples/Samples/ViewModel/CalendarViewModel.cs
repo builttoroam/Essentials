@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Windows.Input;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -12,6 +13,8 @@ namespace Samples.ViewModel
 
         const string endOfDay = "23:59";
 
+        bool alreadyAppeared;
+
         public CalendarViewModel()
         {
             GetCalendars = new Command(OnClickGetCalendars);
@@ -21,6 +24,18 @@ namespace Samples.ViewModel
             EndTimeSelectedCommand = new Command(OnEndTimeSelected);
             StartDateEnabledCheckBoxChanged = new Command(OnStartCheckboxChanged);
             EndDateEnabledCheckBoxChanged = new Command(OnEndCheckboxChanged);
+        }
+
+        public override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            if (!alreadyAppeared)
+            {
+                alreadyAppeared = true;
+
+                RefreshCalendars();
+            }
         }
 
         Calendar selectedCalendar;
@@ -40,6 +55,8 @@ namespace Samples.ViewModel
             get => enddatePickersEnabled;
             set => SetProperty(ref enddatePickersEnabled, value);
         }
+
+        public bool CanCreateCalendarEvent => !string.IsNullOrWhiteSpace(SelectedCalendar?.Name) && SelectedCalendar?.Name != "All" && !SelectedCalendar.IsReadOnly;
 
         public ICommand GetCalendars { get; }
 
@@ -78,6 +95,7 @@ namespace Samples.ViewModel
                 if (SetProperty(ref selectedCalendar, value) && selectedCalendar != null)
                 {
                     OnChangeRequestCalendarSpecificEvents(selectedCalendar.Id);
+                    OnPropertyChanged(nameof(CanCreateCalendarEvent));
                 }
             }
         }
@@ -102,10 +120,13 @@ namespace Samples.ViewModel
             }
         }
 
+        public void RefreshCalendars() => OnClickGetCalendars();
+
         async void OnClickGetCalendars()
         {
             CalendarList.Clear();
-            CalendarList.Add(new Calendar() { Id = null, Name = "All" });
+
+            CalendarList.Add(new Calendar() { Id = null, IsReadOnly = true, Name = "All" });
             var calendars = await Calendars.GetCalendarsAsync();
             foreach (var calendar in calendars)
             {
@@ -153,16 +174,17 @@ namespace Samples.ViewModel
             RefreshEventList();
         }
 
-        void OnChangeRequestCalendarSpecificEvents(string calendarId = null, DateTime? startDateTime = null, DateTime? endDateTime = null) => RefreshEventList(calendarId, startDateTime, endDateTime);
+        public void OnChangeRequestCalendarSpecificEvents(string calendarId = null, DateTime? startDateTime = null, DateTime? endDateTime = null) => RefreshEventList(calendarId, startDateTime, endDateTime);
 
         async void RefreshEventList(string calendarId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
             startDate = StartDatePickersEnabled && !startDate.HasValue ? (DateTime?)StartDate.Date + StartTime : startDate;
             endDate = (EndDatePickersEnabled && !endDate.HasValue) ? (DateTime?)EndDate.Date + EndTime : endDate;
-            if (CalendarList.Count == 0)
+            if (!CalendarList.Any())
                 return;
 
             EventList.Clear();
+
             var events = await Calendars.GetEventsAsync(calendarId, startDate, endDate);
             foreach (var calendarEvent in events)
             {

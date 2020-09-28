@@ -14,12 +14,32 @@ namespace Samples.View
             InitializeComponent();
         }
 
-        async void OnEventTapped(object sender, ItemTappedEventArgs e)
+        async void OnAddCalendarButtonClicked(object sender, EventArgs e)
         {
-            if (e.Item == null || !(e.Item is CalendarEvent evt))
+            var modal = new CalendarAddPage();
+
+            modal.BindingContext = new CalendarAddViewModel();
+            await Navigation.PushAsync(modal);
+        }
+
+        async void OnAddEventButtonClicked(object sender, EventArgs e)
+        {
+            var modal = new CalendarEventAddPage();
+
+            if (!(SelectedCalendar.SelectedItem is Calendar calendar) || string.IsNullOrEmpty(calendar.Id))
                 return;
 
-            var calendarEvent = await Calendars.GetEventByIdAsync((e.Item as CalendarEvent)?.Id);
+            modal.BindingContext = new CalendarEventAddViewModel(calendar.Id, calendar.Name);
+            await Navigation.PushAsync(modal);
+        }
+
+        async void OnEventTapped(object sender, ItemTappedEventArgs e)
+        {
+            if (e.Item == null || !(e.Item is CalendarEvent calendarEvent))
+                return;
+
+            calendarEvent = await Calendars.GetEventInstanceByIdAsync(calendarEvent.Id, calendarEvent.StartDate);
+
             var modal = new CalendarEventPage
             {
                 BindingContext = calendarEvent
