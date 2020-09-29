@@ -38,7 +38,7 @@ namespace Samples.View
             if (e.Item == null || !(e.Item is CalendarEvent calendarEvent))
                 return;
 
-            calendarEvent = await Calendars.GetEventInstanceByIdAsync(calendarEvent.Id, calendarEvent.StartDate);
+            calendarEvent = await Calendars.GetEventInstanceAsync(calendarEvent.Id, calendarEvent.StartDate);
 
             var modal = new CalendarEventPage
             {

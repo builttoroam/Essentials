@@ -142,7 +142,7 @@ namespace DeviceTests
                     eventId = newEvent.Id;
                 }
                 Assert.NotEmpty(eventId);
-                var createdEvent = await Calendars.GetEventByIdAsync(eventId);
+                var createdEvent = await Calendars.GetEventAsync(eventId);
                 newEvent.Id = createdEvent.Id;
                 newEvent.Attendees = createdEvent.Attendees;
 
@@ -172,7 +172,7 @@ namespace DeviceTests
                 createdEvent.AllDay = true;
 
                 var updateSuccessful = await Calendars.UpdateCalendarEvent(createdEvent);
-                var updatedEvent = await Calendars.GetEventByIdAsync(createdEvent.Id);
+                var updatedEvent = await Calendars.GetEventAsync(createdEvent.Id);
 
                 // Updated Successfuly
                 Assert.True(updateSuccessful);
@@ -194,7 +194,7 @@ namespace DeviceTests
                 Assert.True(attendeeAddedSuccessfully);
 
                 // Verify Attendee added to event
-                updatedEvent = await Calendars.GetEventByIdAsync(createdEvent.Id);
+                updatedEvent = await Calendars.GetEventAsync(createdEvent.Id);
                 var expectedAttendeeCount = createdEvent.Attendees != null ? createdEvent.Attendees.Count() + 1 : 1;
                 Assert.Equal(updatedEvent.Attendees.Count(), expectedAttendeeCount);
 
@@ -203,7 +203,7 @@ namespace DeviceTests
                 Assert.True(removedAttendeeSuccessfully);
 
                 var dateOfSecondOccurence = TimeZoneInfo.ConvertTime(new DateTimeOffset(2020, 4, 9, 0, 0, 0, TimeZoneInfo.Local.BaseUtcOffset), TimeZoneInfo.Local);
-                var eventInstance = await Calendars.GetEventInstanceByIdAsync(updatedEvent.Id, dateOfSecondOccurence);
+                var eventInstance = await Calendars.GetEventInstanceAsync(updatedEvent.Id, dateOfSecondOccurence);
 
                 // Retrieve instance of event
                 Assert.Equal(eventInstance.Id, updatedEvent.Id);
@@ -214,11 +214,11 @@ namespace DeviceTests
                 Assert.True(canDeleteInstance);
 
                 // Get whole event
-                var eventStillExists = await Calendars.GetEventByIdAsync(eventInstance.Id);
+                var eventStillExists = await Calendars.GetEventAsync(eventInstance.Id);
                 Assert.NotNull(eventStillExists);
 
                 // Delete whole event
-                var deleteEvent = await Calendars.DeleteCalendarEventById(eventInstance.Id, calendarId);
+                var deleteEvent = await Calendars.DeleteCalendarEvent(eventInstance.Id, calendarId);
                 Assert.True(deleteEvent);
             });
         }
@@ -305,7 +305,7 @@ namespace DeviceTests
                 var attendeeToAdd = new CalendarEventAttendee() { Email = "fake@email.com", Name = "Fake Out", Type = AttendeeType.Required };
                 Assert.True(await Calendars.AddAttendeeToEvent(attendeeToAdd, eventId));
 
-                newEvent = await Calendars.GetEventByIdAsync(eventId);
+                newEvent = await Calendars.GetEventAsync(eventId);
                 var attendee = newEvent.Attendees.FirstOrDefault(x => x.Email == "fake@email.com");
 
                 Assert.Equal(attendee.Email, attendeeToAdd.Email);
@@ -370,7 +370,7 @@ namespace DeviceTests
                         {
                             attendeeToAdd = new CalendarEventAttendee() { Email = "fake@email.com", Name = "Fake Out", Type = AttendeeType.Required };
                             Assert.True(await Calendars.AddAttendeeToEvent(attendeeToAdd, eventId));
-                            newEvent = await Calendars.GetEventByIdAsync(eventId);
+                            newEvent = await Calendars.GetEventAsync(eventId);
                             attendeeCount = newEvent.Attendees.Count();
                             attendee = newEvent.Attendees.FirstOrDefault(x => x.Email == "fake@email.com");
 
@@ -385,7 +385,7 @@ namespace DeviceTests
                 {
                     attendeeToAdd = new CalendarEventAttendee() { Email = "fake@email.com", Name = "Fake Out", Type = AttendeeType.Required };
                     Assert.True(await Calendars.AddAttendeeToEvent(attendeeToAdd, eventId));
-                    newEvent = await Calendars.GetEventByIdAsync(eventId);
+                    newEvent = await Calendars.GetEventAsync(eventId);
                     attendeeCount = newEvent.Attendees.Count();
                     attendee = newEvent.Attendees.FirstOrDefault(x => x.Email == "fake@email.com");
 
@@ -395,7 +395,7 @@ namespace DeviceTests
                     Assert.Equal(attendee.Type, attendeeToAdd.Type);
                 }
                 Assert.True(await Calendars.RemoveAttendeeFromEvent(attendee, eventId));
-                newEvent = await Calendars.GetEventByIdAsync(eventId);
+                newEvent = await Calendars.GetEventAsync(eventId);
                 var newAttendeeCount = newEvent.Attendees.Count();
 
                 Assert.Equal(attendeeCount - 1, newAttendeeCount);
@@ -433,11 +433,11 @@ namespace DeviceTests
                         EndDate = startDate.AddHours(10)
                     };
                     var eventId = await Calendars.CreateCalendarEvent(newEvent);
-                    newEvent = await Calendars.GetEventByIdAsync(eventId);
+                    newEvent = await Calendars.GetEventAsync(eventId);
                 }
                 else
                 {
-                    newEvent = await Calendars.GetEventByIdAsync(newEvent.Id);
+                    newEvent = await Calendars.GetEventAsync(newEvent.Id);
                 }
 
                 newEvent.AllDay = true;
@@ -484,7 +484,7 @@ namespace DeviceTests
                 {
                     eventId = newEvent.Id;
                 }
-                var result = await Calendars.DeleteCalendarEventById(eventId, calendarId);
+                var result = await Calendars.DeleteCalendarEvent(eventId, calendarId);
 
                 Assert.True(result);
             });

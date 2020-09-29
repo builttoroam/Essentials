@@ -315,17 +315,5 @@ namespace Xamarin.Essentials
                 return tcs.Task;
             }
         }
-
-        static Task<PermissionStatus> RequestRemindersAsync()
-        {
-            var tcs = new TaskCompletionSource<PermissionStatus>(CalendarRequest.Instance);
-            CalendarRequest.Instance.RequestAccess(
-                EKEntityType.Reminder,
-                (bool granted, NSError e) =>
-                {
-                    tcs.SetResult(granted ? PermissionStatus.Granted : PermissionStatus.Denied);
-                });
-            return tcs.Task;
-        }
     }
 }
