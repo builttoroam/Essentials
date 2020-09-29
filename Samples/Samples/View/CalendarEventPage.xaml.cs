@@ -33,7 +33,7 @@ namespace Samples.View
 
             var viewModel = BindingContext as CalendarEvent;
 
-            var calendarEvent = await Calendars.GetEventInstanceAsync(eventId, viewModel.StartDate);
+            var calendarEvent = await Calendars.GetEventInstanceByIdAsync(eventId, viewModel.StartDate);
 
             if (!(calendarEvent is CalendarEvent))
                 return;
@@ -49,7 +49,7 @@ namespace Samples.View
                     switch (action)
                     {
                         case actionResponseDeleteAll:
-                            deletionConfirmed = await Calendars.DeleteCalendarEvent(eventId, CalendarId.Text);
+                            deletionConfirmed = await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text);
                             deletionMessage = $"Deleted event id: {eventId}";
                             break;
                         case actionResponseDeleteOne:
@@ -72,7 +72,7 @@ namespace Samples.View
                         await DisplayAlert(actionTitleInfo, "Unable to delete event: " + eventId, actionResponseOk);
                     }
                 }
-                else if (await Calendars.DeleteCalendarEvent(eventId, CalendarId.Text))
+                else if (await Calendars.DeleteCalendarEventById(eventId, CalendarId.Text))
                 {
                     await DisplayAlert(actionTitleInfo, "Deleted event id: " + eventId, actionResponseOk);
                     await Navigation.PopAsync();
