@@ -104,6 +104,7 @@ namespace DeviceTests
         }
 
         [Fact]
+        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public Task Full_Calendar_Edit_Test()
         {
             return Utils.OnMainThread(async () =>
@@ -224,6 +225,7 @@ namespace DeviceTests
         }
 
         [Fact]
+        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public Task Basic_Calendar_Creation()
         {
             return Utils.OnMainThread(async () =>
@@ -235,6 +237,7 @@ namespace DeviceTests
         }
 
         [Fact]
+        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public Task Basic_Calendar_Event_Creation()
         {
             return Utils.OnMainThread(async () =>
@@ -266,6 +269,7 @@ namespace DeviceTests
         }
 
         [Fact]
+        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public Task Basic_Calendar_Event_Attendee_Add()
         {
             return Utils.OnMainThread(async () =>
@@ -316,6 +320,7 @@ namespace DeviceTests
         }
 
         [Fact]
+        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public Task Basic_Calendar_Event_Attendee_Remove()
         {
             return Utils.OnMainThread(async () =>
@@ -403,6 +408,7 @@ namespace DeviceTests
         }
 
         [Fact]
+        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public Task Basic_Calendar_Event_Update()
         {
             return Utils.OnMainThread(async () =>
@@ -448,6 +454,7 @@ namespace DeviceTests
         }
 
         [Fact]
+        [Trait(Traits.InteractionType, Traits.InteractionTypes.Human)]
         public Task Basic_Calendar_Event_Deletion()
         {
             return Utils.OnMainThread(async () =>
