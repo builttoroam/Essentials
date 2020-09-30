@@ -6,6 +6,16 @@ namespace Xamarin.Essentials
     [Preserve(AllMembers = true)]
     public class Calendar
     {
+        public Calendar()
+        {
+        }
+
+        public Calendar(string id, string name)
+        {
+            Id = id;
+            Name = name;
+        }
+
         public string Id { get; set; }
 
         public string Name { get; set; }
@@ -16,6 +26,17 @@ namespace Xamarin.Essentials
     [Preserve(AllMembers = true)]
     public class CalendarEvent
     {
+        public CalendarEvent()
+        {
+        }
+
+        public CalendarEvent(string id, string calendarId, string title)
+        {
+            Id = id;
+            CalendarId = calendarId;
+            Title = title;
+        }
+
         public string Id { get; set; }
 
         public string CalendarId { get; set; }
@@ -34,6 +55,8 @@ namespace Xamarin.Essentials
 
         public DateTimeOffset StartDate { get; set; }
 
+        public DateTimeOffset? EndDate { get; set; }
+
         public TimeSpan? Duration
         {
             get => EndDate.HasValue ? EndDate - StartDate : null;
@@ -41,8 +64,6 @@ namespace Xamarin.Essentials
         }
 
         public string Url { get; set; }
-
-        public DateTimeOffset? EndDate { get; set; }
 
         public IEnumerable<CalendarEventAttendee> Attendees { get; set; }
 

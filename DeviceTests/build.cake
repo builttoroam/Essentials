@@ -343,17 +343,15 @@ Task("test-uwp-emu")
         Information("Installing Dependency appx: {0}", dep);
         StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(dep).FullPath + "\"");
     }
- 
     var appxBundlePath = GetFiles("./**/AppPackages/**/*.msixbundle").First();
     Information("Installing appx: {0}", appxBundlePath);
     StartProcess("powershell", "Add-AppxPackage -Path \"" + MakeAbsolute(appxBundlePath).FullPath + "\"");
 
-     // Start the TCP Test results listener
+    // Start the TCP Test results listener
     Information("Started TCP Test Results Listener on port: {0}:{1}", TCP_LISTEN_HOST, TCP_LISTEN_PORT);
     var tcpListenerTask = DownloadTcpTextAsync(TCP_LISTEN_PORT, UWP_TEST_RESULTS_PATH);
 
     // Launch the app
-    // Information("Running appx: {0}", appxBundlePath);
     var ip = TCP_LISTEN_HOST.Replace(".", "-");
     var executeCommand = $"xamarin-essentials-device-tests://{ip}_{TCP_LISTEN_PORT}";
     Information("Running appx: {0}", executeCommand);

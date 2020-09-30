@@ -23,10 +23,6 @@
     -->
     <Assembly Name="*Application*" Dynamic="Required All" />
 
-    <Assembly Name="*DeviceTests.Shared*" Dynamic="Required All" />
-    <Assembly Name="*XamarinEssentialsDeviceTestsShared*" Dynamic="Required All" />
-    
-
     <!-- Add your application specific runtime directives here. -->
 
 
